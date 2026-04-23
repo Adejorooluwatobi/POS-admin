@@ -1,0 +1,52 @@
+<div class="fade-up">
+  @if (isOwner()) {
+    <div style="text-align:center;padding:40px;color:var(--red);font-size:13px;">
+      ⊘ Super Admin cannot modify store settings. Please log in as a Store Manager.
+    </div>
+  } @else {
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+      <div class="card" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Store Information</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Store Name</label>
+            <input class="inp" [value]="store()?.name">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Address</label>
+            <input class="inp" [value]="store()?.address">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Phone</label>
+            <input class="inp" value="+234 800 000 0001">
+          </div>
+          <button (click)="saveChanges()" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">POS Configuration</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Tax Rate</label>
+            <input class="inp" value="7.5" type="number">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Receipt Footer</label>
+            <input class="inp" value="Thank you for shopping with us!">
+          </div>
+          <div>
+            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Currency</label>
+            <select class="inp">
+              <option>NGN (₦)</option>
+              <option>USD ($)</option>
+            </select>
+          </div>
+          <button (click)="saveChanges()" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

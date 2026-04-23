@@ -1,0 +1,18 @@
+<div class="fade-up">
+  <!-- Report type cards -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+    @for (card of reportCards; track card.title) {
+      <div class="card" style="padding:14px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='var(--surface)'">
+        <div style="font-size:22px;margin-bottom:8px;">{{ card.icon }}</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">{{ card.title }}</div>
+        <div style="font-size:11px;color:var(--text2);">{{ card.desc }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- Monthly revenue chart -->
+  <div class="card" style="padding:16px;">
+    <div style="font-size:12px;font-weight:700;margin-bottom:14px;">Monthly Revenue</div>
+    <canvas #monthChart height="55"></canvas>
+  </div>
+</div>

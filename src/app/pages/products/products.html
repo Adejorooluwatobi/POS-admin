@@ -1,0 +1,68 @@
+<div class="fade-up">
+  @if (isOwner()) {
+    <div class="alert-banner" style="background:var(--accent-d);border:1px solid rgba(2,132,199,.15);color:var(--accent);margin-bottom:14px;">
+      ℹ Product catalog is managed by Store Managers. You have read-only access.
+    </div>
+  }
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+    <input class="inp" style="width:220px;" placeholder="Search products…">
+    <select class="inp" style="width:130px;">
+      <option>All Categories</option>
+      <option>Beverages</option>
+      <option>Dairy</option>
+      <option>Snacks</option>
+      <option>Household</option>
+    </select>
+    @if (!isOwner()) {
+      <button (click)="openAddProduct()" class="btn btn-primary" style="margin-left:auto;">+ Add Product</button>
+    }
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>PRODUCT</th>
+            <th>SKU</th>
+            <th>CATEGORY</th>
+            <th style="text-align:right;">COST</th>
+            <th style="text-align:right;">PRICE</th>
+            <th>TAX</th>
+            <th>STATUS</th>
+            @if (!isOwner()) { <th></th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of products(); track p.sku) {
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:16px;">{{ p.e }}</span>
+                  <span style="font-weight:600;">{{ p.n }}</span>
+                </div>
+              </td>
+              <td class="mono" style="color:var(--text3);font-size:11px;">{{ p.sku }}</td>
+              <td><span class="badge badge-accent">{{ p.cat }}</span></td>
+              <td class="mono" style="text-align:right;">₦{{ p.cost.toLocaleString() }}</td>
+              <td class="mono" style="text-align:right;font-weight:700;">₦{{ p.price.toLocaleString() }}</td>
+              <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'badge-green': p.tax === 'ZERO',
+                        'badge-purple': p.tax === 'EXEMPT',
+                        'badge-dim': p.tax !== 'ZERO' && p.tax !== 'EXEMPT'
+                      }">{{ p.tax }}</span>
+              </td>
+              <td><span class="badge badge-green">{{ p.status }}</span></td>
+              @if (!isOwner()) {
+                <td><button class="btn btn-secondary btn-xs">Edit</button></td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<!-- Header bar -->
+<div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+  <div>
+    <div style="font-size:15px;font-weight:700;">{{ pageTitle() }}</div>
+    <div class="mono" style="font-size:10px;color:var(--text3);">{{ pageSubtitle() }}</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="mono" style="font-size:11px;color:var(--text3);">{{ currentTime() }}</div>
+
+    <!-- Super admin only: store switcher -->
+    @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:10px;color:var(--text3);">Viewing:</span>
+        <select class="inp" style="width:auto;" (change)="switchStore($any($event.target).value)">
+          <option value="all">All Stores</option>
+          <option value="LG-01">VI Store</option>
+          <option value="LG-02">Ikeja Store</option>
+        </select>
+      </div>
+    }
+
+    <a href="pos-terminal-v2.html" target="_blank" class="btn btn-primary" style="font-size:11px;padding:6px 12px;">Open POS →</a>
+  </div>
+</div>

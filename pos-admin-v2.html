@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailOS — Admin Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+/* ─── THEME VARS ──────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg:        #f1f4f8;
+  --surface:   #ffffff;
+  --surface2:  #f7f9fc;
+  --surface3:  #edf0f5;
+  --border:    #e1e7ef;
+  --border2:   #d0d9e4;
+  --text:      #0d1623;
+  --text2:     #4a6075;
+  --text3:     #8fa5bb;
+  --sidebar:   #0f1923;
+  --sidebar-t: #94a3b5;
+  --sidebar-a: #ffffff;
+  --sidebar-s: rgba(255,255,255,0.08);
+  --sidebar-ab:#0ea5e9;
+  --accent:    #0284c7;
+  --accent-d:  rgba(2,132,199,0.08);
+  --green:     #059669;
+  --green-d:   rgba(5,150,105,0.08);
+  --amber:     #d97706;
+  --amber-d:   rgba(217,119,6,0.08);
+  --red:       #dc2626;
+  --red-d:     rgba(220,38,38,0.08);
+  --purple:    #7c3aed;
+  --purple-d:  rgba(124,58,237,0.08);
+  --chart1:    #0284c7;
+  --chart2:    #059669;
+}
+:root[data-theme="dark"] {
+  --bg:        #07090e;
+  --surface:   #0d1117;
+  --surface2:  #131920;
+  --surface3:  #1a2333;
+  --border:    #1e2d40;
+  --border2:   #253347;
+  --text:      #dde5f0;
+  --text2:     #7a9ab4;
+  --text3:     #3d5870;
+  --sidebar:   #080b10;
+  --sidebar-t: #4a6880;
+  --sidebar-a: #dde5f0;
+  --sidebar-s: rgba(255,255,255,0.06);
+  --sidebar-ab:#00c2ff;
+  --accent:    #00c2ff;
+  --accent-d:  rgba(0,194,255,0.08);
+  --green:     #00d68f;
+  --green-d:   rgba(0,214,143,0.08);
+  --amber:     #f5a623;
+  --amber-d:   rgba(245,166,35,0.08);
+  --red:       #ff4b6e;
+  --red-d:     rgba(255,75,110,0.08);
+  --purple:    #a78bfa;
+  --purple-d:  rgba(167,139,250,0.08);
+  --chart1:    #00c2ff;
+  --chart2:    #00d68f;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Geist',sans-serif;font-size:13px;}
+body{background:var(--bg);color:var(--text);transition:background .2s,color .2s;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+.mono{font-family:'Geist Mono',monospace;}
+.hidden{display:none!important;}
+
+/* Sidebar */
+.sidebar{background:var(--sidebar);width:220px;flex-shrink:0;display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);}
+.nav-link{display:flex;align-items:center;gap:9px;padding:7px 14px;border-radius:8px;cursor:pointer;color:var(--sidebar-t);font-size:12px;font-weight:500;transition:all .12s;margin:1px 0;}
+.nav-link:hover{background:var(--sidebar-s);color:var(--sidebar-a);}
+.nav-link.active{background:var(--sidebar-s);color:var(--sidebar-ab);}
+.nav-link.active .nav-icon{color:var(--sidebar-ab);}
+.nav-icon{width:15px;height:15px;flex-shrink:0;}
+.nav-section{font-size:9px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;padding:10px 14px 4px;}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;white-space:nowrap;font-family:'Geist Mono',monospace;}
+.badge-green{background:var(--green-d);color:var(--green);}
+.badge-red{background:var(--red-d);color:var(--red);}
+.badge-amber{background:var(--amber-d);color:var(--amber);}
+.badge-accent{background:var(--accent-d);color:var(--accent);}
+.badge-dim{background:var(--surface3);color:var(--text3);}
+.badge-purple{background:var(--purple-d);color:var(--purple);}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;border:none;cursor:pointer;font-family:'Geist',sans-serif;font-weight:600;border-radius:7px;transition:all .12s;white-space:nowrap;}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:var(--accent);color:#fff;padding:7px 14px;font-size:12px;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:6px 12px;font-size:12px;}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text);}
+.btn-danger{background:var(--red-d);color:var(--red);border:1px solid rgba(220,38,38,.15);padding:6px 12px;font-size:12px;}
+.btn-danger:hover{background:rgba(220,38,38,.12);}
+.btn-sm{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-xs{padding:3px 8px;font-size:10px;border-radius:5px;}
+.btn-amber{background:var(--amber-d);color:var(--amber);border:1px solid rgba(217,119,6,.15);padding:6px 12px;font-size:12px;}
+
+/* Inputs */
+.inp{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Geist',sans-serif;font-size:12px;border-radius:8px;padding:8px 12px;outline:none;width:100%;transition:border .15s;}
+.inp:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-d);}
+.inp::placeholder{color:var(--text3);}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%2394a3b8' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:14px;padding-right:30px;}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{text-align:left;padding:8px 16px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);}
+.tbl td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover{background:var(--surface2);}
+
+/* Section pages */
+.page{display:none;}
+.page.active{display:block;}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:60;display:flex;align-items:center;justify-content:center;}
+.modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.3);animation:pop .18s cubic-bezier(.34,1.4,.64,1);}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* Stat card */
+.stat-card{padding:16px;position:relative;overflow:hidden;}
+.stat-card-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px;}
+
+/* Progress */
+.prog{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .2s ease;}
+
+/* Toggle */
+.toggle{width:38px;height:21px;border-radius:11px;background:var(--surface3);border:1px solid var(--border2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle .knob{position:absolute;top:2.5px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--text3);transition:all .2s;}
+[data-theme="dark"] .toggle .knob{transform:translateX(17px);background:var(--accent);}
+
+/* Readonly overlay */
+.readonly-overlay{position:absolute;inset:0;border-radius:inherit;z-index:10;cursor:not-allowed;}
+
+/* Alert banner */
+.alert-banner{border-radius:8px;padding:10px 14px;font-size:12px;display:flex;align-items:center;gap:8px;}
+
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════ -->
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);">
+  <div style="width:380px;padding:16px;">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:12px;background:var(--accent);margin-bottom:12px;">
+        <span style="color:#fff;font-size:20px;font-weight:800;">R</span>
+      </div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.03em;">RetailOS Admin</div>
+      <div class="mono" style="font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:.05em;">BACK-OFFICE PORTAL</div>
+    </div>
+
+    <!-- Role selector -->
+    <div id="roleSelector" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+      <div onclick="selectRole('owner')" id="role-owner" style="border:1.5px solid var(--accent);background:var(--accent-d);border-radius:10px;padding:12px;cursor:pointer;transition:all .12s;">
+        <div style="font-size:18px;margin-bottom:5px;">👑</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent);">Super Admin</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">All stores · Owner view</div>
+      </div>
+      <div onclick="selectRole('manager')" id="role-manager" style="border:1.5px solid var(--border);background:var(--surface2);border-radius:10px;padding:12px;cursor:pointer;transition:all .12s;">
+        <div style="font-size:18px;margin-bottom:5px;">🏪</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Store Manager</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">Own store only</div>
+      </div>
+    </div>
+
+    <!-- Store selector (for managers) -->
+    <div id="storeSelectorWrap" style="margin-bottom:12px;display:none;">
+      <label style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Your Store</label>
+      <select id="storeSelect" class="inp">
+        <option value="LG-01">Victoria Island Store</option>
+        <option value="LG-02">Ikeja Store</option>
+      </select>
+    </div>
+
+    <!-- Login form -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;">
+      <div style="margin-bottom:12px;">
+        <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Email</label>
+        <input id="loginEmail" type="email" class="inp" placeholder="admin@retailos.ng">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Password</label>
+        <input id="loginPassword" type="password" class="inp" placeholder="••••••••">
+      </div>
+      <button onclick="doLogin()" class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;font-size:13px;border-radius:9px;">Sign In →</button>
+      <div id="loginErr" class="hidden" style="margin-top:10px;text-align:center;font-size:11px;color:var(--red);"></div>
+    </div>
+
+    <!-- Demo credentials -->
+    <div style="margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;">Demo Credentials</div>
+      <div class="mono" style="font-size:10px;color:var(--text2);display:flex;flex-direction:column;gap:3px;">
+        <div>👑 Super Admin → <span style="color:var(--accent);">owner@retailos.ng</span> / <span style="color:var(--accent);">owner123</span></div>
+        <div>🏪 VI Manager  → <span style="color:var(--green);">vi@retailos.ng</span> / <span style="color:var(--green);">store123</span></div>
+        <div>🏪 IK Manager  → <span style="color:var(--green);">ik@retailos.ng</span> / <span style="color:var(--green);">store123</span></div>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;">
+      <span style="font-size:11px;color:var(--text3);">☀</span>
+      <div class="toggle" onclick="toggleTheme()"><div class="knob"></div></div>
+      <span style="font-size:11px;color:var(--text3);">☾</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN ADMIN APP
+════════════════════════════════════════════ -->
+<div id="adminApp" class="hidden" style="display:flex;height:100vh;overflow:hidden;">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Logo -->
+    <div style="padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.06);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">R</div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#fff;">RetailOS</div>
+          <div class="mono" style="font-size:9px;color:rgba(255,255,255,.3);">Admin Portal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Role badge -->
+    <div id="sidebarRoleBadge" style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);"></div>
+
+    <!-- Nav -->
+    <nav style="padding:10px 8px;flex:1;" id="sidebarNav"></nav>
+
+    <!-- Bottom -->
+    <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:rgba(255,255,255,.3);">☀</span>
+          <div class="toggle" onclick="toggleTheme()"><div class="knob"></div></div>
+          <span style="font-size:10px;color:rgba(255,255,255,.3);">☾</span>
+        </div>
+        <button onclick="doLogout()" style="background:none;border:none;cursor:pointer;font-size:10px;color:rgba(255,255,255,.3);font-family:'Geist',sans-serif;transition:color .12s;" onmouseover="this.style.color='#ff4b6e'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Logout</button>
+      </div>
+      <div id="sidebarUser" style="display:flex;align-items:center;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Top bar -->
+    <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div>
+        <div style="font-size:15px;font-weight:700;" id="pageTitle">Dashboard</div>
+        <div class="mono" style="font-size:10px;color:var(--text3);" id="pageSubtitle"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="mono" style="font-size:11px;color:var(--text3);" id="topClock"></div>
+        <!-- Super admin only: store switcher -->
+        <div id="storeSwitcher" class="hidden" style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:10px;color:var(--text3);">Viewing:</span>
+          <select class="inp btn-sm" style="width:auto;" onchange="switchStore(this.value)" id="globalStoreSel">
+            <option value="all">All Stores</option>
+            <option value="LG-01">VI Store</option>
+            <option value="LG-02">Ikeja Store</option>
+          </select>
+        </div>
+        <div id="readonlyBanner" class="hidden badge badge-amber">READ-ONLY VIEW</div>
+        <a href="pos-terminal-v2.html" target="_blank" class="btn btn-primary btn-sm">Open POS →</a>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div style="flex:1;overflow-y:auto;padding:18px 20px;" id="pageContent">
+      <!-- pages rendered here -->
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONTAINER -->
+<div id="modalContainer" class="modal-bg hidden">
+  <div class="modal-box" style="max-width:500px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;" id="modalTitle">Modal</span>
+      <button onclick="closeModal()" class="btn btn-secondary btn-xs">✕</button>
+    </div>
+    <div id="modalBody" style="padding:18px;"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden" style="position:fixed;bottom:20px;right:20px;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:9px;font-size:12px;font-weight:600;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.15);animation:fadeUp .2s ease;"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// AUTH DATA
+// ═══════════════════════════════════════════════
+const ACCOUNTS = {
+  'owner@retailos.ng': { pass:'owner123', role:'SUPER_ADMIN', name:'Gold Adejoro (Owner)', store:null, initials:'GA' },
+  'vi@retailos.ng':    { pass:'store123', role:'STORE_MANAGER', name:'Temi Oladipo',        store:'LG-01', initials:'TO' },
+  'ik@retailos.ng':    { pass:'store123', role:'STORE_MANAGER', name:'Kunle Peters',         store:'LG-02', initials:'KP' },
+};
+
+const STORES = {
+  'LG-01': { name:'Victoria Island Store', city:'Lagos', address:'23 Adeola Hopewell, VI', terminals:4, active:true,  todayRevenue:842500, txCount:247, staff:5 },
+  'LG-02': { name:'Ikeja Store',           city:'Lagos', address:'15 Allen Avenue, Ikeja',  terminals:3, active:true,  todayRevenue:621000, txCount:183, staff:4 },
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let currentUser = null;
+let selectedLoginRole = 'owner';
+let globalStore = 'all'; // for super admin
+
+// ═══════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════
+function toggleTheme() {
+  const h = document.documentElement;
+  h.setAttribute('data-theme', h.getAttribute('data-theme')==='dark'?'light':'dark');
+  setTimeout(() => { if (currentUser) refreshCharts(); }, 100);
+}
+
+// ═══════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════
+function selectRole(r) {
+  selectedLoginRole = r;
+  document.getElementById('role-owner').style.borderColor  = r==='owner'?'var(--accent)':'var(--border)';
+  document.getElementById('role-owner').style.background   = r==='owner'?'var(--accent-d)':'var(--surface2)';
+  document.getElementById('role-manager').style.borderColor= r==='manager'?'var(--accent)':'var(--border)';
+  document.getElementById('role-manager').style.background = r==='manager'?'var(--accent-d)':'var(--surface2)';
+  document.getElementById('storeSelectorWrap').style.display= r==='manager'?'block':'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPassword').value;
+  const acct  = ACCOUNTS[email];
+  const errEl = document.getElementById('loginErr');
+  if (!acct || acct.pass !== pass) { errEl.textContent='Invalid email or password'; errEl.classList.remove('hidden'); return; }
+  if (selectedLoginRole==='manager' && acct.role==='SUPER_ADMIN') { errEl.textContent='Use Super Admin role for this account'; errEl.classList.remove('hidden'); return; }
+  if (selectedLoginRole==='owner' && acct.role==='STORE_MANAGER') { errEl.textContent='Use Store Manager role for this account'; errEl.classList.remove('hidden'); return; }
+  currentUser = acct;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminApp').style.display='flex';
+  document.getElementById('adminApp').classList.remove('hidden');
+  initApp();
+}
+
+function doLogout() { if(confirm('Logout?')) location.reload(); }
+
+// ═══════════════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════════════
+function initApp() {
+  renderSidebar();
+  renderUserBadge();
+  // Store switcher only for super admin
+  if (currentUser.role==='SUPER_ADMIN') {
+    document.getElementById('storeSwitcher').classList.remove('hidden');
+    document.getElementById('storeSwitcher').style.display='flex';
+  }
+  navigate('dashboard');
+  startClock();
+}
+
+function startClock() {
+  function tick(){ document.getElementById('topClock').textContent=new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit'}); }
+  tick(); setInterval(tick,1000);
+}
+
+function switchStore(v) { globalStore=v; navigate(currentPage); }
+
+function getActiveStores() {
+  if (currentUser.role==='STORE_MANAGER') return [currentUser.store];
+  if (globalStore==='all') return Object.keys(STORES);
+  return [globalStore];
+}
+
+// ═══════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════
+const SUPER_ADMIN_NAV = [
+  { section:'Overview' },
+  { id:'dashboard', icon:'grid', label:'Dashboard' },
+  { id:'stores',    icon:'store', label:'All Stores' },
+  { section:'Data' },
+  { id:'transactions', icon:'receipt', label:'Transactions' },
+  { id:'reports',      icon:'chart',   label:'Reports' },
+  { section:'Monitor' },
+  { id:'audit',   icon:'shield', label:'Audit Logs' },
+];
+
+const STORE_MANAGER_NAV = [
+  { section:'Overview' },
+  { id:'dashboard',    icon:'grid',    label:'Dashboard' },
+  { id:'transactions', icon:'receipt', label:'Transactions' },
+  { section:'Inventory' },
+  { id:'products',   icon:'box',      label:'Products' },
+  { id:'inventory',  icon:'stack',    label:'Inventory' },
+  { section:'Commerce' },
+  { id:'customers',   icon:'users',   label:'Customers' },
+  { id:'promotions',  icon:'tag',     label:'Promotions' },
+  { section:'Management' },
+  { id:'staff',    icon:'person',    label:'Staff' },
+  { id:'reports',  icon:'chart',     label:'Reports' },
+  { id:'settings', icon:'cog',       label:'Store Settings' },
+];
+
+const ICONS = {
+  grid:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
+  store:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  receipt:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+  chart:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  shield:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  box:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>',
+  stack:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+  users:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>',
+  tag:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+  person:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  cog:'<svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>',
+};
+
+function renderSidebar() {
+  const nav = currentUser.role==='SUPER_ADMIN' ? SUPER_ADMIN_NAV : STORE_MANAGER_NAV;
+  document.getElementById('sidebarNav').innerHTML = nav.map(item => {
+    if (item.section) return `<div class="nav-section">${item.section}</div>`;
+    return `<div class="nav-link" id="nav-${item.id}" onclick="navigate('${item.id}')">${ICONS[item.icon]||''}<span>${item.label}</span></div>`;
+  }).join('');
+
+  // Role badge
+  document.getElementById('sidebarRoleBadge').innerHTML = currentUser.role==='SUPER_ADMIN'
+    ? `<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">👑</span><div><div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Super Admin</div><div style="font-size:9px;color:rgba(255,255,255,.3);">All Stores · Owner</div></div></div>`
+    : `<div style="display:flex;align-items:center;gap:6px;"><span style="font-size:13px;">🏪</span><div><div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Store Manager</div><div style="font-size:9px;color:rgba(255,255,255,.3);">${STORES[currentUser.store]?.name}</div></div></div>`;
+}
+
+function renderUserBadge() {
+  document.getElementById('sidebarUser').innerHTML = `
+    <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">${currentUser.initials}</div>
+    <div style="overflow:hidden;"><div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${currentUser.name}</div><div style="font-size:9px;color:rgba(255,255,255,.3);">${currentUser.role}</div></div>
+  `;
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+let currentPage = 'dashboard';
+let chartInstances = {};
+
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  const link = document.getElementById(`nav-${page}`);
+  if (link) link.classList.add('active');
+
+  // Destroy old charts
+  Object.values(chartInstances).forEach(c=>c.destroy());
+  chartInstances = {};
+
+  const titles = {
+    dashboard:'Dashboard', stores:'All Stores', transactions:'Transactions',
+    reports:'Reports & Analytics', audit:'Audit Logs', products:'Products',
+    inventory:'Inventory', customers:'Customers', promotions:'Promotions',
+    staff:'Staff Management', settings:'Store Settings',
+  };
+  document.getElementById('pageTitle').textContent = titles[page]||page;
+  document.getElementById('pageSubtitle').textContent = currentUser.role==='SUPER_ADMIN'
+    ? (globalStore==='all' ? 'All Stores · Super Admin' : STORES[globalStore]?.name)
+    : STORES[currentUser.store]?.name + ' · Store Manager';
+
+  const content = document.getElementById('pageContent');
+  content.innerHTML = '';
+  content.classList.add('fade-up');
+  setTimeout(()=>content.classList.remove('fade-up'),300);
+
+  const pages = {
+    dashboard: renderDashboard,
+    stores: renderStores,
+    transactions: renderTransactions,
+    reports: renderReports,
+    audit: renderAudit,
+    products: renderProducts,
+    inventory: renderInventory,
+    customers: renderCustomers,
+    promotions: renderPromotions,
+    staff: renderStaff,
+    settings: renderSettings,
+  };
+  if (pages[page]) pages[page]();
+  else content.innerHTML=`<div style="color:var(--text2);padding:40px;text-align:center;">Coming soon</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard() {
+  const isOwner = currentUser.role==='SUPER_ADMIN';
+  const stores = getActiveStores().map(s=>STORES[s]);
+  const totalRevenue = stores.reduce((s,x)=>s+x.todayRevenue,0);
+  const totalTx = stores.reduce((s,x)=>s+x.txCount,0);
+
+  const html = `
+    ${isOwner ? `<div class="alert-banner" style="background:var(--accent-d);border:1px solid rgba(0,194,255,.2);color:var(--accent);margin-bottom:16px;">
+      👑 You are viewing as <strong>Super Admin (Owner)</strong>. You can monitor all stores but cannot modify store settings.
+    </div>` : ''}
+
+    <!-- KPI Row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+      ${kpiCard('Today Revenue','₦'+totalRevenue.toLocaleString(),'+14.2%','green','₦')}
+      ${kpiCard('Transactions',totalTx.toLocaleString(),'+23','accent','🧾')}
+      ${kpiCard('Active Stores', isOwner?Object.keys(STORES).length:1, '—','amber','🏪')}
+      ${kpiCard('Low Stock Items','3','-1','red','📦')}
+    </div>
+
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:700;">Revenue — Last 7 Days</div>
+          ${isOwner&&globalStore==='all'?`<div class="badge badge-accent">Combined · All Stores</div>`:`<div class="badge badge-dim">${stores[0]?.name||''}</div>`}
+        </div>
+        <canvas id="revChart" height="100"></canvas>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Sales Mix</div>
+        <canvas id="mixChart" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div style="display:grid;grid-template-columns:${isOwner?'1fr 1fr 1fr':'1fr 1fr'};gap:12px;">
+      <!-- Top products -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:12px;font-weight:700;">Top Products</span>
+          <button class="btn btn-secondary btn-xs" onclick="navigate('products')">See all</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          ${[{n:'Coca-Cola 50cl',e:'🥤',s:94,r:32900,p:85},{n:'Indomie 5-pack',e:'🍜',s:76,r:57000,p:70},{n:'Peak Milk 400g',e:'🥛',s:61,r:109800,p:60},{n:'Pringles',e:'🍿',s:43,r:77400,p:40}]
+          .map(x=>`<div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:15px;">${x.e}</span>
+            <div style="flex:1;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:3px;"><span style="font-size:11px;font-weight:500;">${x.n}</span><span class="mono" style="font-size:11px;font-weight:700;">₦${x.r.toLocaleString()}</span></div>
+              <div class="prog"><div class="prog-fill" style="width:${x.p}%;background:var(--accent);"></div></div>
+            </div>
+            <span class="mono" style="font-size:10px;color:var(--text3);width:36px;text-align:right;">${x.s}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Recent transactions -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:12px;font-weight:700;">Recent Transactions</span>
+          <button class="btn btn-secondary btn-xs" onclick="navigate('transactions')">See all</button>
+        </div>
+        <div>${DEMO_TXS.slice(0,6).map(tx=>`
+          <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);">
+            <div style="width:28px;height:28px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;" class="mono" style="font-size:10px;color:var(--text3);">${tx.method[0]}</div>
+            <div style="flex:1;">
+              <div style="font-size:11px;font-weight:600;" class="mono">${tx.id}</div>
+              <div style="font-size:10px;color:var(--text2);">${tx.cashier} · ${tx.time}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="mono" style="font-size:11px;font-weight:700;">₦${tx.amount.toLocaleString()}</div>
+              <span class="badge ${tx.status==='COMPLETED'?'badge-green':'badge-red'}">${tx.status}</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Stores overview (super admin only) -->
+      ${isOwner ? `
+      <div class="card" style="padding:16px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Store Status</div>
+        ${Object.entries(STORES).map(([code,s])=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="font-size:12px;font-weight:600;">${s.name}</div>
+            <div style="display:flex;gap:5px;align-items:center;">
+              <span class="badge ${s.active?'badge-green':'badge-red'}">${s.active?'LIVE':'DISABLED'}</span>
+              <button onclick="toggleStoreStatus('${code}')" class="btn ${s.active?'btn-danger':'btn-primary'} btn-xs">${s.active?'Disable':'Enable'}</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;" class="mono">
+            <div><div style="font-size:9px;color:var(--text3);">Revenue</div><div style="font-size:11px;font-weight:700;color:var(--green);">₦${(s.todayRevenue/1000).toFixed(0)}K</div></div>
+            <div><div style="font-size:9px;color:var(--text3);">TX</div><div style="font-size:11px;font-weight:700;">${s.txCount}</div></div>
+            <div><div style="font-size:9px;color:var(--text3);">Staff</div><div style="font-size:11px;font-weight:700;">${s.staff}</div></div>
+            <div><div style="font-size:9px;color:var(--text3);">Terminals</div><div style="font-size:11px;font-weight:700;">${s.terminals}</div></div>
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+    </div>
+  `;
+  document.getElementById('pageContent').innerHTML = html;
+  renderDashCharts();
+}
+
+function kpiCard(label, val, delta, color, icon) {
+  return `<div class="card stat-card">
+    <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:8px;">
+      <div style="font-size:18px;">${icon}</div>
+      <span class="badge badge-${color}" style="font-size:9px;">${delta}</span>
+    </div>
+    <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">${val}</div>
+    <div style="font-size:11px;color:var(--text2);">${label}</div>
+  </div>`;
+}
+
+function renderDashCharts() {
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor = isDark ? '#1e2d40' : '#e8edf3';
+  const tickColor = isDark ? '#3d5870' : '#94a3b8';
+
+  const revCtx = document.getElementById('revChart');
+  if (revCtx) chartInstances.rev = new Chart(revCtx, {
+    type:'bar',
+    data:{ labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets:[
+      { data:[620000,580000,710000,650000,820000,980000,842500], backgroundColor:getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()+'cc', borderRadius:5, borderSkipped:false }
+    ]},
+    options:{ responsive:true, plugins:{legend:{display:false}},
+      scales:{ x:{grid:{display:false},ticks:{color:tickColor,font:{size:10}}},
+               y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:10},callback:v=>'₦'+(v/1000)+'k'}} }}
+  });
+
+  const mixCtx = document.getElementById('mixChart');
+  if (mixCtx) chartInstances.mix = new Chart(mixCtx, {
+    type:'doughnut',
+    data:{ labels:['Cash','Card','Mobile','Gift'], datasets:[
+      { data:[42,35,18,5], backgroundColor:['#0284c7','#059669','#f5a623','#7c3aed'], borderWidth:0, hoverOffset:5 }
+    ]},
+    options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{color:tickColor,font:{size:10},boxWidth:9,padding:10}}}, cutout:'65%' }
+  });
+}
+
+function refreshCharts() { if(currentPage==='dashboard') { renderDashboard(); } }
+
+// ═══════════════════════════════════════════════
+// STORES PAGE (Super Admin only)
+// ═══════════════════════════════════════════════
+function renderStores() {
+  if (currentUser.role!=='SUPER_ADMIN') { document.getElementById('pageContent').innerHTML=`<div style="color:var(--text2);padding:40px;text-align:center;">Access denied</div>`; return; }
+  document.getElementById('pageContent').innerHTML = `
+    <div class="alert-banner" style="background:var(--amber-d);border:1px solid rgba(217,119,6,.2);color:var(--amber);margin-bottom:16px;">
+      ⚠ As Super Admin, you can only <strong>enable/disable</strong> stores. Store settings can only be changed by the Store Manager.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      ${Object.entries(STORES).map(([code,s])=>`
+      <div class="card" style="padding:18px;">
+        <div style="display:flex;align-items:start;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">${s.name}</div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">${code} · ${s.address}</div>
+          </div>
+          <span class="badge ${s.active?'badge-green':'badge-red'} " style="font-size:11px;">${s.active?'● LIVE':'● DISABLED'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+          ${[['Revenue','₦'+(s.todayRevenue/1000).toFixed(0)+'K'],['TX',s.txCount],['Staff',s.staff],['Terminals',s.terminals]].map(([l,v])=>`
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px;">
+            <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">${l}</div>
+            <div class="mono" style="font-size:14px;font-weight:700;">${v}</div>
+          </div>`).join('')}
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;gap:8px;align-items:center;">
+          <button onclick="toggleStoreStatus('${code}')" class="btn ${s.active?'btn-danger':'btn-primary'} btn-sm" style="flex:1;justify-content:center;">
+            ${s.active?'⊘ Disable Store':'✓ Enable Store'}
+          </button>
+          <button class="btn btn-secondary btn-sm" style="flex:1;justify-content:center;position:relative;cursor:not-allowed;opacity:.6;" title="Only Store Manager can edit">
+            ⚙ Settings
+            <div class="readonly-overlay"></div>
+          </button>
+        </div>
+        ${!s.active?`<div style="margin-top:8px;background:var(--red-d);border-radius:6px;padding:8px 10px;font-size:10px;color:var(--red);">⚠ This store is currently disabled from the platform. All POS terminals will be locked.</div>`:''}
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+function toggleStoreStatus(code) {
+  const s = STORES[code];
+  const action = s.active ? 'disable' : 'enable';
+  if (!confirm(`Are you sure you want to ${action} ${s.name}? ${s.active?'All terminals will be locked.':''}`)) return;
+  s.active = !s.active;
+  toast(`${s.name} has been ${s.active?'enabled':'disabled'}`);
+  navigate(currentPage);
+}
+
+// ═══════════════════════════════════════════════
+// TRANSACTIONS
+// ═══════════════════════════════════════════════
+const DEMO_TXS = [
+  {id:'LG01-001',date:'Jun 1',time:'08:12',cashier:'Gold (EMP-001)',customer:'Amara Okafor',method:'CASH',items:5,amount:4850,status:'COMPLETED',store:'LG-01'},
+  {id:'LG01-002',date:'Jun 1',time:'08:34',cashier:'Gold (EMP-001)',customer:'Walk-in',method:'CARD',items:2,amount:1750,status:'COMPLETED',store:'LG-01'},
+  {id:'LG01-003',date:'Jun 1',time:'09:01',cashier:'Sola (EMP-002)',customer:'Tunde Adeyemi',method:'CARD',items:8,amount:12400,status:'COMPLETED',store:'LG-01'},
+  {id:'LG01-004',date:'Jun 1',time:'09:22',cashier:'Sola (EMP-002)',customer:'Walk-in',method:'CASH',items:1,amount:350,status:'COMPLETED',store:'LG-01'},
+  {id:'LG01-005',date:'Jun 1',time:'09:45',cashier:'Gold (EMP-001)',customer:'Ngozi Eze',method:'MOBILE',items:3,amount:3200,status:'COMPLETED',store:'LG-01'},
+  {id:'LG01-006',date:'Jun 1',time:'10:11',cashier:'Sola (EMP-002)',customer:'Walk-in',method:'CASH',items:6,amount:5600,status:'VOIDED',store:'LG-01'},
+  {id:'LG02-001',date:'Jun 1',time:'08:20',cashier:'Kunle (EMP-005)',customer:'Walk-in',method:'CASH',items:4,amount:3400,status:'COMPLETED',store:'LG-02'},
+  {id:'LG02-002',date:'Jun 1',time:'09:15',cashier:'Kunle (EMP-005)',customer:'Chidi Obi',method:'CARD',items:11,amount:18500,status:'COMPLETED',store:'LG-02'},
+];
+
+function renderTransactions() {
+  const stores = getActiveStores();
+  const txs = DEMO_TXS.filter(t=>stores.includes(t.store));
+  document.getElementById('pageContent').innerHTML=`
+    <div class="card">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <input class="inp" style="width:220px;" placeholder="Search TX #, cashier…" oninput="filterTxs(this.value)">
+        <select class="inp" style="width:130px;"><option>All Status</option><option>COMPLETED</option><option>VOIDED</option><option>REFUNDED</option></select>
+        <input type="date" class="inp" style="width:140px;">
+        <button class="btn btn-secondary btn-sm" style="margin-left:auto;">⬇ Export</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="txTable">
+          <thead><tr>
+            <th>RECEIPT #</th><th>DATE/TIME</th><th>CASHIER</th><th>CUSTOMER</th><th>METHOD</th><th>ITEMS</th><th style="text-align:right;">AMOUNT</th><th>STATUS</th><th></th>
+          </tr></thead>
+          <tbody id="txBody">
+            ${txs.map(tx=>`<tr>
+              <td class="mono" style="color:var(--accent);font-weight:700;font-size:11px;">${tx.id}</td>
+              <td style="color:var(--text2);font-size:11px;">${tx.date} ${tx.time}</td>
+              <td style="font-weight:600;">${tx.cashier}</td>
+              <td style="color:var(--text2);">${tx.customer}</td>
+              <td><span class="badge badge-dim">${tx.method}</span></td>
+              <td>${tx.items}</td>
+              <td style="text-align:right;" class="mono"><strong>₦${tx.amount.toLocaleString()}</strong></td>
+              <td><span class="badge ${tx.status==='COMPLETED'?'badge-green':tx.status==='VOIDED'?'badge-red':'badge-amber'}">${tx.status}</span></td>
+              <td>${tx.status==='COMPLETED'?`<button class="btn btn-danger btn-xs">Refund</button>`:''}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+function filterTxs(q) { /* filter table rows */ }
+
+// ═══════════════════════════════════════════════
+// PRODUCTS
+// ═══════════════════════════════════════════════
+const DEMO_PRODUCTS=[
+  {n:'Coca-Cola 50cl',e:'🥤',sku:'BEV-001',cat:'Beverages',cost:220,price:350,tax:'STANDARD',status:'ACTIVE'},
+  {n:'Peak Milk 400g',e:'🥛',sku:'DAI-001',cat:'Dairy',cost:1200,price:1800,tax:'ZERO',status:'ACTIVE'},
+  {n:'Indomie 5-pack',e:'🍜',sku:'SNK-004',cat:'Snacks',cost:450,price:750,tax:'ZERO',status:'ACTIVE'},
+  {n:'Omo Detergent 1kg',e:'🧺',sku:'HSH-001',cat:'Household',cost:700,price:1100,tax:'STANDARD',status:'ACTIVE'},
+  {n:'Dettol Soap 3pk',e:'🧼',sku:'PER-001',cat:'Personal Care',cost:850,price:1400,tax:'EXEMPT',status:'ACTIVE'},
+  {n:'Pringles Original',e:'🍿',sku:'SNK-002',cat:'Snacks',cost:1100,price:1800,tax:'STANDARD',status:'ACTIVE'},
+  {n:'Water 75cl',e:'💧',sku:'BEV-003',cat:'Beverages',cost:80,price:150,tax:'ZERO',status:'ACTIVE'},
+  {n:'Butter 250g',e:'🧈',sku:'DAI-002',cat:'Dairy',cost:600,price:950,tax:'ZERO',status:'ACTIVE'},
+];
+function renderProducts() {
+  const isOwner = currentUser.role==='SUPER_ADMIN';
+  document.getElementById('pageContent').innerHTML=`
+    ${isOwner?`<div class="alert-banner" style="background:var(--accent-d);border:1px solid rgba(0,194,255,.15);color:var(--accent);margin-bottom:14px;">ℹ Product catalog is managed by Store Managers. You have read-only access.</div>`:''}
+    <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+      <input class="inp" style="width:220px;" placeholder="Search products…">
+      <select class="inp" style="width:130px;"><option>All Categories</option><option>Beverages</option><option>Dairy</option><option>Snacks</option><option>Household</option></select>
+      ${!isOwner?`<button onclick="openAddProduct()" class="btn btn-primary" style="margin-left:auto;">+ Add Product</button>`:''}
+    </div>
+    <div class="card"><div style="overflow-x:auto;"><table class="tbl">
+      <thead><tr><th>PRODUCT</th><th>SKU</th><th>CATEGORY</th><th style="text-align:right;">COST</th><th style="text-align:right;">PRICE</th><th>TAX</th><th>STATUS</th>${!isOwner?'<th></th>':''}</tr></thead>
+      <tbody>${DEMO_PRODUCTS.map(p=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">${p.e}</span><span style="font-weight:600;">${p.n}</span></div></td>
+        <td class="mono" style="color:var(--text3);font-size:11px;">${p.sku}</td>
+        <td><span class="badge badge-accent">${p.cat}</span></td>
+        <td style="text-align:right;" class="mono">₦${p.cost.toLocaleString()}</td>
+        <td style="text-align:right;" class="mono"><strong>₦${p.price.toLocaleString()}</strong></td>
+        <td><span class="badge ${p.tax==='ZERO'?'badge-green':p.tax==='EXEMPT'?'badge-purple':'badge-dim'}">${p.tax}</span></td>
+        <td><span class="badge badge-green">${p.status}</span></td>
+        ${!isOwner?`<td><button class="btn btn-secondary btn-xs">Edit</button></td>`:''}
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// INVENTORY
+// ═══════════════════════════════════════════════
+const DEMO_INV=[
+  {n:'Coca-Cola 50cl',e:'🥤',oh:240,res:12,ro:50,s:'OK'},
+  {n:'Peak Milk 400g',e:'🥛',oh:38,res:5,ro:40,s:'LOW'},
+  {n:'Butter 250g',e:'🧈',oh:22,res:2,ro:30,s:'LOW'},
+  {n:'Pringles Original',e:'🍿',oh:14,res:0,ro:20,s:'LOW'},
+  {n:'Indomie 5-pack',e:'🍜',oh:178,res:15,ro:50,s:'OK'},
+  {n:'Omo Detergent 1kg',e:'🧺',oh:65,res:3,ro:20,s:'OK'},
+];
+function renderInventory() {
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+      ${[['In Stock','13','✅','green'],['Low Stock','3','⚠️','amber'],['Out of Stock','0','🚨','red']].map(([l,v,i,c])=>`
+      <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:9px;background:var(--${c}-d);display:flex;align-items:center;justify-content:center;font-size:16px;">${i}</div>
+        <div><div class="mono" style="font-size:20px;font-weight:700;">${v}</div><div style="font-size:11px;color:var(--text2);">${l}</div></div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;font-weight:700;">Stock Levels — ${currentUser.role==='STORE_MANAGER'?STORES[currentUser.store]?.name:'All Stores'}</span>
+        <button onclick="openStockAdj()" class="btn btn-primary btn-sm">+ Adjust Stock</button>
+      </div>
+      <div style="overflow-x:auto;"><table class="tbl">
+        <thead><tr><th>PRODUCT</th><th style="text-align:right;">ON HAND</th><th style="text-align:right;">RESERVED</th><th style="text-align:right;">AVAILABLE</th><th style="text-align:right;">REORDER PT</th><th>STATUS</th><th></th></tr></thead>
+        <tbody>${DEMO_INV.map(i=>`<tr>
+          <td><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:15px;">${i.e}</span><span style="font-weight:600;">${i.n}</span></div></td>
+          <td style="text-align:right;" class="mono"><strong>${i.oh}</strong></td>
+          <td style="text-align:right;" class="mono" style="color:var(--text2);">${i.res}</td>
+          <td style="text-align:right;" class="mono" style="color:${i.oh-i.res<i.ro?'var(--red)':'var(--green)'}"><strong>${i.oh-i.res}</strong></td>
+          <td style="text-align:right;" class="mono" style="color:var(--text3);">${i.ro}</td>
+          <td><span class="badge ${i.s==='OK'?'badge-green':i.s==='LOW'?'badge-amber':'badge-red'}">${i.s}</span></td>
+          <td><button onclick="openStockAdj('${i.n}')" class="btn btn-secondary btn-xs">Adjust</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// CUSTOMERS
+// ═══════════════════════════════════════════════
+const DEMO_CUSTS=[
+  {n:'Amara Okafor',e:'amara@email.com',ph:'08012345678',loy:'LOY-001',tier:'GOLD',pts:3200,spend:142000,last:'Jun 1'},
+  {n:'Tunde Adeyemi',e:'tunde@email.com',ph:'08098765432',loy:'LOY-002',tier:'SILVER',pts:1100,spend:58000,last:'Jun 1'},
+  {n:'Ngozi Eze',e:'ngozi@email.com',ph:'07031234567',loy:'LOY-003',tier:'BRONZE',pts:450,spend:21500,last:'Jun 1'},
+  {n:'Chidi Obi',e:'chidi@email.com',ph:'08155443322',loy:'LOY-004',tier:'PLATINUM',pts:7800,spend:380000,last:'May 30'},
+];
+function renderCustomers() {
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="inp" style="width:240px;" placeholder="Search customers…">
+      <select class="inp" style="width:130px;"><option>All Tiers</option><option>PLATINUM</option><option>GOLD</option><option>SILVER</option><option>BRONZE</option></select>
+      <button onclick="openAddCustomer()" class="btn btn-primary" style="margin-left:auto;">+ Add Customer</button>
+    </div>
+    <div class="card"><div style="overflow-x:auto;"><table class="tbl">
+      <thead><tr><th>CUSTOMER</th><th>LOYALTY #</th><th>TIER</th><th style="text-align:right;">POINTS</th><th style="text-align:right;">TOTAL SPEND</th><th>LAST VISIT</th><th></th></tr></thead>
+      <tbody>${DEMO_CUSTS.map(c=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);">${c.n[0]}</div><div><div style="font-weight:600;">${c.n}</div><div style="font-size:10px;color:var(--text3);">${c.e}</div></div></div></td>
+        <td class="mono" style="font-size:11px;color:var(--text2);">${c.loy}</td>
+        <td><span class="badge ${c.tier==='PLATINUM'?'badge-purple':c.tier==='GOLD'?'badge-amber':c.tier==='SILVER'?'badge-dim':'badge-green'}">${c.tier}</span></td>
+        <td style="text-align:right;" class="mono"><strong>${c.pts.toLocaleString()}</strong></td>
+        <td style="text-align:right;" class="mono"><strong>₦${c.spend.toLocaleString()}</strong></td>
+        <td style="color:var(--text2);">${c.last}</td>
+        <td><button class="btn btn-secondary btn-xs">View</button></td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// PROMOTIONS
+// ═══════════════════════════════════════════════
+function renderPromotions() {
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:13px;font-weight:700;color:var(--text2);">Active Promotions</span>
+      <button onclick="openAddPromo()" class="btn btn-primary">+ New Promotion</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+      ${[{n:'Weekend Beverages',t:'15% off',scope:'CATEGORY',active:true,ends:'Jun 7'},
+         {n:'Spend & Save',t:'₦500 off',scope:'CART (min ₦5K)',active:true,ends:'Jun 30'},
+         {n:'Dairy Bundle',t:'BOGO',scope:'PRODUCT',active:false,ends:'Jun 3'}].map(p=>`
+      <div class="card" style="padding:14px;${!p.active?'opacity:.6':''}">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+          <span class="badge ${p.active?'badge-green':'badge-dim'}">${p.active?'ACTIVE':'ENDED'}</span>
+          <span class="badge badge-accent">${p.scope}</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">${p.n}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">${p.t}</div>
+        <div class="mono" style="font-size:10px;color:var(--text3);">Ends: ${p.ends}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Coupons</div>
+      ${[{code:'SAVE10',d:'10% off',uses:'45/100',active:true},{code:'SAVE500',d:'₦500 off',uses:'12/50',active:true},{code:'FLAT20',d:'20% off',uses:'8/20',active:false}].map(c=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <code style="background:var(--surface2);border:1px solid var(--border);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:700;">${c.code}</code>
+          <span style="font-size:12px;color:var(--text2);">${c.d}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="mono" style="font-size:10px;color:var(--text3);">${c.uses} used</span>
+          <span class="badge ${c.active?'badge-green':'badge-dim'}">${c.active?'ACTIVE':'EXPIRED'}</span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// STAFF
+// ═══════════════════════════════════════════════
+const DEMO_STAFF_DATA=[
+  {n:'Gold Adejoro',no:'EMP-001',role:'MANAGER',store:'LG-01',last:'Now',active:true,sales:842500,txCount:127},
+  {n:'Sola Fashola',no:'EMP-002',role:'CASHIER',store:'LG-01',last:'2h ago',active:true,sales:310200,txCount:84},
+  {n:'Bola Adekunle',no:'EMP-003',role:'CASHIER',store:'LG-01',last:'Yesterday',active:true,sales:215000,txCount:62},
+  {n:'Temi Oladipo',no:'EMP-004',role:'SUPERVISOR',store:'LG-01',last:'3d ago',active:true,sales:180000,txCount:45},
+  {n:'Kunle Peters',no:'EMP-005',role:'CASHIER',store:'LG-02',last:'5d ago',active:false,sales:0,txCount:0},
+];
+function renderStaff() {
+  const stores = getActiveStores();
+  const staff = DEMO_STAFF_DATA.filter(s=>stores.includes(s.store));
+  const isOwner = currentUser.role==='SUPER_ADMIN';
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="inp" style="width:240px;" placeholder="Search staff…">
+      ${!isOwner?`<button onclick="openAddStaff()" class="btn btn-primary" style="margin-left:auto;">+ Add Staff</button>`:''}
+    </div>
+    <div class="card"><div style="overflow-x:auto;"><table class="tbl">
+      <thead><tr><th>STAFF</th><th>EMPLOYEE #</th><th>ROLE</th><th>STORE</th><th style="text-align:right;">SALES (TODAY)</th><th style="text-align:right;">TX COUNT</th><th>LAST LOGIN</th><th>STATUS</th>${!isOwner?'<th></th>':''}</tr></thead>
+      <tbody>${staff.map(s=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:8px;"><div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${s.n[0]}</div><span style="font-weight:600;">${s.n}</span></div></td>
+        <td class="mono" style="font-size:11px;color:var(--text2);">${s.no}</td>
+        <td><span class="badge ${s.role==='MANAGER'?'badge-purple':s.role==='SUPERVISOR'?'badge-accent':s.role==='ADMIN'?'badge-red':'badge-dim'}">${s.role}</span></td>
+        <td style="color:var(--text2);font-size:11px;">${STORES[s.store]?.name}</td>
+        <td style="text-align:right;" class="mono" style="color:var(--green);"><strong>₦${s.sales.toLocaleString()}</strong></td>
+        <td style="text-align:right;" class="mono"><strong>${s.txCount}</strong></td>
+        <td style="color:var(--text2);font-size:11px;">${s.last}</td>
+        <td><span class="badge ${s.active?'badge-green':'badge-red'}">${s.active?'ACTIVE':'INACTIVE'}</span></td>
+        ${!isOwner?`<td style="display:flex;gap:4px;"><button class="btn btn-secondary btn-xs">Edit</button>${s.active?`<button class="btn btn-danger btn-xs">Deactivate</button>`:''}</td>`:''}
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════
+function renderReports() {
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+      ${[['📋','Z-Report (EOD)','End-of-day summary per terminal'],['📈','Sales Report','Revenue, transactions, AOV by staff'],['📦','Inventory Report','Stock movement & shrinkage']].map(([i,t,d])=>`
+      <div class="card" style="padding:14px;cursor:pointer;" onclick="showToast('Generating report…')">
+        <div style="font-size:22px;margin-bottom:8px;">${i}</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${t}</div>
+        <div style="font-size:11px;color:var(--text2);">${d}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card" style="padding:16px;">
+      <div style="font-size:12px;font-weight:700;margin-bottom:14px;">Monthly Revenue</div>
+      <canvas id="monthChart" height="55"></canvas>
+    </div>`;
+  setTimeout(()=>{
+    const ctx=document.getElementById('monthChart');
+    const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+    const tc=isDark?'#3d5870':'#94a3b8';
+    if(ctx) chartInstances.month=new Chart(ctx,{type:'line',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{data:[18500000,21000000,19800000,24500000,22100000,25400000],borderColor:'var(--accent)',backgroundColor:'rgba(0,194,255,.05)',borderWidth:2,pointRadius:3,tension:.4,fill:true}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:tc}},y:{grid:{color:isDark?'#1e2d40':'#e8edf3'},ticks:{color:tc,callback:v=>'₦'+(v/1e6).toFixed(1)+'M'}}}}});
+  },50);
+}
+
+// ═══════════════════════════════════════════════
+// AUDIT LOG
+// ═══════════════════════════════════════════════
+function renderAudit() {
+  const logs=[
+    {ts:'Jun 1 08:12',staff:'Gold (EMP-001)',action:'OPEN_TILL',entity:'TillSession',store:'LG-01'},
+    {ts:'Jun 1 10:11',staff:'Sola (EMP-002)',action:'VOID_TRANSACTION',entity:'LG01-006',store:'LG-01'},
+    {ts:'Jun 1 11:30',staff:'Gold (EMP-001)',action:'APPLY_MANUAL_DISCOUNT',entity:'LG01-010',store:'LG-01'},
+    {ts:'Jun 1 12:00',staff:'Gold (EMP-001)',action:'ADJUST_STOCK',entity:'DAI-001',store:'LG-01'},
+    {ts:'Jun 1 14:22',staff:'Temi (EMP-004)',action:'DEACTIVATE_STAFF',entity:'EMP-006',store:'LG-01'},
+  ];
+  document.getElementById('pageContent').innerHTML=`
+    <div class="card"><div style="overflow-x:auto;"><table class="tbl">
+      <thead><tr><th>TIMESTAMP</th><th>STAFF</th><th>ACTION</th><th>ENTITY</th><th>STORE</th></tr></thead>
+      <tbody>${logs.map(l=>`<tr>
+        <td class="mono" style="font-size:11px;color:var(--text2);">${l.ts}</td>
+        <td style="font-weight:600;">${l.staff}</td>
+        <td><span class="badge ${l.action.startsWith('VOID')||l.action.startsWith('DEACTIVATE')?'badge-red':l.action.startsWith('APPLY')?'badge-amber':'badge-dim'}">${l.action}</span></td>
+        <td class="mono" style="font-size:11px;">${l.entity}</td>
+        <td style="color:var(--text2);">${l.store}</td>
+      </tr>`).join('')}</tbody>
+    </table></div></div>`;
+}
+
+// ═══════════════════════════════════════════════
+// SETTINGS (Store Manager only)
+// ═══════════════════════════════════════════════
+function renderSettings() {
+  if (currentUser.role==='SUPER_ADMIN') { document.getElementById('pageContent').innerHTML=`<div style="text-align:center;padding:40px;color:var(--red);">⊘ Super Admin cannot modify store settings. Please log in as a Store Manager.</div>`; return; }
+  const s = STORES[currentUser.store];
+  document.getElementById('pageContent').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="card" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Store Information</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Store Name</label><input class="inp" value="${s.name}"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Address</label><input class="inp" value="${s.address}"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Phone</label><input class="inp" value="+234 800 000 0001"></div>
+          <button onclick="showToast('Settings saved')" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
+        </div>
+      </div>
+      <div class="card" style="padding:18px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">POS Configuration</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Tax Rate</label><input class="inp" value="7.5" type="number"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Receipt Footer</label><input class="inp" value="Thank you for shopping with us!"></div>
+          <div><label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;">Currency</label><select class="inp"><option>NGN (₦)</option><option>USD ($)</option></select></div>
+          <button onclick="showToast('POS config saved')" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════
+function openModal(title, bodyHTML) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modalContainer').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modalContainer').classList.add('hidden'); }
+
+function openAddProduct() {
+  openModal('Add Product', `<div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Product Name</label><input class="inp" placeholder="e.g. Coca-Cola 50cl"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Brand</label><input class="inp" placeholder="Brand"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">SKU</label><input class="inp mono" placeholder="BEV-XXX"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Barcode</label><input class="inp mono" placeholder="EAN-13"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Category</label><select class="inp"><option>Beverages</option><option>Dairy</option><option>Snacks</option><option>Household</option><option>Personal Care</option></select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Cost (₦)</label><input class="inp mono" type="number"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Selling Price (₦)</label><input class="inp mono" type="number"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Tax</label><select class="inp"><option>STANDARD</option><option>ZERO</option><option>EXEMPT</option><option>REDUCED</option></select></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button onclick="closeModal()" class="btn btn-secondary btn-sm">Cancel</button>
+      <button onclick="showToast('Product saved');closeModal()" class="btn btn-primary btn-sm">Save Product</button>
+    </div>
+  </div>`);
+}
+
+function openStockAdj(name='') {
+  openModal('Adjust Stock', `<div style="display:flex;flex-direction:column;gap:12px;">
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Product</label><input class="inp" value="${name}" placeholder="Product name or SKU…"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Type</label><select class="inp"><option>Add (Receipt)</option><option>Remove (Loss)</option><option>Set Exact Count</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Quantity</label><input class="inp mono" type="number" placeholder="0"></div>
+    </div>
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Reason</label><input class="inp" placeholder="e.g. Received from supplier, Damaged goods…"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button onclick="closeModal()" class="btn btn-secondary btn-sm">Cancel</button>
+      <button onclick="showToast('Stock adjusted');closeModal()" class="btn btn-primary btn-sm">Apply</button>
+    </div>
+  </div>`);
+}
+
+function openAddCustomer() {
+  openModal('Add Customer', `<div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">First Name</label><input class="inp" placeholder="First name"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Last Name</label><input class="inp" placeholder="Last name"></div>
+    </div>
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Email</label><input class="inp" type="email" placeholder="email@example.com"></div>
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Phone</label><input class="inp" placeholder="080XXXXXXXX"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button onclick="closeModal()" class="btn btn-secondary btn-sm">Cancel</button>
+      <button onclick="showToast('Customer added');closeModal()" class="btn btn-primary btn-sm">Add Customer</button>
+    </div>
+  </div>`);
+}
+
+function openAddStaff() {
+  openModal('Add Staff', `<div style="display:flex;flex-direction:column;gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">First Name</label><input class="inp" placeholder="First name"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Last Name</label><input class="inp" placeholder="Last name"></div>
+    </div>
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Email</label><input class="inp" type="email" placeholder="staff@retailos.ng"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Role</label><select class="inp"><option>CASHIER</option><option>SUPERVISOR</option><option>MANAGER</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Initial PIN</label><input class="inp mono" type="password" maxlength="4" placeholder="4-digit PIN"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button onclick="closeModal()" class="btn btn-secondary btn-sm">Cancel</button>
+      <button onclick="showToast('Staff added');closeModal()" class="btn btn-primary btn-sm">Add Staff</button>
+    </div>
+  </div>`);
+}
+
+function openAddPromo() {
+  openModal('New Promotion', `<div style="display:flex;flex-direction:column;gap:12px;">
+    <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Promotion Name</label><input class="inp" placeholder="e.g. Weekend Sale"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Type</label><select class="inp"><option>PERCENT</option><option>FIXED</option><option>BOGO</option><option>BUNDLE</option></select></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Value</label><input class="inp mono" type="number" placeholder="e.g. 10 or 500"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">Start Date</label><input class="inp" type="date"></div>
+      <div><label style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px;">End Date</label><input class="inp" type="date"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+      <button onclick="closeModal()" class="btn btn-secondary btn-sm">Cancel</button>
+      <button onclick="showToast('Promotion created');closeModal()" class="btn btn-primary btn-sm">Create</button>
+    </div>
+  </div>`);
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.remove('hidden');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.add('hidden'),2500);
+}
+
+// Modal close on outside click
+document.getElementById('modalContainer').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// Init login role
+selectRole('owner');
+</script>
+</body>
+</html>

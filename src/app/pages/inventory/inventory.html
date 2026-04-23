@@ -1,0 +1,74 @@
+<div class="fade-up">
+  <!-- Summary cards -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:9px;background:var(--green-d);display:flex;align-items:center;justify-content:center;font-size:16px;">✅</div>
+      <div>
+        <div class="mono" style="font-size:20px;font-weight:700;">13</div>
+        <div style="font-size:11px;color:var(--text2);">In Stock</div>
+      </div>
+    </div>
+    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:9px;background:var(--amber-d);display:flex;align-items:center;justify-content:center;font-size:16px;">⚠️</div>
+      <div>
+        <div class="mono" style="font-size:20px;font-weight:700;">3</div>
+        <div style="font-size:11px;color:var(--text2);">Low Stock</div>
+      </div>
+    </div>
+    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:9px;background:var(--red-d);display:flex;align-items:center;justify-content:center;font-size:16px;">🚨</div>
+      <div>
+        <div class="mono" style="font-size:20px;font-weight:700;">0</div>
+        <div style="font-size:11px;color:var(--text2);">Out of Stock</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:12px;font-weight:700;">Stock Levels — {{ storeName() }}</span>
+      <button (click)="openStockAdj()" class="btn btn-primary btn-sm">+ Adjust Stock</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>PRODUCT</th>
+            <th style="text-align:right;">ON HAND</th>
+            <th style="text-align:right;">RESERVED</th>
+            <th style="text-align:right;">AVAILABLE</th>
+            <th style="text-align:right;">REORDER PT</th>
+            <th>STATUS</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of inventory(); track item.n) {
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:15px;">{{ item.e }}</span>
+                  <span style="font-weight:600;">{{ item.n }}</span>
+                </div>
+              </td>
+              <td class="mono" style="text-align:right;font-weight:700;">{{ item.oh }}</td>
+              <td class="mono" style="text-align:right;color:var(--text2);">{{ item.res }}</td>
+              <td class="mono" style="text-align:right;font-weight:700;" [style.color]="(item.oh - item.res) < item.ro ? 'var(--red)' : 'var(--green)'">{{ item.oh - item.res }}</td>
+              <td class="mono" style="text-align:right;color:var(--text3);">{{ item.ro }}</td>
+              <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'badge-green': item.s === 'OK',
+                        'badge-amber': item.s === 'LOW',
+                        'badge-red': item.s === 'OUT'
+                      }">{{ item.s }}</span>
+              </td>
+              <td><button (click)="openStockAdj(item.n)" class="btn btn-secondary btn-xs">Adjust</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="fade-up">
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="inp" style="width:240px;" placeholder="Search customers…">
+    <select class="inp" style="width:130px;">
+      <option>All Tiers</option>
+      <option>PLATINUM</option>
+      <option>GOLD</option>
+      <option>SILVER</option>
+      <option>BRONZE</option>
+    </select>
+    <button (click)="openAddCustomer()" class="btn btn-primary" style="margin-left:auto;">+ Add Customer</button>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>CUSTOMER</th>
+            <th>LOYALTY #</th>
+            <th>TIER</th>
+            <th style="text-align:right;">POINTS</th>
+            <th style="text-align:right;">TOTAL SPEND</th>
+            <th>LAST VISIT</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of customers(); track c.loy) {
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);">{{ c.n[0] }}</div>
+                  <div>
+                    <div style="font-weight:600;">{{ c.n }}</div>
+                    <div style="font-size:10px;color:var(--text3);">{{ c.e }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="mono" style="font-size:11px;color:var(--text2);">{{ c.loy }}</td>
+              <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'badge-purple': c.tier === 'PLATINUM',
+                        'badge-amber': c.tier === 'GOLD',
+                        'badge-dim': c.tier === 'SILVER',
+                        'badge-green': c.tier === 'BRONZE'
+                      }">{{ c.tier }}</span>
+              </td>
+              <td class="mono" style="text-align:right;font-weight:700;">{{ c.pts.toLocaleString() }}</td>
+              <td class="mono" style="text-align:right;font-weight:700;">₦{{ c.spend.toLocaleString() }}</td>
+              <td style="color:var(--text2);">{{ c.last }}</td>
+              <td><button class="btn btn-secondary btn-xs">View</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

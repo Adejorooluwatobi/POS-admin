@@ -1,0 +1,63 @@
+<div class="fade-up">
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <input class="inp" style="width:240px;" placeholder="Search staff…">
+    @if (!isOwner()) {
+      <button (click)="openAddStaff()" class="btn btn-primary" style="margin-left:auto;">+ Add Staff</button>
+    }
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>STAFF</th>
+            <th>EMPLOYEE #</th>
+            <th>ROLE</th>
+            <th>STORE</th>
+            <th style="text-align:right;">SALES (TODAY)</th>
+            <th style="text-align:right;">TX COUNT</th>
+            <th>LAST LOGIN</th>
+            <th>STATUS</th>
+            @if (!isOwner()) { <th></th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of staff(); track s.no) {
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div style="width:28px;height:28px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">{{ s.n[0] }}</div>
+                  <span style="font-weight:600;">{{ s.n }}</span>
+                </div>
+              </td>
+              <td class="mono" style="font-size:11px;color:var(--text2);">{{ s.no }}</td>
+              <td>
+                <span class="badge"
+                      [ngClass]="{
+                        'badge-purple': s.role === 'MANAGER',
+                        'badge-accent': s.role === 'SUPERVISOR',
+                        'badge-red': s.role === 'ADMIN',
+                        'badge-dim': s.role !== 'MANAGER' && s.role !== 'SUPERVISOR' && s.role !== 'ADMIN'
+                      }">{{ s.role }}</span>
+              </td>
+              <td style="color:var(--text2);font-size:11px;">{{ getStoreName(s.store) }}</td>
+              <td class="mono" style="text-align:right;font-weight:700;color:var(--green);">₦{{ s.sales.toLocaleString() }}</td>
+              <td class="mono" style="text-align:right;font-weight:700;">{{ s.txCount }}</td>
+              <td style="color:var(--text2);font-size:11px;">{{ s.last }}</td>
+              <td><span class="badge" [ngClass]="s.active ? 'badge-green' : 'badge-red'">{{ s.active ? 'ACTIVE' : 'INACTIVE' }}</span></td>
+              @if (!isOwner()) {
+                <td style="display:flex;gap:4px;">
+                  <button class="btn btn-secondary btn-xs">Edit</button>
+                  @if (s.active) {
+                    <button class="btn btn-danger btn-xs">Deactivate</button>
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

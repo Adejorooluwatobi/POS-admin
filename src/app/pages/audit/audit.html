@@ -1,0 +1,33 @@
+<div class="card fade-up">
+  <div style="overflow-x:auto;">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>TIMESTAMP</th>
+          <th>STAFF</th>
+          <th>ACTION</th>
+          <th>ENTITY</th>
+          <th>STORE</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (l of logs(); track l.ts + l.entity) {
+          <tr>
+            <td class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</td>
+            <td style="font-weight:600;">{{ l.staff }}</td>
+            <td>
+              <span class="badge"
+                    [ngClass]="{
+                      'badge-red': l.action.startsWith('VOID') || l.action.startsWith('DEACTIVATE'),
+                      'badge-amber': l.action.startsWith('APPLY'),
+                      'badge-dim': !l.action.startsWith('VOID') && !l.action.startsWith('DEACTIVATE') && !l.action.startsWith('APPLY')
+                    }">{{ l.action }}</span>
+            </td>
+            <td class="mono" style="font-size:11px;">{{ l.entity }}</td>
+            <td style="color:var(--text2);">{{ l.store }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

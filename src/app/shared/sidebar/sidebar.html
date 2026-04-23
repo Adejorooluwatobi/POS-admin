@@ -1,0 +1,84 @@
+<div class="sidebar">
+
+  <!-- Logo -->
+  <div style="padding:16px 14px;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">R</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">RetailOS</div>
+        <div class="mono" style="font-size:9px;color:rgba(255,255,255,.3);">Admin Portal</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role badge -->
+  <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);">
+    @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;">👑</span>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Super Admin</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);">All Stores · Owner</div>
+        </div>
+      </div>
+    } @else {
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:13px;">🏪</span>
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Store Manager</div>
+          <div style="font-size:9px;color:rgba(255,255,255,.3);">{{ getStoreName() }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Nav -->
+  <nav style="padding:10px 8px;flex:1;">
+    @for (item of navItems; track item.id || item.section) {
+      @if (item.section) {
+        <div class="nav-section">{{ item.section }}</div>
+      } @else {
+        <a class="nav-link"
+           [routerLink]="item.route"
+           routerLinkActive="active">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            @if (item.icon === 'grid') { <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/> }
+            @if (item.icon === 'store') { <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><polyline points="9 22 9 12 15 12 15 22"/> }
+            @if (item.icon === 'receipt') { <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/> }
+            @if (item.icon === 'chart') { <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/> }
+            @if (item.icon === 'shield') { <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/> }
+            @if (item.icon === 'box') { <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/> }
+            @if (item.icon === 'stack') { <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/> }
+            @if (item.icon === 'users') { <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/> }
+            @if (item.icon === 'tag') { <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/> }
+            @if (item.icon === 'person') { <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/> }
+            @if (item.icon === 'cog') { <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/> }
+          </svg>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    }
+  </nav>
+
+  <!-- Bottom user area -->
+  <div style="padding:10px 14px;border-top:1px solid rgba(255,255,255,.06);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:10px;color:rgba(255,255,255,.3);">☀</span>
+        <div class="toggle" (click)="themeService.toggleTheme()"><div class="knob"></div></div>
+        <span style="font-size:10px;color:rgba(255,255,255,.3);">☾</span>
+      </div>
+      <button (click)="logout()" style="background:none;border:none;cursor:pointer;font-size:10px;color:rgba(255,255,255,.3);font-family:'Geist',sans-serif;transition:color .12s;" onmouseover="this.style.color='#ff4b6e'" onmouseout="this.style.color='rgba(255,255,255,.3)'">Logout</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;">
+        {{ authService.currentUser()?.initials }}
+      </div>
+      <div style="overflow:hidden;">
+        <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ authService.currentUser()?.name }}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);">{{ authService.currentUser()?.role }}</div>
+      </div>
+    </div>
+  </div>
+
+</div>
