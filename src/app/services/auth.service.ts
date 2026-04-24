@@ -1,7 +1,15 @@
 import { Injectable, signal } from '@angular/core';
 import { Account } from '../models/pos.models';
-import { DataService } from './data.service';
 import { Router } from '@angular/router';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+
+interface AuthResponseDto {
+  token: string;
+  role: string;
+  tenantId: string | null;
+  fullName: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -9,37 +17,63 @@ import { Router } from '@angular/router';
 export class AuthService {
   private currentUserSignal = signal<Account | null>(null);
   public currentUser = this.currentUserSignal.asReadonly();
+  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/auth';
 
-  constructor(private dataService: DataService, private router: Router) {
+  constructor(private http: HttpClient, private router: Router) {
     // Attempt to hydrate from localStorage
-    const saved = localStorage.getItem('retail_os_user');
-    if (saved) {
-      this.currentUserSignal.set(JSON.parse(saved));
+    const savedUser = localStorage.getItem('retail_os_user');
+    if (savedUser) {
+      this.currentUserSignal.set(JSON.parse(savedUser));
     }
   }
 
-  login(email: string, pass: string, selectedRole: string): string | null {
-    const acct = this.dataService.accounts[email.toLowerCase()];
-    
-    if (!acct || acct.pass !== pass) {
-      return 'Invalid email or password';
-    }
+  async login(email: string, pass: string, selectedRole: string): Promise<string | null> {
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponseDto>(`${this.apiUrl}/login-admin`, { email, password: pass })
+      );
 
-    if (selectedRole === 'manager' && acct.role === 'SUPER_ADMIN') {
-      return 'Use Super Admin role for this account';
-    }
-    if (selectedRole === 'owner' && acct.role === 'STORE_MANAGER') {
-      return 'Use Store Manager role for this account';
-    }
+      const role = response.role;
 
-    this.currentUserSignal.set(acct);
-    localStorage.setItem('retail_os_user', JSON.stringify(acct));
-    return null;
+      if (selectedRole === 'manager' && role === 'SuperAdmin') {
+        return 'Use Super Admin role for this account';
+      }
+      if (selectedRole === 'owner' && role === 'StoreManager') {
+        return 'Use Store Manager role for this account';
+      }
+
+      let mappedRole: any = 'SUPER_ADMIN';
+      if (role === 'StoreManager') mappedRole = 'STORE_MANAGER';
+      else if (role === 'Cashier') mappedRole = 'CASHIER';
+      else if (role === 'Supervisor') mappedRole = 'SUPERVISOR';
+
+      const acct: Account = {
+        pass: '',
+        role: mappedRole,
+        name: response.fullName,
+        store: null,
+        initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U'
+      };
+
+      this.currentUserSignal.set(acct);
+      localStorage.setItem('retail_os_user', JSON.stringify(acct));
+      localStorage.setItem('retail_os_token', response.token);
+      return null;
+    } catch (error) {
+      if (error instanceof HttpErrorResponse) {
+        if (error.status === 401) {
+          return 'Invalid email or password';
+        }
+        return error.error?.message || 'Login failed. Please try again later.';
+      }
+      return 'An unexpected error occurred';
+    }
   }
 
   logout() {
     this.currentUserSignal.set(null);
     localStorage.removeItem('retail_os_user');
+    localStorage.removeItem('retail_os_token');
     this.router.navigate(['/login']);
   }
 
