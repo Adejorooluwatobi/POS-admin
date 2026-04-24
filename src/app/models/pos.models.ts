@@ -7,9 +7,15 @@ export interface Account {
 }
 
 export interface Store {
+  id?: string;
+  code: string;
   name: string;
   city: string;
   address: string;
+  state?: string;
+  country?: string;
+  phone?: string;
+  timezone?: string;
   terminals: number;
   active: boolean;
   todayRevenue: number;
@@ -51,21 +57,31 @@ export interface InventoryItem {
 }
 
 export interface Customer {
-  n: string;
-  e: string;
+  id?: string;
+  n: string; // Full name (mapping helper)
+  firstName?: string;
+  lastName?: string;
+  e: string; // Email
   ph: string;
   loy: string;
   tier: 'PLATINUM' | 'GOLD' | 'SILVER' | 'BRONZE';
   pts: number;
   spend: number;
   last: string;
+  active?: boolean;
 }
 
 export interface Staff {
-  n: string;
-  no: string;
-  role: string;
-  store: string;
+  id?: string;
+  n: string; // Full name (mapping helper)
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  no: string; // EmployeeNo
+  role: string; // SystemRole string
+  roleId?: string;
+  store: string; // Store code or name
+  storeId?: string;
   last: string;
   active: boolean;
   sales: number;
