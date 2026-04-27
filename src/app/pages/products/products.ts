@@ -75,7 +75,7 @@ export class ProductsComponent implements OnInit {
           cost: p.costPrice || 0,
           weight: p.weightGrams,
           uom: p.unitOfMeasure,
-          status: p.isActive ? 'ACTIVE' : 'INACTIVE',
+          status: p.isActive !== undefined ? (p.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
           tax: p.taxCategory || 'STANDARD'
         };
       }));

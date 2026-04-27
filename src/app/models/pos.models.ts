@@ -22,6 +22,7 @@ export interface Store {
   todayRevenue: number;
   txCount: number;
   staff: number;
+  isActive?: boolean;
 }
 
 export interface Transaction {
@@ -52,6 +53,7 @@ export interface Product {
   categoryId?: string;
   weight?: number;
   uom?: string;
+  isActive?: boolean;
 }
 
 export interface InventoryItem {
@@ -99,8 +101,10 @@ export interface Staff {
   sales: number;
   txCount: number;
   pin?: string;
+  hasPin?: boolean;
   hiredAt?: string;
   password?: string;
+  hasPassword?: boolean;
 }
 
 export interface Role {

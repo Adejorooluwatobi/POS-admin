@@ -59,6 +59,9 @@ export class StaffComponent implements OnInit {
         n: `${s.firstName} ${s.lastName}`,
         no: s.employeeNo,
         role: s.systemRole,
+        active: s.isActive,
+        hasPin: s.hasPin,
+        hasPassword: s.hasPassword,
         last: 'Never', // Placeholder
         sales: 0,
         txCount: 0
@@ -107,13 +110,21 @@ export class StaffComponent implements OnInit {
 
   openEditModal(staff: Staff) {
     this.modalMode.set('edit');
-    this.selectedStaff.set({ ...staff });
+    this.selectedStaff.set({ 
+      ...staff, 
+      pin: staff.hasPin ? '****' : '', 
+      password: staff.hasPassword ? '********' : '' 
+    });
     this.isModalOpen.set(true);
   }
 
   openViewModal(staff: Staff) {
     this.modalMode.set('view');
-    this.selectedStaff.set({ ...staff });
+    this.selectedStaff.set({ 
+      ...staff, 
+      pin: staff.hasPin ? '****' : '', 
+      password: staff.hasPassword ? '********' : '' 
+    });
     this.isModalOpen.set(true);
   }
 
@@ -128,6 +139,22 @@ export class StaffComponent implements OnInit {
     // Find systemRole from selected roleId
     const selectedRole = this.roles().find(r => r.id === s.roleId);
     
+    let finalPin = undefined;
+    if (this.modalMode() === 'create') {
+      finalPin = s.pin ? s.pin : '1234';
+    } else {
+      finalPin = (s.pin && s.pin !== '****') ? s.pin : undefined;
+    }
+
+    let finalPassword = undefined;
+    if (s.password === '********') {
+      finalPassword = undefined;
+    } else if (s.password === '') {
+      finalPassword = '';
+    } else {
+      finalPassword = s.password;
+    }
+
     const dto = {
       firstName: s.firstName,
       lastName: s.lastName,
@@ -139,8 +166,8 @@ export class StaffComponent implements OnInit {
       isActive: s.active,
       hiredAt: s.hiredAt,
       tenantId: user?.tenantId,
-      pin: s.pin || (this.modalMode() === 'create' ? '1234' : undefined),
-      password: s.password || undefined
+      pin: finalPin,
+      password: finalPassword
     };
 
     try {

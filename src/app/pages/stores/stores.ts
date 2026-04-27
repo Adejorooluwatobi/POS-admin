@@ -41,8 +41,10 @@ export class StoresComponent implements OnInit {
     this.isLoading.set(true);
     try {
       const data = await this.storeService.getStores();
-      // The backend returns a paged result, usually { items: [], totalCount: ... }
-      this.stores.set(data.items || data); 
+      this.stores.set((data.items || data).map((s: any) => ({
+        ...s,
+        active: s.isActive !== undefined ? s.isActive : s.active
+      }))); 
     } catch (error) {
       console.error('Failed to load stores', error);
     } finally {
@@ -82,11 +84,15 @@ export class StoresComponent implements OnInit {
 
   async saveStore() {
     const storeData = this.selectedStore();
+    const dto = {
+      ...storeData,
+      isActive: storeData.active
+    };
     try {
       if (this.modalMode() === 'create') {
-        await this.storeService.createStore(storeData);
+        await this.storeService.createStore(dto);
       } else if (this.modalMode() === 'edit' && storeData.id) {
-        await this.storeService.updateStore(storeData.id, storeData);
+        await this.storeService.updateStore(storeData.id, dto);
       }
       this.closeModal();
       this.loadStores();
@@ -98,7 +104,7 @@ export class StoresComponent implements OnInit {
   async toggleStoreStatus(store: Store) {
     if (!store.id) return;
     try {
-      await this.storeService.updateStore(store.id, { ...store, active: !store.active });
+      await this.storeService.updateStore(store.id, { ...store, isActive: !store.active });
       this.loadStores();
     } catch (error) {
       console.error('Failed to toggle store status', error);

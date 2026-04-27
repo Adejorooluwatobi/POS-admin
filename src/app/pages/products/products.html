@@ -140,7 +140,7 @@
                 </select>
               </div>
               <div style="display:flex;align-items:center;gap:12px;padding-top:20px;">
-                <input type="checkbox" [(ngModel)]="selectedProduct().status" [checked]="selectedProduct().status === 'ACTIVE'" (change)="selectedProduct().status = selectedProduct().status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'">
+                <input type="checkbox" [checked]="selectedProduct().status === 'ACTIVE'" (change)="selectedProduct().status = $any($event.target).checked ? 'ACTIVE' : 'INACTIVE'" [disabled]="modalMode() === 'view'">
                 <label style="font-size:13px;font-weight:600;">Active</label>
               </div>
             </div>
