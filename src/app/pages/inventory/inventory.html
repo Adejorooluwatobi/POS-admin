@@ -1,74 +1,115 @@
 <div class="fade-up">
-  <!-- Summary cards -->
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:9px;background:var(--green-d);display:flex;align-items:center;justify-content:center;font-size:16px;">✅</div>
-      <div>
-        <div class="mono" style="font-size:20px;font-weight:700;">13</div>
-        <div style="font-size:11px;color:var(--text2);">In Stock</div>
-      </div>
-    </div>
-    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:9px;background:var(--amber-d);display:flex;align-items:center;justify-content:center;font-size:16px;">⚠️</div>
-      <div>
-        <div class="mono" style="font-size:20px;font-weight:700;">3</div>
-        <div style="font-size:11px;color:var(--text2);">Low Stock</div>
-      </div>
-    </div>
-    <div class="card" style="padding:12px;display:flex;align-items:center;gap:10px;">
-      <div style="width:36px;height:36px;border-radius:9px;background:var(--red-d);display:flex;align-items:center;justify-content:center;font-size:16px;">🚨</div>
-      <div>
-        <div class="mono" style="font-size:20px;font-weight:700;">0</div>
-        <div style="font-size:11px;color:var(--text2);">Out of Stock</div>
-      </div>
+  <!-- Header with Action -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Inventory Management</div>
+      <div style="font-size:12px;color:var(--text3);">Monitor stock levels, reorder points and adjustments</div>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="card">
-    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:12px;font-weight:700;">Stock Levels — {{ storeName() }}</span>
-      <button (click)="openStockAdj()" class="btn btn-primary btn-sm">+ Adjust Stock</button>
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading inventory...</span>
     </div>
-    <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>PRODUCT</th>
-            <th style="text-align:right;">ON HAND</th>
-            <th style="text-align:right;">RESERVED</th>
-            <th style="text-align:right;">AVAILABLE</th>
-            <th style="text-align:right;">REORDER PT</th>
-            <th>STATUS</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of inventory(); track item.n) {
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
             <tr>
-              <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:15px;">{{ item.e }}</span>
-                  <span style="font-weight:600;">{{ item.n }}</span>
-                </div>
-              </td>
-              <td class="mono" style="text-align:right;font-weight:700;">{{ item.oh }}</td>
-              <td class="mono" style="text-align:right;color:var(--text2);">{{ item.res }}</td>
-              <td class="mono" style="text-align:right;font-weight:700;" [style.color]="(item.oh - item.res) < item.ro ? 'var(--red)' : 'var(--green)'">{{ item.oh - item.res }}</td>
-              <td class="mono" style="text-align:right;color:var(--text3);">{{ item.ro }}</td>
-              <td>
-                <span class="badge"
-                      [ngClass]="{
-                        'badge-green': item.s === 'OK',
-                        'badge-amber': item.s === 'LOW',
-                        'badge-red': item.s === 'OUT'
-                      }">{{ item.s }}</span>
-              </td>
-              <td><button (click)="openStockAdj(item.n)" class="btn btn-secondary btn-xs">Adjust</button></td>
+              <th>PRODUCT</th>
+              <th style="text-align:right;">ON HAND</th>
+              <th style="text-align:right;">RESERVED</th>
+              <th style="text-align:right;">AVAILABLE</th>
+              <th style="text-align:right;">REORDER PT</th>
+              <th>STATUS</th>
+              <th style="text-align:right;">ACTIONS</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (item of inventory(); track item.id) {
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;">
+                      {{ item.e }}
+                    </div>
+                    <div style="font-weight:600;font-size:13px;">{{ item.n }}</div>
+                  </div>
+                </td>
+                <td class="mono" style="text-align:right;font-weight:700;">{{ item.oh }}</td>
+                <td class="mono" style="text-align:right;color:var(--text2);">{{ item.res }}</td>
+                <td class="mono" style="text-align:right;font-weight:700;" [style.color]="(item.oh - item.res) < item.ro ? 'var(--red)' : 'var(--green)'">
+                  {{ item.oh - item.res }}
+                </td>
+                <td class="mono" style="text-align:right;color:var(--text3);">{{ item.ro }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-green': item.s === 'OK',
+                    'badge-amber': item.s === 'LOW',
+                    'badge-red': item.s === 'OUT'
+                  }">{{ item.s }}</span>
+                </td>
+                <td style="text-align:right;">
+                  <button class="btn btn-secondary btn-xs" (click)="openStockAdj(item)">Adjust</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
+  }
+
+  <!-- ADJUSTMENT MODAL -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+          <div>
+            <div style="font-size:18px;font-weight:800;">Adjust Stock</div>
+            <div style="font-size:11px;color:var(--text3);">{{ selectedItem().n }}</div>
+          </div>
+          <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="padding:24px;">
+          <div style="display:grid;gap:16px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Quantity On Hand</label>
+                <input type="number" class="inp" [(ngModel)]="selectedItem().oh">
+              </div>
+              <div>
+                <label class="label">Quantity Reserved</label>
+                <input type="number" class="inp" [(ngModel)]="selectedItem().res">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Reorder Point</label>
+                <input type="number" class="inp" [(ngModel)]="selectedItem().ro">
+              </div>
+              <div>
+                <label class="label">Reorder Quantity</label>
+                <input type="number" class="inp" [(ngModel)]="selectedItem().roQty">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button class="btn btn-primary" (click)="saveAdjustment()">Save Adjustments</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>
+
+<style>
+  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

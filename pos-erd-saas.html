@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailOS — SaaS Multi-Tenant Architecture ERD</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #07090e;
+  --s:       #0d1117;
+  --s2:      #111820;
+  --s3:      #192130;
+  --b:       #1e2d3d;
+  --b2:      #26374d;
+  --text:    #d4dfe9;
+  --text2:   #6b8aa3;
+  --text3:   #334a60;
+  --gold:    #f59e0b;
+  --blue:    #38bdf8;
+  --green:   #34d399;
+  --amber:   #fbbf24;
+  --red:     #f87171;
+  --purple:  #a78bfa;
+  --pink:    #f472b6;
+  --orange:  #fb923c;
+  --teal:    #2dd4bf;
+  --lime:    #a3e635;
+}
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Geist', sans-serif; font-size: 12px; }
+.mono { font-family: 'Geist Mono', monospace; }
+::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 3px; }
+
+/* HEADER */
+.hdr {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(7,9,14,.94); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--b);
+  padding: 10px 24px;
+  display: flex; align-items: center; gap: 16px;
+}
+.logo { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg,var(--gold),var(--orange)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; color: #000; }
+
+/* STATS */
+.stats { display: flex; background: var(--s); border-bottom: 1px solid var(--b); }
+.stat { flex: 1; padding: 10px 18px; border-right: 1px solid var(--b); }
+.stat:last-child { border-right: none; }
+.stat-n { font-family: 'Geist Mono', monospace; font-size: 20px; font-weight: 800; }
+.stat-l { font-size: 9px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+
+/* LAYOUT TIERS DIAGRAM */
+.tiers-wrap { padding: 28px 24px; }
+.tiers-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); font-family: 'Geist Mono', monospace; margin-bottom: 16px; }
+
+.tier-diagram {
+  display: flex; flex-direction: column; gap: 0;
+  background: var(--s); border: 1px solid var(--b); border-radius: 14px; overflow: hidden;
+  margin-bottom: 28px;
+}
+.tier-row {
+  display: flex; align-items: stretch;
+  border-bottom: 1px solid var(--b);
+}
+.tier-row:last-child { border-bottom: none; }
+.tier-label {
+  width: 180px; flex-shrink: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--b);
+  display: flex; flex-direction: column; justify-content: center; gap: 4px;
+}
+.tier-num { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+.tier-name { font-size: 13px; font-weight: 700; }
+.tier-desc { font-size: 10px; color: var(--text2); line-height: 1.4; margin-top: 2px; }
+.tier-content { flex: 1; padding: 16px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+/* ACTOR CHIPS */
+.actor {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--s2); border: 1px solid var(--b); border-radius: 8px;
+  padding: 9px 13px;
+}
+.actor-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; flex-shrink: 0; }
+.actor-name { font-size: 11px; font-weight: 600; }
+.actor-sub { font-size: 10px; color: var(--text2); margin-top: 1px; }
+.actor-perms { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 3px; }
+.perm { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+.perm-y { background: rgba(52,211,153,.1); color: var(--green); }
+.perm-n { background: rgba(248,113,113,.1); color: var(--red); text-decoration: line-through; }
+
+/* ARROW CONNECTOR */
+.connector { display: flex; align-items: center; justify-content: center; padding: 4px 24px; color: var(--text3); font-size: 18px; }
+
+/* CANVAS */
+.canvas { padding: 0 24px 60px; }
+
+/* DOMAIN GROUPS */
+.domain { margin-bottom: 44px; }
+.domain-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.domain-num { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: .1em; width: 22px; }
+.domain-name { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.domain-line { flex: 1; height: 1px; background: var(--b); }
+.domain-badge { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.new-badge { background: rgba(163,230,53,.12); color: var(--lime); border: 1px solid rgba(163,230,53,.25); }
+.updated-badge { background: rgba(251,191,36,.1); color: var(--amber); border: 1px solid rgba(251,191,36,.2); }
+
+.tables { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-start; }
+
+/* ENTITY CARD */
+.entity {
+  background: var(--s); border: 1px solid var(--b);
+  border-radius: 10px; min-width: 240px; max-width: 280px; flex: 1;
+  overflow: hidden; transition: border-color .2s, box-shadow .2s;
+  position: relative;
+}
+.entity::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 10px 10px 0 0; }
+.entity:hover { border-color: var(--b2); box-shadow: 0 4px 20px rgba(0,0,0,.3); }
+
+/* Domain color coding */
+.entity[data-d="platform"]::before  { background: var(--gold); }
+.entity[data-d="store"]::before     { background: var(--blue); }
+.entity[data-d="product"]::before   { background: var(--green); }
+.entity[data-d="transaction"]::before{ background: var(--amber); }
+.entity[data-d="payment"]::before   { background: var(--orange); }
+.entity[data-d="customer"]::before  { background: var(--purple); }
+.entity[data-d="staff"]::before     { background: var(--red); }
+.entity[data-d="audit"]::before     { background: var(--text2); }
+
+.entity-hd { padding: 10px 13px 8px; border-bottom: 1px solid var(--b); display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+.entity-title { font-family: 'Geist Mono', monospace; font-size: 12px; font-weight: 700; }
+.entity-sub { font-size: 9px; color: var(--text3); font-family: 'Geist Mono', monospace; margin-top: 1px; }
+.entity-tags { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+
+.tag { display: inline-flex; align-items: center; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+.tag-pk   { background: rgba(251,191,36,.12); color: var(--amber); }
+.tag-fk   { background: rgba(56,189,248,.1); color: var(--blue); }
+.tag-uk   { background: rgba(52,211,153,.1); color: var(--green); }
+.tag-idx  { background: rgba(167,139,250,.1); color: var(--purple); }
+.tag-enum { background: rgba(251,146,60,.1); color: var(--orange); }
+.tag-json { background: rgba(244,114,182,.1); color: var(--pink); }
+.tag-nav  { background: rgba(45,212,191,.1); color: var(--teal); }
+.tag-new  { background: rgba(163,230,53,.1); color: var(--lime); }
+.tag-core { background: rgba(56,189,248,.08); color: var(--blue); }
+.tag-pivot{ background: rgba(251,191,36,.08); color: var(--amber); }
+.tag-ref  { background: rgba(107,138,163,.1); color: var(--text2); }
+
+.entity-body { padding: 5px 0; }
+.field { display: flex; align-items: center; gap: 7px; padding: 3.5px 13px; transition: background .1s; }
+.field:hover { background: var(--s2); }
+.field.pk-row { border-left: 2px solid var(--amber); }
+.field.fk-row { border-left: 2px solid var(--blue); }
+.field.nav-row { background: rgba(45,212,191,.02); }
+.field.new-row { background: rgba(163,230,53,.03); border-left: 2px solid rgba(163,230,53,.4); }
+.fi { font-size: 9px; width: 11px; text-align: center; flex-shrink: 0; }
+.fn { font-family: 'Geist Mono', monospace; font-size: 10.5px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fn.pk   { color: var(--amber); font-weight: 700; }
+.fn.fk   { color: var(--blue); }
+.fn.nav  { color: var(--teal); font-style: italic; }
+.fn.uk   { color: var(--green); }
+.fn.muted{ color: var(--text3); font-size: 10px; font-style: italic; }
+.fn.lime { color: var(--lime); font-weight: 600; }
+.ft { font-family: 'Geist Mono', monospace; font-size: 9.5px; color: var(--text2); white-space: nowrap; text-align: right; }
+.fb { font-family: 'Geist Mono', monospace; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 2px; flex-shrink: 0; }
+.fb-pk   { background: rgba(251,191,36,.15); color: var(--amber); }
+.fb-fk   { background: rgba(56,189,248,.12); color: var(--blue); }
+.fb-uk   { background: rgba(52,211,153,.12); color: var(--green); }
+.fb-nav  { background: rgba(45,212,191,.1); color: var(--teal); }
+.fb-enum { background: rgba(251,146,60,.12); color: var(--orange); }
+.fb-json { background: rgba(244,114,182,.1); color: var(--pink); }
+.fb-new  { background: rgba(163,230,53,.12); color: var(--lime); }
+.divider { height: 1px; background: var(--b); margin: 4px 13px; opacity: .5; }
+.section-label { padding: 5px 13px 2px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); }
+
+/* RELATIONSHIP PANEL */
+.rel-panel { background: var(--s); border: 1px solid var(--b); border-radius: 10px; padding: 16px 18px; margin-top: 14px; }
+.rel-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); font-family: 'Geist Mono', monospace; margin-bottom: 12px; }
+.rel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 5px; }
+.rel { display: flex; align-items: center; gap: 7px; padding: 6px 10px; background: var(--s2); border: 1px solid transparent; border-radius: 5px; font-family: 'Geist Mono', monospace; font-size: 10px; transition: border-color .15s; }
+.rel:hover { border-color: var(--b2); }
+.rel-a { color: var(--blue); font-weight: 600; }
+.rel-b { color: var(--green); font-weight: 600; }
+.rel-arr { color: var(--text3); }
+.rel-t { margin-left: auto; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; background: var(--s3); color: var(--text2); white-space: nowrap; }
+.rel.new-rel { background: rgba(163,230,53,.04); border-color: rgba(163,230,53,.15); }
+.rel.new-rel .rel-a { color: var(--lime); }
+
+/* FILTER KEY */
+.filter-box { background: var(--s); border: 1px solid var(--b); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; }
+.filter-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); font-family: 'Geist Mono', monospace; margin-bottom: 12px; }
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 8px; }
+.filter-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--s2); border: 1px solid var(--b); border-radius: 7px; }
+.filter-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; margin-top: 2px; }
+.filter-label { font-size: 11px; font-weight: 600; margin-bottom: 3px; }
+.filter-desc { font-size: 10px; color: var(--text2); line-height: 1.5; }
+
+/* ONBOARDING FLOW */
+.flow-panel { background: var(--s); border: 1px solid var(--b); border-radius: 10px; padding: 16px 18px; margin-top: 14px; }
+.flow-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text3); font-family: 'Geist Mono', monospace; margin-bottom: 14px; }
+.flow-steps { display: flex; gap: 0; overflow-x: auto; }
+.step { flex-shrink: 0; width: 180px; padding: 12px; background: var(--s2); border: 1px solid var(--b); border-right: none; }
+.step:first-child { border-radius: 8px 0 0 8px; }
+.step:last-child { border-right: 1px solid var(--b); border-radius: 0 8px 8px 0; }
+.step-num { font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 700; color: var(--text3); margin-bottom: 5px; }
+.step-title { font-size: 11px; font-weight: 700; margin-bottom: 5px; }
+.step-desc { font-size: 10px; color: var(--text2); line-height: 1.5; }
+.step-actor { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+.domain { animation: fadeIn .25s ease both; }
+.domain:nth-child(1) { animation-delay: .05s; }
+.domain:nth-child(2) { animation-delay: .10s; }
+.domain:nth-child(3) { animation-delay: .15s; }
+.domain:nth-child(4) { animation-delay: .20s; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="logo">R</div>
+  <div>
+    <div style="font-size:14px;font-weight:700;">RetailOS — SaaS Multi-Tenant Architecture</div>
+    <div class="mono" style="font-size:10px;color:var(--text2);">// Platform Owner → Tenant (Business) → Store (Branch) → Cashier</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+    <span class="tag tag-new">NEW: Tenant</span>
+    <span class="tag tag-new">NEW: TenantSubscription</span>
+    <span class="tag" style="background:rgba(251,191,36,.1);color:var(--amber);">UPDATED: Store</span>
+    <span class="tag" style="background:rgba(251,191,36,.1);color:var(--amber);">UPDATED: Staff</span>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><span class="stat-n" style="color:var(--gold)">4</span><span class="stat-l">Access Tiers</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--lime)">2</span><span class="stat-l">New Tables</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--blue)">23</span><span class="stat-l">Total Entities</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--green)">1</span><span class="stat-l">Deployment</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--amber)">∞</span><span class="stat-l">Tenants (Businesses)</span></div>
+  <div class="stat"><span class="stat-n" style="color:var(--purple)">∞</span><span class="stat-l">Branches per Tenant</span></div>
+</div>
+
+<div class="tiers-wrap">
+
+  <!-- ACCESS TIER DIAGRAM -->
+  <div class="tiers-title">// Access Hierarchy — Who Logs In, What They See, What They Can Touch</div>
+  <div class="tier-diagram">
+
+    <!-- Tier 1: Platform Owner -->
+    <div class="tier-row">
+      <div class="tier-label">
+        <div class="tier-num" style="color:var(--gold);">TIER 1 · PLATFORM</div>
+        <div class="tier-name" style="color:var(--gold);">Super Admin</div>
+        <div class="tier-desc">You (Gold). The platform owner. One account.</div>
+      </div>
+      <div class="tier-content">
+        <div class="actor">
+          <div class="actor-avatar" style="background:rgba(245,158,11,.15);color:var(--gold);">G</div>
+          <div>
+            <div class="actor-name" style="color:var(--gold);">Gold Adejoro</div>
+            <div class="actor-sub">owner@retailos.ng</div>
+            <div class="actor-perms">
+              <span class="perm perm-y">Monitor all tenants</span>
+              <span class="perm perm-y">View all metrics</span>
+              <span class="perm perm-y">Enable / Disable tenants</span>
+              <span class="perm perm-y">Manage subscriptions/billing</span>
+              <span class="perm perm-n">Touch store settings</span>
+              <span class="perm perm-n">Modify staff/products</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);max-width:280px;line-height:1.6;">
+          One login. You see every tenant (Walmart Nigeria, ShopRite, etc). If a tenant's subscription expires or they violate terms — you flip a switch to disable them. You cannot edit their data.
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier 2: Tenant Admin -->
+    <div class="tier-row">
+      <div class="tier-label">
+        <div class="tier-num" style="color:var(--blue);">TIER 2 · TENANT</div>
+        <div class="tier-name" style="color:var(--blue);">Tenant Admin</div>
+        <div class="tier-desc">HQ account for the business that purchased your SaaS.</div>
+      </div>
+      <div class="tier-content">
+        <div class="actor">
+          <div class="actor-avatar" style="background:rgba(56,189,248,.12);color:var(--blue);">W</div>
+          <div>
+            <div class="actor-name">Walmart Nigeria HQ</div>
+            <div class="actor-sub">admin@walmart.ng · Tenant Admin</div>
+            <div class="actor-perms">
+              <span class="perm perm-y">Register branches (stores)</span>
+              <span class="perm perm-y">Manage all their staff</span>
+              <span class="perm perm-y">Set products & pricing for all branches</span>
+              <span class="perm perm-y">View all branch reports</span>
+              <span class="perm perm-y">Create promotions</span>
+              <span class="perm perm-n">See other tenants' data</span>
+            </div>
+          </div>
+        </div>
+        <div class="actor">
+          <div class="actor-avatar" style="background:rgba(56,189,248,.12);color:var(--blue);">S</div>
+          <div>
+            <div class="actor-name">ShopRite Nigeria HQ</div>
+            <div class="actor-sub">admin@shoprite.ng · Tenant Admin</div>
+            <div class="actor-perms">
+              <span class="perm perm-y">Their own branches only</span>
+              <span class="perm perm-y">Completely isolated from Walmart</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier 3: Store Manager -->
+    <div class="tier-row">
+      <div class="tier-label">
+        <div class="tier-num" style="color:var(--green);">TIER 3 · STORE</div>
+        <div class="tier-name" style="color:var(--green);">Store Manager</div>
+        <div class="tier-desc">Manages one specific branch. Cannot see other branches.</div>
+      </div>
+      <div class="tier-content">
+        <div class="actor">
+          <div class="actor-avatar" style="background:rgba(52,211,153,.1);color:var(--green);">T</div>
+          <div>
+            <div class="actor-name">Temi Oladipo</div>
+            <div class="actor-sub">temi@walmart.ng · VI Branch Manager</div>
+            <div class="actor-perms">
+              <span class="perm perm-y">Manage VI branch staff</span>
+              <span class="perm perm-y">VI branch inventory</span>
+              <span class="perm perm-y">VI branch reports</span>
+              <span class="perm perm-n">See Ikeja branch data</span>
+              <span class="perm perm-n">Create new branches</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier 4: Cashier -->
+    <div class="tier-row" style="border-bottom:none;">
+      <div class="tier-label">
+        <div class="tier-num" style="color:var(--text2);">TIER 4 · POS</div>
+        <div class="tier-name">Cashier</div>
+        <div class="tier-desc">PIN login on the terminal. POS only.</div>
+      </div>
+      <div class="tier-content">
+        <div class="actor">
+          <div class="actor-avatar" style="background:rgba(107,138,163,.1);color:var(--text2);">G</div>
+          <div>
+            <div class="actor-name">Gold (Cashier)</div>
+            <div class="actor-sub">PIN: 1234 · Terminal LG-01-T3</div>
+            <div class="actor-perms">
+              <span class="perm perm-y">Process sales</span>
+              <span class="perm perm-y">Apply coupons</span>
+              <span class="perm perm-n">Admin portal</span>
+              <span class="perm perm-n">Reports</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ONBOARDING FLOW -->
+  <div class="flow-panel">
+    <div class="flow-title">// Tenant Onboarding Flow — How a New Business Gets On Your Platform</div>
+    <div class="flow-steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Business Signs Up</div>
+        <div class="step-desc">Walmart Nigeria registers on your platform, picks a plan (Starter / Pro / Enterprise)</div>
+        <div><span class="step-actor" style="background:rgba(245,158,11,.1);color:var(--gold);">👑 Auto or you approve</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Tenant Created</div>
+        <div class="step-desc">A Tenant record is created. They get a unique slug (e.g. "walmart-ng") and a Tenant Admin account.</div>
+        <div><span class="step-actor" style="background:rgba(56,189,248,.1);color:var(--blue);">🏢 System auto-creates</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Register Branches</div>
+        <div class="step-desc">Tenant Admin logs into admin portal and creates their Store records (VI branch, Ikeja branch, etc.)</div>
+        <div><span class="step-actor" style="background:rgba(56,189,248,.1);color:var(--blue);">🏪 Tenant Admin does this</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Add Staff & Products</div>
+        <div class="step-desc">Tenant Admin or Store Manager adds cashiers, products, and configures terminals per branch.</div>
+        <div><span class="step-actor" style="background:rgba(52,211,153,.1);color:var(--green);">👤 Manager does this</span></div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-title">Go Live</div>
+        <div class="step-desc">Cashiers PIN login at terminals. Sales start flowing. Data stays isolated under their TenantId.</div>
+        <div><span class="step-actor" style="background:rgba(107,138,163,.1);color:var(--text2);">💳 POS is live</span></div>
+      </div>
+      <div class="step" style="border-right:1px solid var(--b);border-radius:0 8px 8px 0;">
+        <div class="step-num">06</div>
+        <div class="step-title">You Monitor</div>
+        <div class="step-desc">You watch all tenants from your Super Admin dashboard. Metrics, revenue, subscription status.</div>
+        <div><span class="step-actor" style="background:rgba(245,158,11,.1);color:var(--gold);">👑 Platform view only</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tiers-wrap -->
+
+<div class="canvas">
+
+  <!-- KEY LEGEND -->
+  <div class="filter-box">
+    <div class="filter-title">// Color Coding — What Changed vs Before</div>
+    <div class="filter-grid">
+      <div class="filter-item">
+        <div class="filter-dot" style="background:var(--lime);"></div>
+        <div><div class="filter-label" style="color:var(--lime);">NEW Tables</div><div class="filter-desc">Tenant, TenantSubscription — the two new tables that make everything multi-tenant.</div></div>
+      </div>
+      <div class="filter-item">
+        <div class="filter-dot" style="background:var(--amber);"></div>
+        <div><div class="filter-label" style="color:var(--amber);">UPDATED Tables</div><div class="filter-desc">Store gets TenantId FK. Staff gets SystemRole enum. Both tables gain one column each.</div></div>
+      </div>
+      <div class="filter-item">
+        <div class="filter-dot" style="background:var(--blue);"></div>
+        <div><div class="filter-label" style="color:var(--blue);">UNCHANGED — Row-Level Tenant Isolation</div><div class="filter-desc">All other entities inherit tenant isolation via Store.TenantId. No other table needs TenantId directly because everything is Store-scoped.</div></div>
+      </div>
+      <div class="filter-item">
+        <div class="filter-dot" style="background:var(--gold);"></div>
+        <div><div class="filter-label" style="color:var(--gold);">EF Core Query Filters</div><div class="filter-desc">HasQueryFilter on Store → IsActive AND TenantId == currentTenantId. All child queries inherit the filter automatically.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOMAIN 00: PLATFORM (NEW) -->
+  <div class="domain">
+    <div class="domain-hdr">
+      <span class="domain-num">00</span>
+      <span class="domain-name" style="color:var(--gold);">Platform Layer (NEW)</span>
+      <div class="domain-line"></div>
+      <span class="domain-badge new-badge">2 NEW entities</span>
+    </div>
+    <div class="tables">
+
+      <!-- Tenant -->
+      <div class="entity" data-d="platform">
+        <div class="entity-hd">
+          <div><div class="entity-title">Tenant</div><div class="entity-sub">// Tenants</div></div>
+          <div class="entity-tags"><span class="tag tag-new">NEW</span><span class="tag tag-core">CORE</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row new-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn uk lime">Slug</span><span class="ft">string(80)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">BusinessName</span><span class="ft">string(200)</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">ContactEmail</span><span class="ft">string(200)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">ContactPhone</span><span class="ft">string(30)?</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">Country</span><span class="ft">string(100)</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">LogoUrl</span><span class="ft">string?</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">IsActive</span><span class="ft">bool</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">IsVerified</span><span class="ft">bool</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">CreatedAt</span><span class="ft">DateTimeOffset</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">UpdatedAt</span><span class="ft">DateTimeOffset</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Navigation</div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Stores</span><span class="ft">ICollection&lt;Store&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Staff</span><span class="ft">ICollection&lt;Staff&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Subscription</span><span class="ft">TenantSubscription?</span><span class="fb fb-nav">NAV</span></div>
+        </div>
+      </div>
+
+      <!-- TenantSubscription -->
+      <div class="entity" data-d="platform">
+        <div class="entity-hd">
+          <div><div class="entity-title">TenantSubscription</div><div class="entity-sub">// TenantSubscriptions</div></div>
+          <div class="entity-tags"><span class="tag tag-new">NEW</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row new-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field fk-row new-row"><span class="fi">🔗</span><span class="fn fk">TenantId</span><span class="ft">Guid</span><span class="fb fb-fk">FK</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">Plan</span><span class="ft">SubscriptionPlan</span><span class="fb fb-enum">ENUM</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">Status</span><span class="ft">SubscriptionStatus</span><span class="fb fb-enum">ENUM</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">MaxStores</span><span class="ft">int</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">MaxTerminals</span><span class="ft">int</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">MaxStaff</span><span class="ft">int</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">BillingCycle</span><span class="ft">BillingCycle</span><span class="fb fb-enum">ENUM</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">MonthlyPrice</span><span class="ft">decimal(10,2)</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">TrialEndsAt</span><span class="ft">DateTimeOffset?</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">CurrentPeriodStart</span><span class="ft">DateTimeOffset</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">CurrentPeriodEnd</span><span class="ft">DateTimeOffset</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">CancelledAt</span><span class="ft">DateTimeOffset?</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">CreatedAt</span><span class="ft">DateTimeOffset</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Enum Values</div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Plan: Starter|Pro|Enterprise</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Status: Trial|Active|PastDue|Cancelled|Suspended</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Billing: Monthly|Annually</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Plan Limits Example</div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Starter: 1 store · 2 terminals · 5 staff</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Pro: 5 stores · 10 terminals · 30 staff</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Enterprise: unlimited all</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Navigation</div>
+          <div class="field nav-row"><span class="fi">↙</span><span class="fn nav">Tenant</span><span class="ft">Tenant</span><span class="fb fb-nav">NAV</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DOMAIN 01: STORE (UPDATED) -->
+  <div class="domain">
+    <div class="domain-hdr">
+      <span class="domain-num">01</span>
+      <span class="domain-name" style="color:var(--blue);">Store & Infrastructure (Updated)</span>
+      <div class="domain-line"></div>
+      <span class="domain-badge updated-badge">Store + TenantId · Staff + SystemRole</span>
+    </div>
+    <div class="tables">
+
+      <!-- Store (Updated) -->
+      <div class="entity" data-d="store">
+        <div class="entity-hd">
+          <div><div class="entity-title">Store</div><div class="entity-sub">// Stores</div></div>
+          <div class="entity-tags"><span class="tag" style="background:rgba(251,191,36,.1);color:var(--amber);">UPDATED</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field fk-row new-row"><span class="fi">🔗</span><span class="fn fk lime">TenantId</span><span class="ft">Guid</span><span class="fb fb-fk">FK · NEW</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn uk">Code</span><span class="ft">string(10)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Name</span><span class="ft">string(200)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Address</span><span class="ft">string</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">City</span><span class="ft">string(100)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">State</span><span class="ft">string(100)?</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Country</span><span class="ft">string(100)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Phone</span><span class="ft">string(30)?</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Timezone</span><span class="ft">string(60)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">IsActive</span><span class="ft">bool</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">CreatedAt</span><span class="ft">DateTimeOffset</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">UpdatedAt</span><span class="ft">DateTimeOffset</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Navigation</div>
+          <div class="field nav-row new-row"><span class="fi">↙</span><span class="fn nav lime">Tenant</span><span class="ft">Tenant</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Terminals</span><span class="ft">ICollection&lt;Terminal&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Staff</span><span class="ft">ICollection&lt;Staff&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Inventories</span><span class="ft">ICollection&lt;Inventory&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↗</span><span class="fn nav">Transactions</span><span class="ft">ICollection&lt;Transaction&gt;</span><span class="fb fb-nav">NAV</span></div>
+          <div class="divider"></div>
+          <div class="section-label">EF Core Query Filter</div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">HasQueryFilter(s =&gt; s.TenantId == _tenantId</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">            &amp;&amp; s.IsActive)</span></div>
+        </div>
+      </div>
+
+      <!-- Staff (Updated) -->
+      <div class="entity" data-d="staff">
+        <div class="entity-hd">
+          <div><div class="entity-title">Staff</div><div class="entity-sub">// Staff</div></div>
+          <div class="entity-tags"><span class="tag" style="background:rgba(251,191,36,.1);color:var(--amber);">UPDATED</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field fk-row new-row"><span class="fi">🔗</span><span class="fn fk lime">TenantId</span><span class="ft">Guid</span><span class="fb fb-fk">FK · NEW</span></div>
+          <div class="field fk-row"><span class="fi">🔗</span><span class="fn fk">StoreId</span><span class="ft">Guid?</span><span class="fb fb-fk">FK?</span></div>
+          <div class="field fk-row"><span class="fi">🔗</span><span class="fn fk">RoleId</span><span class="ft">Guid?</span><span class="fb fb-fk">FK?</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn lime">SystemRole</span><span class="ft">SystemRole</span><span class="fb fb-enum">ENUM · NEW</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn uk">EmployeeNo</span><span class="ft">string(30)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn uk">Email</span><span class="ft">string(200)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">PinHash</span><span class="ft">string(255)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">PasswordHash</span><span class="ft">string(255)?</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">FirstName</span><span class="ft">string(100)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">LastName</span><span class="ft">string(100)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">IsActive</span><span class="ft">bool</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">HiredAt</span><span class="ft">DateOnly</span></div>
+          <div class="divider"></div>
+          <div class="section-label">SystemRole Enum — The Gate</div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">TenantAdmin  → all branches of their tenant</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">StoreManager → their assigned StoreId only</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Cashier      → POS terminal only</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Notes</div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">TenantAdmin: StoreId=null, RoleId=null</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">StoreManager/Cashier: StoreId required</span></div>
+          <div class="divider"></div>
+          <div class="section-label">Navigation</div>
+          <div class="field nav-row new-row"><span class="fi">↙</span><span class="fn nav lime">Tenant</span><span class="ft">Tenant</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↙</span><span class="fn nav">Store</span><span class="ft">Store?</span><span class="fb fb-nav">NAV</span></div>
+          <div class="field nav-row"><span class="fi">↙</span><span class="fn nav">Role</span><span class="ft">Role?</span><span class="fb fb-nav">NAV</span></div>
+        </div>
+      </div>
+
+      <!-- Terminal (unchanged) -->
+      <div class="entity" data-d="store">
+        <div class="entity-hd">
+          <div><div class="entity-title">Terminal</div><div class="entity-sub">// Terminals · unchanged</div></div>
+          <div class="entity-tags"><span class="tag tag-ref">UNCHANGED</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field fk-row"><span class="fi">🔗</span><span class="fn fk">StoreId</span><span class="ft">Guid</span><span class="fb fb-fk">FK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn uk">TerminalCode</span><span class="ft">string(30)</span><span class="fb fb-uk">UK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Status</span><span class="ft">TerminalStatus</span><span class="fb fb-enum">ENUM</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Label, IpAddress</span><span class="ft">string?</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Tenant isolation via Store.TenantId ✓</span></div>
+        </div>
+      </div>
+
+      <!-- TillSession (unchanged) -->
+      <div class="entity" data-d="store">
+        <div class="entity-hd">
+          <div><div class="entity-title">TillSession</div><div class="entity-sub">// TillSessions · unchanged</div></div>
+          <div class="entity-tags"><span class="tag tag-ref">UNCHANGED</span></div>
+        </div>
+        <div class="entity-body">
+          <div class="field pk-row"><span class="fi">🔑</span><span class="fn pk">Id</span><span class="ft">Guid</span><span class="fb fb-pk">PK</span></div>
+          <div class="field fk-row"><span class="fi">🔗</span><span class="fn fk">TerminalId</span><span class="ft">Guid</span><span class="fb fb-fk">FK</span></div>
+          <div class="field fk-row"><span class="fi">🔗</span><span class="fn fk">StaffId</span><span class="ft">Guid</span><span class="fb fb-fk">FK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">OpeningFloat, ClosingCash</span><span class="ft">decimal(12,2)</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn">Status</span><span class="ft">SessionStatus</span><span class="fb fb-enum">ENUM</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Tenant isolation via Terminal.Store.TenantId ✓</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ALL OTHER DOMAINS (summary cards) -->
+  <div class="domain">
+    <div class="domain-hdr">
+      <span class="domain-num">02–08</span>
+      <span class="domain-name" style="color:var(--text2);">Remaining Domains — Unchanged (Tenant Isolation Inherited)</span>
+      <div class="domain-line"></div>
+      <span class="domain-badge" style="background:rgba(56,189,248,.08);color:var(--blue);border:1px solid rgba(56,189,248,.2);">Row-Level Isolation via Store.TenantId</span>
+    </div>
+    <div class="tables">
+
+      <div class="entity" data-d="product" style="max-width:220px;">
+        <div class="entity-hd"><div><div class="entity-title">Product Catalog</div><div class="entity-sub">Category · Product · ProductVariant</div></div></div>
+        <div class="entity-body">
+          <div class="field"><span class="fi"> </span><span class="fn">All scoped to Tenant via</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Inventory.Store.TenantId</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Products can be shared or tenant-specific</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">Consider: add optional TenantId to Product</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">for tenant-private product catalogs</span></div>
+        </div>
+      </div>
+
+      <div class="entity" data-d="transaction" style="max-width:220px;">
+        <div class="entity-hd"><div><div class="entity-title">Transactions</div><div class="entity-sub">Transaction · TransactionItem · AppliedDiscount</div></div></div>
+        <div class="entity-body">
+          <div class="field"><span class="fi"> </span><span class="fn">Filtered via Transaction.Store.TenantId</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Receipt numbers unique per store</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">Consider: add TenantId to Transaction</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">for faster cross-branch reporting queries</span></div>
+        </div>
+      </div>
+
+      <div class="entity" data-d="payment" style="max-width:220px;">
+        <div class="entity-hd"><div><div class="entity-title">Payments</div><div class="entity-sub">Payment · GiftCard</div></div></div>
+        <div class="entity-body">
+          <div class="field"><span class="fi"> </span><span class="fn">Scoped via Payment.Transaction.Store.TenantId</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">GiftCards could be cross-branch (same tenant)</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">Add TenantId to GiftCard for cross-store</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">gift card support within a tenant</span></div>
+        </div>
+      </div>
+
+      <div class="entity" data-d="customer" style="max-width:220px;">
+        <div class="entity-hd"><div><div class="entity-title">Customers & Loyalty</div><div class="entity-sub">Customer · LoyaltyLedgerEntry</div></div></div>
+        <div class="entity-body">
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">⚠ Add TenantId to Customer</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">Customers belong to ONE tenant</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">Loyalty points valid across all</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">branches of same tenant</span></div>
+        </div>
+      </div>
+
+      <div class="entity" data-d="audit" style="max-width:220px;">
+        <div class="entity-hd"><div><div class="entity-title">Audit & Reports</div><div class="entity-sub">AuditLog · EodReport</div></div></div>
+        <div class="entity-body">
+          <div class="field"><span class="fi"> </span><span class="fn">AuditLog already has StoreId FK</span></div>
+          <div class="field"><span class="fi"> </span><span class="fn muted">You can query by TenantId via store</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">Consider: add TenantId directly to</span></div>
+          <div class="field new-row"><span class="fi"> </span><span class="fn muted">AuditLog for fast platform-level audit</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RELATIONSHIPS (new ones only) -->
+  <div class="rel-panel">
+    <div class="rel-title">// New Relationships Added by Multi-Tenancy</div>
+    <div class="rel-grid">
+      <div class="rel new-rel"><span class="rel-a">Tenant</span><span class="rel-arr">→</span><span class="rel-b">TenantSubscription</span><span class="rel-t">1:1 · HasOne/WithOne</span></div>
+      <div class="rel new-rel"><span class="rel-a">Store</span><span class="rel-arr">→</span><span class="rel-b">Tenant</span><span class="rel-t">N:1 · HasOne/WithMany</span></div>
+      <div class="rel new-rel"><span class="rel-a">Staff</span><span class="rel-arr">→</span><span class="rel-b">Tenant</span><span class="rel-t">N:1 · HasOne/WithMany</span></div>
+      <div class="rel new-rel"><span class="rel-a">Customer</span><span class="rel-arr">→</span><span class="rel-b">Tenant</span><span class="rel-t">N:1 · recommend adding</span></div>
+      <div class="rel new-rel"><span class="rel-a">GiftCard</span><span class="rel-arr">→</span><span class="rel-b">Tenant</span><span class="rel-t">N:1 · recommend adding</span></div>
+      <div class="rel new-rel"><span class="rel-a">Promotion</span><span class="rel-arr">→</span><span class="rel-b">Tenant</span><span class="rel-t">N:1 · recommend adding</span></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

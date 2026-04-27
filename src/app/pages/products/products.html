@@ -1,68 +1,184 @@
 <div class="fade-up">
-  @if (isOwner()) {
-    <div class="alert-banner" style="background:var(--accent-d);border:1px solid rgba(2,132,199,.15);color:var(--accent);margin-bottom:14px;">
-      ℹ Product catalog is managed by Store Managers. You have read-only access.
+  <!-- Header with Action -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Products Catalog</div>
+      <div style="font-size:12px;color:var(--text3);">Manage your product listings, categories and pricing</div>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+      <span style="font-size:18px;margin-right:6px;">+</span> New Product
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading products...</span>
+    </div>
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>PRODUCT</th>
+              <th>SKU</th>
+              <th>CATEGORY</th>
+              <th style="text-align:right;">PRICE</th>
+              <th>TAX</th>
+              <th>STATUS</th>
+              @if (!isOwner()) { <th style="text-align:right;">ACTIONS</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of products(); track p.id) {
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;">
+                      {{ p.e }}
+                    </div>
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">{{ p.n }}</div>
+                      <div style="font-size:10px;color:var(--text3);">{{ p.brand || 'No Brand' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="mono" style="font-size:11px;color:var(--text2);">{{ p.sku }}</td>
+                <td><span class="badge badge-accent">{{ p.cat }}</span></td>
+                <td class="mono" style="text-align:right;font-weight:700;">₦{{ (p.price || 0).toLocaleString() }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-green': p.tax === 'ZERO',
+                    'badge-purple': p.tax === 'EXEMPT',
+                    'badge-dim': p.tax === 'STANDARD'
+                  }">{{ p.tax }}</span>
+                </td>
+                <td><span class="badge" [ngClass]="p.status === 'ACTIVE' ? 'badge-green' : 'badge-red'">{{ p.status }}</span></td>
+                <td style="text-align:right;">
+                  <div style="display:flex;gap:8px;justify-content:flex-end;">
+                    <button class="btn btn-secondary btn-xs" (click)="openViewModal(p)">View</button>
+                    <button class="btn btn-secondary btn-xs" (click)="openEditModal(p)">Edit</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     </div>
   }
 
-  <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
-    <input class="inp" style="width:220px;" placeholder="Search products…">
-    <select class="inp" style="width:130px;">
-      <option>All Categories</option>
-      <option>Beverages</option>
-      <option>Dairy</option>
-      <option>Snacks</option>
-      <option>Household</option>
-    </select>
-    @if (!isOwner()) {
-      <button (click)="openAddProduct()" class="btn btn-primary" style="margin-left:auto;">+ Add Product</button>
-    }
-  </div>
+  <!-- PRODUCT MODAL -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;">
+          <div>
+            <div style="font-size:18px;font-weight:800;">
+              {{ modalMode() === 'create' ? 'New Product' : modalMode() === 'edit' ? 'Edit Product' : 'Product Details' }}
+            </div>
+            <div style="font-size:11px;color:var(--text3);">
+              {{ modalMode() === 'view' ? 'View-only access to product information' : 'Configure product details and pricing' }}
+            </div>
+          </div>
+          <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+        </div>
 
-  <div class="card">
-    <div style="overflow-x:auto;">
-      <table class="tbl">
-        <thead>
-          <tr>
-            <th>PRODUCT</th>
-            <th>SKU</th>
-            <th>CATEGORY</th>
-            <th style="text-align:right;">COST</th>
-            <th style="text-align:right;">PRICE</th>
-            <th>TAX</th>
-            <th>STATUS</th>
-            @if (!isOwner()) { <th></th> }
-          </tr>
-        </thead>
-        <tbody>
-          @for (p of products(); track p.sku) {
-            <tr>
-              <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:16px;">{{ p.e }}</span>
-                  <span style="font-weight:600;">{{ p.n }}</span>
-                </div>
-              </td>
-              <td class="mono" style="color:var(--text3);font-size:11px;">{{ p.sku }}</td>
-              <td><span class="badge badge-accent">{{ p.cat }}</span></td>
-              <td class="mono" style="text-align:right;">₦{{ p.cost.toLocaleString() }}</td>
-              <td class="mono" style="text-align:right;font-weight:700;">₦{{ p.price.toLocaleString() }}</td>
-              <td>
-                <span class="badge"
-                      [ngClass]="{
-                        'badge-green': p.tax === 'ZERO',
-                        'badge-purple': p.tax === 'EXEMPT',
-                        'badge-dim': p.tax !== 'ZERO' && p.tax !== 'EXEMPT'
-                      }">{{ p.tax }}</span>
-              </td>
-              <td><span class="badge badge-green">{{ p.status }}</span></td>
-              @if (!isOwner()) {
-                <td><button class="btn btn-secondary btn-xs">Edit</button></td>
-              }
-            </tr>
+        <div style="padding:24px;overflow-y:auto;flex:1;">
+          <div style="display:grid;gap:16px;">
+            <div>
+              <label class="label">Product Name</label>
+              <input class="inp" [(ngModel)]="selectedProduct().n" placeholder="e.g. Coca-Cola 50cl" [disabled]="modalMode() === 'view'">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Master SKU</label>
+                <input class="inp" [(ngModel)]="selectedProduct().sku" placeholder="SKU-000" [disabled]="modalMode() === 'view'">
+              </div>
+              <div>
+                <label class="label">Brand</label>
+                <input class="inp" [(ngModel)]="selectedProduct().brand" placeholder="Brand Name">
+              </div>
+            </div>
+
+            <div>
+              <label class="label">Category</label>
+              <select class="inp" [(ngModel)]="selectedProduct().categoryId" [disabled]="modalMode() === 'view'">
+                <option value="" disabled selected>Select a Category...</option>
+                @for (c of categories(); track c.id) {
+                  <option [value]="c.id">{{ c.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Description</label>
+              <textarea class="inp" [(ngModel)]="selectedProduct().description" style="height:80px;resize:none;" placeholder="Product description..."></textarea>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Cost Price (₦)</label>
+                <input type="number" class="inp mono" [(ngModel)]="selectedProduct().cost" placeholder="0.00" [disabled]="modalMode() === 'view'">
+              </div>
+              <div>
+                <label class="label">Selling Price (₦)</label>
+                <input type="number" class="inp mono" [(ngModel)]="selectedProduct().price" placeholder="0.00" [disabled]="modalMode() === 'view'">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Tax Category</label>
+                <select class="inp" [(ngModel)]="selectedProduct().tax">
+                  <option value="STANDARD">Standard (7.5%)</option>
+                  <option value="ZERO">Zero Rated</option>
+                  <option value="EXEMPT">Exempt</option>
+                  <option value="REDUCED">Reduced</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;padding-top:20px;">
+                <input type="checkbox" [(ngModel)]="selectedProduct().status" [checked]="selectedProduct().status === 'ACTIVE'" (change)="selectedProduct().status = selectedProduct().status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'">
+                <label style="font-size:13px;font-weight:600;">Active</label>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Weight (grams)</label>
+                <input type="number" class="inp" [(ngModel)]="selectedProduct().weight" placeholder="e.g. 500">
+              </div>
+              <div>
+                <label class="label">Unit of Measure</label>
+                <select class="inp" [(ngModel)]="selectedProduct().uom">
+                  <option value="Each">Each (Item)</option>
+                  <option value="Kg">Kilograms (Kg)</option>
+                  <option value="G">Grams (g)</option>
+                  <option value="L">Liters (L)</option>
+                  <option value="Ml">Milliliters (ml)</option>
+                  <option value="Pack">Pack</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);flex-shrink:0;">
+          <button class="btn btn-secondary" (click)="closeModal()">{{ modalMode() === 'view' ? 'Close' : 'Cancel' }}</button>
+          @if (modalMode() !== 'view') {
+            <button class="btn btn-primary" (click)="saveProduct()">
+              {{ modalMode() === 'create' ? 'Create Product' : 'Save Changes' }}
+            </button>
           }
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
-  </div>
+  }
 </div>
+
+<style>
+  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

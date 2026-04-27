@@ -3,8 +3,9 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StaffService } from '../../services/staff.service';
 import { StoreService } from '../../services/store.service';
+import { RoleService } from '../../services/role.service';
 import { AuthService } from '../../services/auth.service';
-import { Staff, Store } from '../../models/pos.models';
+import { Staff, Store, Role } from '../../models/pos.models';
 
 @Component({
   selector: 'app-staff',
@@ -15,6 +16,7 @@ import { Staff, Store } from '../../models/pos.models';
 export class StaffComponent implements OnInit {
   public staff = signal<Staff[]>([]);
   public stores = signal<Store[]>([]);
+  public roles = signal<Role[]>([]);
   public isOwner = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
 
@@ -26,13 +28,15 @@ export class StaffComponent implements OnInit {
     lastName: '',
     email: '',
     no: '',
-    role: 'Cashier',
-    active: true
+    roleId: '',
+    active: true,
+    hiredAt: new Date().toISOString().split('T')[0]
   });
 
   constructor(
     private staffService: StaffService,
     private storeService: StoreService,
+    private roleService: RoleService,
     private authService: AuthService
   ) {
     this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
@@ -41,6 +45,7 @@ export class StaffComponent implements OnInit {
   ngOnInit() {
     this.loadStaff();
     this.loadStores();
+    this.loadRoles();
   }
 
   async loadStaff() {
@@ -73,6 +78,15 @@ export class StaffComponent implements OnInit {
     }
   }
 
+  async loadRoles() {
+    try {
+      const data = await this.roleService.getRoles();
+      this.roles.set(data.items || data);
+    } catch (error) {
+      console.error('Failed to load roles', error);
+    }
+  }
+
   openCreateModal() {
     this.modalMode.set('create');
     this.selectedStaff.set({
@@ -80,9 +94,10 @@ export class StaffComponent implements OnInit {
       lastName: '',
       email: '',
       no: '',
-      role: 'Cashier',
+      roleId: '',
       active: true,
-      storeId: ''
+      storeId: '',
+      hiredAt: new Date().toISOString().split('T')[0]
     });
     this.isModalOpen.set(true);
   }
@@ -93,20 +108,34 @@ export class StaffComponent implements OnInit {
     this.isModalOpen.set(true);
   }
 
+  openViewModal(staff: Staff) {
+    this.modalMode.set('view');
+    this.selectedStaff.set({ ...staff });
+    this.isModalOpen.set(true);
+  }
+
   closeModal() {
     this.isModalOpen.set(false);
   }
 
   async saveStaff() {
     const s = this.selectedStaff();
+    const user = this.authService.currentUser();
+    
+    // Find systemRole from selected roleId
+    const selectedRole = this.roles().find(r => r.id === s.roleId);
+    
     const dto = {
       firstName: s.firstName,
       lastName: s.lastName,
       email: s.email,
       employeeNo: s.no,
-      systemRole: s.role === 'MANAGER' ? 2 : s.role === 'CASHIER' ? 3 : 3, // Simplistic mapping
+      roleId: s.roleId,
+      systemRole: selectedRole?.systemRole || 3, // Fallback to Cashier if not found
       storeId: s.storeId,
       isActive: s.active,
+      hiredAt: s.hiredAt,
+      tenantId: user?.tenantId,
       pin: '1234' // Default PIN for new staff
     };
 
@@ -114,16 +143,21 @@ export class StaffComponent implements OnInit {
       if (this.modalMode() === 'create') {
         await this.staffService.createStaff(dto);
       } else if (this.modalMode() === 'edit' && s.id) {
-        await this.staffService.updateStaff(s.id, dto);
+        await this.staffService.updateStaff(s.id, { ...dto, id: s.id });
       }
       this.closeModal();
       this.loadStaff();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save staff', error);
+      alert(`Error saving staff: ${error.error?.message || error.message || 'Unknown error'}`);
     }
   }
 
   getStoreName(storeId: string) {
     return this.stores().find(st => st.id === storeId)?.name || 'Unknown';
+  }
+
+  getRoleName(roleId: string) {
+    return this.roles().find(r => r.id === roleId)?.name || 'No Role';
   }
 }

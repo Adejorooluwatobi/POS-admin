@@ -7,114 +7,125 @@
     </div>
   }
 
-  <!-- KPI Row -->
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
-    <div class="card stat-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:18px;">₦</div>
-        <span class="badge badge-green">+14.2%</span>
-      </div>
-      <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">₦{{ formatNum(totalRevenue()) }}</div>
-      <div style="font-size:11px;color:var(--text2);">Today Revenue</div>
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading insights...</span>
     </div>
-
-    <div class="card stat-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:18px;">🧾</div>
-        <span class="badge badge-accent">+23</span>
-      </div>
-      <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ totalTx() }}</div>
-      <div style="font-size:11px;color:var(--text2);">Transactions</div>
-    </div>
-
-    <div class="card stat-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:18px;">🏪</div>
-        <span class="badge badge-amber">—</span>
-      </div>
-      <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ activeStores() }}</div>
-      <div style="font-size:11px;color:var(--text2);">Active Stores</div>
-    </div>
-
-    <div class="card stat-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-        <div style="font-size:18px;">📦</div>
-        <span class="badge badge-red">-1</span>
-      </div>
-      <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">3</div>
-      <div style="font-size:11px;color:var(--text2);">Low Stock Items</div>
-    </div>
-  </div>
-
-  <!-- Charts -->
-  <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px;">
-    <div class="card" style="padding:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-size:13px;font-weight:700;">Revenue — Last 7 Days</div>
-        <span class="badge badge-accent">Combined · All Stores</span>
-      </div>
-      <canvas #revChart height="100"></canvas>
-    </div>
-    <div class="card" style="padding:16px;">
-      <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Sales Mix</div>
-      <canvas #mixChart height="130"></canvas>
-    </div>
-  </div>
-
-  <!-- Bottom row -->
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-
-    <!-- Recent transactions -->
-    <div class="card" style="padding:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:12px;font-weight:700;">Recent Transactions</span>
-        <button class="btn btn-secondary btn-xs">See all</button>
-      </div>
-      @for (tx of dataService.transactions.slice(0, 6); track tx.id) {
-        <div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);">
-          <div style="width:28px;height:28px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;" class="mono" style="font-size:10px;color:var(--text3);">
-            {{ tx.method[0] }}
-          </div>
-          <div style="flex:1;">
-            <div class="mono" style="font-size:11px;font-weight:600;">{{ tx.id }}</div>
-            <div style="font-size:10px;color:var(--text2);">{{ tx.cashier }} · {{ tx.time }}</div>
-          </div>
-          <div style="text-align:right;">
-            <div class="mono" style="font-size:11px;font-weight:700;">₦{{ formatNum(tx.amount) }}</div>
-            <span class="badge" [ngClass]="tx.status === 'COMPLETED' ? 'badge-green' : 'badge-red'">{{ tx.status }}</span>
-          </div>
+  } @else {
+    <!-- KPI Row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+      <div class="card stat-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:18px;">₦</div>
         </div>
-      }
+        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">₦{{ formatNum(totalRevenue()) }}</div>
+        <div style="font-size:11px;color:var(--text2);">Total Revenue</div>
+      </div>
+
+      <div class="card stat-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:18px;">🧾</div>
+        </div>
+        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ totalTx() }}</div>
+        <div style="font-size:11px;color:var(--text2);">Transactions</div>
+      </div>
+
+      <div class="card stat-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:18px;">🏪</div>
+        </div>
+        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ activeStoresCount() }}</div>
+        <div style="font-size:11px;color:var(--text2);">Active Stores</div>
+      </div>
+
+      <div class="card stat-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:18px;">📦</div>
+        </div>
+        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">3</div>
+        <div style="font-size:11px;color:var(--text2);">Low Stock Items</div>
+      </div>
     </div>
 
-    <!-- Stores overview -->
-    <div class="card" style="padding:16px;">
-      <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Store Status</div>
-      @for (store of storeEntries; track store.key) {
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-            <div style="font-size:12px;font-weight:600;">{{ store.value.name }}</div>
-            <span class="badge" [ngClass]="store.value.active ? 'badge-green' : 'badge-red'">
-              {{ store.value.active ? 'LIVE' : 'DISABLED' }}
-            </span>
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:700;">Revenue Trend</div>
+          <span class="badge badge-accent">Combined · All Stores</span>
+        </div>
+        <div style="height:200px;">
+          <canvas #revChart></canvas>
+        </div>
+      </div>
+      <div class="card" style="padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Sales Mix</div>
+        <div style="height:200px;">
+          <canvas #mixChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <!-- Recent Status -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:12px;font-weight:700;">Operational Status</span>
+        </div>
+        <div style="display:grid;gap:10px;">
+          <div class="card" style="padding:12px;background:var(--surface2);border:none;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">SYSTEM STATUS</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);"></div>
+              <div style="font-size:13px;font-weight:600;">All Systems Operational</div>
+            </div>
           </div>
-          <div style="display:flex;gap:12px;" class="mono">
-            <div>
-              <div style="font-size:9px;color:var(--text3);">Revenue</div>
-              <div style="font-size:11px;font-weight:700;color:var(--green);">₦{{ (store.value.todayRevenue / 1000).toFixed(0) }}K</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--text3);">TX</div>
-              <div style="font-size:11px;font-weight:700;">{{ store.value.txCount }}</div>
-            </div>
-            <div>
-              <div style="font-size:9px;color:var(--text3);">Staff</div>
-              <div style="font-size:11px;font-weight:700;">{{ store.value.staff }}</div>
+          <div class="card" style="padding:12px;background:var(--surface2);border:none;">
+            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">SYNC STATUS</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);"></div>
+              <div style="font-size:13px;font-weight:600;">Last synced 2 mins ago</div>
             </div>
           </div>
         </div>
-      }
-    </div>
+      </div>
 
-  </div>
+      <!-- Stores overview -->
+      <div class="card" style="padding:16px;display:flex;flex-direction:column;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Store Status</div>
+        <div style="flex:1;overflow-y:auto;max-height:400px;padding-right:4px;">
+          @for (store of stores(); track store.id) {
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <div style="font-size:12px;font-weight:600;">{{ store.name }}</div>
+                <span class="badge" [ngClass]="store.active ? 'badge-green' : 'badge-red'">
+                  {{ store.active ? 'LIVE' : 'DISABLED' }}
+                </span>
+              </div>
+              <div style="display:flex;gap:12px;" class="mono">
+                <div>
+                  <div style="font-size:9px;color:var(--text3);">Revenue</div>
+                  <div style="font-size:11px;font-weight:700;color:var(--green);">₦{{ ((store.todayRevenue || 0) / 1000).toFixed(0) }}K</div>
+                </div>
+                <div>
+                  <div style="font-size:9px;color:var(--text3);">TX</div>
+                  <div style="font-size:11px;font-weight:700;">{{ store.txCount || 0 }}</div>
+                </div>
+                <div>
+                  <div style="font-size:9px;color:var(--text3);">Terminals</div>
+                  <div style="font-size:11px;font-weight:700;">{{ store.terminals || 0 }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

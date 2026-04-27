@@ -4,6 +4,7 @@ export interface Account {
   name: string;
   store: string | null;
   initials: string;
+  tenantId?: string | null;
 }
 
 export interface Store {
@@ -37,23 +38,33 @@ export interface Transaction {
 }
 
 export interface Product {
-  n: string;
-  e: string;
-  sku: string;
-  cat: string;
+  id?: string;
+  n: string; // Name
+  e: string; // Emoji/Icon
+  sku: string; // MasterSku
+  cat: string; // Category
   cost: number;
   price: number;
   tax: 'STANDARD' | 'ZERO' | 'EXEMPT' | 'REDUCED';
   status: 'ACTIVE' | 'INACTIVE';
+  brand?: string;
+  description?: string;
+  categoryId?: string;
+  weight?: number;
+  uom?: string;
 }
 
 export interface InventoryItem {
-  n: string;
-  e: string;
-  oh: number;
-  res: number;
-  ro: number;
+  id?: string;
+  n: string; // Product/Variant Name
+  e: string; // Icon
+  oh: number; // Quantity On Hand
+  res: number; // Quantity Reserved
+  ro: number; // Reorder Point
+  roQty?: number; // Reorder Quantity
   s: 'OK' | 'LOW' | 'OUT';
+  storeId?: string;
+  variantId?: string;
 }
 
 export interface Customer {
@@ -86,4 +97,79 @@ export interface Staff {
   active: boolean;
   sales: number;
   txCount: number;
+  hiredAt?: string;
+}
+
+export interface Role {
+  id?: string;
+  name: string;
+  description?: string;
+  permissions?: { [key: string]: boolean };
+  systemRole?: number;
+  isActive?: boolean;
+  createdAt?: string;
+}
+
+export interface Promotion {
+  id?: string;
+  name: string;
+  code: string;
+  discountType: 'PERCENT' | 'FIXED' | 'BOGO' | 'BUNDLE';
+  value: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  scope: 'PRODUCT' | 'CATEGORY' | 'CART';
+  targetId?: string; // ProductId or CategoryId
+}
+export interface Terminal {
+  id?: string;
+  terminalNo: string;
+  name: string;
+  ipAddress?: string;
+  lastSync?: string;
+  status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
+  storeId: string;
+}
+
+export interface TillSession {
+  id?: string;
+  terminalId: string;
+  staffId: string;
+  staffName?: string;
+  openTime: string;
+  closeTime?: string;
+  openBalance: number;
+  closeBalance?: number;
+  expectedBalance?: number;
+  actualBalance?: number;
+  status: 'OPEN' | 'CLOSED';
+}
+
+export interface Category {
+  id?: string;
+  name: string;
+  slug: string;
+  isActive?: boolean;
+  parentId?: string;
+}
+
+export interface GiftCard {
+  id?: string;
+  cardNumber: string;
+  balance: number;
+  initialValue: number;
+  expiresAt?: string;
+  isActive: boolean;
+  issuedAt: string;
+}
+
+export interface LoyaltyLedgerEntry {
+  id?: string;
+  customerId: string;
+  transactionId?: string;
+  delta: number;
+  reason: string;
+  balanceAfter: number;
+  createdAt: string;
 }

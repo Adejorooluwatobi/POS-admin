@@ -1,6 +1,7 @@
-import { Component, AfterViewInit, signal, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, AfterViewInit, signal, ElementRef, ViewChild, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
-import { DataService } from '../../services/data.service';
+import { StoreService } from '../../services/store.service';
+import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { Store } from '../../models/pos.models';
 import { Chart, registerables } from 'chart.js';
@@ -13,7 +14,7 @@ Chart.register(...registerables);
   imports: [CommonModule, NgClass],
   templateUrl: './dashboard.html'
 })
-export class DashboardComponent implements AfterViewInit, OnDestroy {
+export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('revChart') revChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mixChart') mixChartCanvas!: ElementRef<HTMLCanvasElement>;
 
@@ -22,22 +23,44 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
 
   public totalRevenue = signal<number>(0);
   public totalTx = signal<number>(0);
-  public activeStores = signal<number>(0);
-  public storeEntries: { key: string; value: Store }[] = [];
+  public activeStoresCount = signal<number>(0);
+  public stores = signal<Store[]>([]);
+  public isLoading = signal<boolean>(false);
 
   constructor(
-    public dataService: DataService,
+    private storeService: StoreService,
+    private transactionService: TransactionService,
     public authService: AuthService
-  ) {
-    this.calculateKpis();
-    this.storeEntries = Object.entries(this.dataService.stores).map(([key, value]) => ({ key, value }));
+  ) {}
+
+  ngOnInit() {
+    this.loadData();
   }
 
-  calculateKpis() {
-    const stores = Object.values(this.dataService.stores);
-    this.totalRevenue.set(stores.reduce((acc, s) => acc + s.todayRevenue, 0));
-    this.totalTx.set(stores.reduce((acc, s) => acc + s.txCount, 0));
-    this.activeStores.set(stores.filter(s => s.active).length);
+  async loadData() {
+    this.isLoading.set(true);
+    try {
+      const storesData = await this.storeService.getStores();
+      const storesList = storesData.items || storesData;
+      this.stores.set(storesList);
+      
+      this.activeStoresCount.set(storesList.filter((s: any) => s.active || s.isActive).length);
+      this.totalRevenue.set(storesList.reduce((acc: number, s: any) => acc + (s.todayRevenue || 0), 0));
+      this.totalTx.set(storesList.reduce((acc: number, s: any) => acc + (s.txCount || 0), 0));
+      
+      // If totals are 0, maybe we need to fetch transactions to calculate them
+      if (this.totalTx() === 0) {
+        const txData = await this.transactionService.getTransactions(1, 100);
+        const txList = txData.items || txData;
+        this.totalTx.set(txList.length);
+        this.totalRevenue.set(txList.reduce((acc: number, t: any) => acc + (t.totalAmount || 0), 0));
+      }
+    } catch (error) {
+      console.error('Failed to load dashboard data', error);
+    } finally {
+      this.isLoading.set(false);
+      this.renderCharts();
+    }
   }
 
   formatNum(n: number): string {
@@ -45,7 +68,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    this.renderCharts();
+    // Charts are rendered after data is loaded in loadData()
   }
 
   renderCharts() {
@@ -54,13 +77,16 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
     const gridColor = isDark ? '#1e2d40' : '#e8edf3';
     const tickColor = isDark ? '#3d5870' : '#94a3b8';
 
+    if (this.revChart) this.revChart.destroy();
+    if (this.mixChart) this.mixChart.destroy();
+
     if (this.revChartCanvas?.nativeElement) {
       this.revChart = new Chart(this.revChartCanvas.nativeElement, {
         type: 'bar',
         data: {
           labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
           datasets: [{
-            data: [620000, 580000, 710000, 650000, 820000, 980000, 842500],
+            data: [620000, 580000, 710000, 650000, 820000, 980000, this.totalRevenue()],
             backgroundColor: accentColor + 'cc',
             borderRadius: 5,
             borderSkipped: false
@@ -68,6 +94,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
             x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
@@ -91,6 +118,7 @@ export class DashboardComponent implements AfterViewInit, OnDestroy {
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { position: 'bottom', labels: { color: tickColor, font: { size: 10 }, boxWidth: 9, padding: 10 } } },
           cutout: '65%'
         }

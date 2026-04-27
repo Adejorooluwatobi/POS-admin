@@ -1,0 +1,114 @@
+<div class="fade-up">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Gift Cards</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px;">Issue and manage store credit and gift cards</div>
+    </div>
+    <button class="btn btn-primary" (click)="openIssueModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+      <span style="font-size:18px;margin-right:6px;">+</span> Issue New Card
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading cards...</span>
+    </div>
+  } @else {
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:20px;">
+      @for (gc of giftCards(); track gc.id) {
+        <div class="card premium-card" style="padding:20px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1px solid var(--border);">
+          <div style="position:absolute;top:0;right:0;padding:15px;opacity:0.05;font-size:60px;">💳</div>
+          
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative;z-index:1;">
+            <div>
+              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">Card Number</div>
+              <div class="mono" style="font-size:16px;font-weight:800;color:var(--text);">{{ gc.cardNumber }}</div>
+            </div>
+            <span class="badge" [ngClass]="gc.isActive ? 'badge-green' : 'badge-red'">{{ gc.isActive ? 'ACTIVE' : 'EXPIRED' }}</span>
+          </div>
+
+          <div style="margin-bottom:20px;position:relative;z-index:1;">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">Current Balance</div>
+            <div style="font-size:28px;font-weight:900;color:var(--accent);">₦{{ gc.balance.toLocaleString() }}</div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);position:relative;z-index:1;">
+            <div>
+              <div style="color:var(--text3);margin-bottom:2px;">Issued</div>
+              <div>{{ gc.issuedAt | date:'mediumDate' }}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:var(--text3);margin-bottom:2px;">Expires</div>
+              <div>{{ gc.expiresAt || 'Never' }}</div>
+            </div>
+          </div>
+        </div>
+      }
+      @if (giftCards().length === 0) {
+        <div class="card" style="padding:60px;text-align:center;grid-column:1/-1;color:var(--text3);">
+          <div style="font-size:48px;margin-bottom:16px;">💳</div>
+          <div style="font-size:18px;font-weight:700;color:var(--text);">No Gift Cards Issued</div>
+          <div style="font-size:12px;margin-top:4px;">Issued cards will appear here for management and tracking.</div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ISSUE MODAL -->
+@if (isModalOpen()) {
+  <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:450px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+        <div>
+          <div style="font-size:18px;font-weight:800;">Issue Gift Card</div>
+          <div style="font-size:11px;color:var(--text3);">Generate a new store credit card</div>
+        </div>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+      </div>
+
+      <div style="padding:24px;display:grid;gap:20px;">
+        <div>
+          <label class="lbl">Generated Card Number</label>
+          <div class="mono" style="padding:12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);font-weight:800;font-size:18px;text-align:center;letter-spacing:0.1em;color:var(--accent);">
+            {{ newCard().cardNumber }}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+          <div>
+            <label class="lbl">Initial Amount (₦)</label>
+            <input type="number" class="inp" [(ngModel)]="newCard().initialValue" placeholder="0.00">
+          </div>
+          <div>
+            <label class="lbl">Security PIN</label>
+            <input class="inp mono" [(ngModel)]="newCard().pin" placeholder="4 digits">
+          </div>
+        </div>
+
+        <div>
+          <label class="lbl">Expiration Date</label>
+          <input type="date" class="inp" [(ngModel)]="newCard().expiresAt">
+        </div>
+
+        <div style="background:var(--accent-d);border-radius:10px;padding:12px;border:1px solid var(--accent);display:flex;gap:12px;align-items:center;">
+          <div style="font-size:20px;">💡</div>
+          <div style="font-size:11px;line-height:1.4;color:var(--text);">This card will be active immediately after issuance and can be used at any terminal within your organization.</div>
+        </div>
+      </div>
+
+      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="issueCard()" [disabled]="newCard().initialValue <= 0">Issue Card</button>
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+  .lbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .premium-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,.15); border-color: var(--accent); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

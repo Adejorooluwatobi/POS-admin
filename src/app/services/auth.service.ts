@@ -52,7 +52,8 @@ export class AuthService {
         role: mappedRole,
         name: response.fullName,
         store: null,
-        initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U'
+        initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U',
+        tenantId: response.tenantId
       };
 
       this.currentUserSignal.set(acct);

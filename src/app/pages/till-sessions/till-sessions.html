@@ -1,0 +1,81 @@
+<div class="fade-up">
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Till Sessions</div>
+      <div style="font-size:12px;color:var(--text3);">Monitor active shifts, cash floats and session history</div>
+    </div>
+    <button class="btn btn-secondary" (click)="loadSessions()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+      Refresh Sessions
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading sessions...</span>
+    </div>
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>TERMINAL</th>
+              <th>STAFF</th>
+              <th>OPENED AT</th>
+              <th style="text-align:right;">OPEN FLOAT</th>
+              <th style="text-align:right;">CURRENT/CLOSE</th>
+              <th style="text-align:right;">VARIANCE</th>
+              <th>STATUS</th>
+              <th style="text-align:right;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of sessions(); track s.id) {
+              <tr>
+                <td>
+                  <div style="font-weight:600;font-size:13px;">{{ getTerminalName(s.terminalId) }}</div>
+                </td>
+                <td>
+                  <div style="font-size:13px;">{{ getStaffName(s.staffId) }}</div>
+                </td>
+                <td style="font-size:11px;color:var(--text2);">
+                  {{ s.openTime | date:'MMM d, HH:mm' }}
+                </td>
+                <td class="mono" style="text-align:right;">₦{{ s.openBalance.toLocaleString() }}</td>
+                <td class="mono" style="text-align:right;font-weight:700;">
+                  ₦{{ (s.closeBalance || 0).toLocaleString() }}
+                </td>
+                <td class="mono" style="text-align:right;" [style.color]="(s.actualBalance || 0) - (s.expectedBalance || 0) < 0 ? 'var(--red)' : 'var(--green)'">
+                  {{ (s.actualBalance || 0) - (s.expectedBalance || 0) !== 0 ? '₦' + ((s.actualBalance || 0) - (s.expectedBalance || 0)).toLocaleString() : '—' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="s.status === 'OPEN' ? 'badge-green' : 'badge-dim'">
+                    {{ s.status }}
+                  </span>
+                </td>
+                <td style="text-align:right;">
+                  <button class="btn btn-secondary btn-xs">View Log</button>
+                </td>
+              </tr>
+            }
+            @if (sessions().length === 0) {
+              <tr>
+                <td colspan="8" style="text-align:center;padding:40px;color:var(--text3);">
+                  No active or recent till sessions found.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.3s ease-out forwards; }
+</style>
