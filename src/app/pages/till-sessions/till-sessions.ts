@@ -17,6 +17,8 @@ export class TillSessionsComponent implements OnInit {
   public terminals = signal<Terminal[]>([]);
   public staff = signal<Staff[]>([]);
   public isLoading = signal<boolean>(false);
+  public isModalOpen = signal<boolean>(false);
+  public selectedSession = signal<any>(null);
 
   constructor(
     private tillService: TillService,
@@ -67,5 +69,23 @@ export class TillSessionsComponent implements OnInit {
   getStaffName(staffId: string) {
     const s = this.staff().find(st => st.id === staffId);
     return s ? `${s.firstName} ${s.lastName}` : 'Unknown Staff';
+  }
+
+  async viewDetails(session: TillSession) {
+    if (!session.id) return;
+    this.selectedSession.set(session);
+    this.isModalOpen.set(true);
+
+    try {
+      const details = await this.tillService.getTillSessionById(session.id);
+      this.selectedSession.set({ ...session, ...details });
+    } catch (error) {
+      console.error('Failed to fetch session details', error);
+    }
+  }
+
+  closeModal() {
+    this.isModalOpen.set(false);
+    this.selectedSession.set(null);
   }
 }

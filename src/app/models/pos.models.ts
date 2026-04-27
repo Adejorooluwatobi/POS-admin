@@ -65,6 +65,7 @@ export interface InventoryItem {
   s: 'OK' | 'LOW' | 'OUT';
   storeId?: string;
   variantId?: string;
+  reason?: string;
 }
 
 export interface Customer {
@@ -97,7 +98,9 @@ export interface Staff {
   active: boolean;
   sales: number;
   txCount: number;
+  pin?: string;
   hiredAt?: string;
+  password?: string;
 }
 
 export interface Role {

@@ -12,6 +12,8 @@ import { Transaction } from '../../models/pos.models';
 export class TransactionsComponent implements OnInit {
   public transactions = signal<Transaction[]>([]);
   public isLoading = signal<boolean>(false);
+  public isModalOpen = signal<boolean>(false);
+  public selectedTx = signal<any>(null);
 
   constructor(private transactionService: TransactionService) {}
 
@@ -43,7 +45,21 @@ export class TransactionsComponent implements OnInit {
     }
   }
 
-  viewReceipt(tx: Transaction) {
-    console.log('View receipt for', tx.id);
+  async viewReceipt(tx: Transaction) {
+    if (!tx.id) return;
+    this.selectedTx.set(tx);
+    this.isModalOpen.set(true);
+    
+    try {
+      const details = await this.transactionService.getTransactionById(tx.id);
+      this.selectedTx.set({ ...tx, details });
+    } catch (error) {
+      console.error('Failed to fetch transaction details', error);
+    }
+  }
+
+  closeModal() {
+    this.isModalOpen.set(false);
+    this.selectedTx.set(null);
   }
 }

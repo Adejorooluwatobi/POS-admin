@@ -56,7 +56,7 @@
                   </span>
                 </td>
                 <td style="text-align:right;">
-                  <button class="btn btn-secondary btn-xs">View Log</button>
+                  <button class="btn btn-secondary btn-xs" (click)="viewDetails(s)">View Details</button>
                 </td>
               </tr>
             }
@@ -69,6 +69,72 @@
             }
           </tbody>
         </table>
+      </div>
+    </div>
+  }
+  <!-- SESSION DETAILS MODAL -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+          <div>
+            <div style="font-size:18px;font-weight:800;">Session Summary</div>
+            <div style="font-size:11px;color:var(--text3);">#{{ selectedSession()?.id }}</div>
+          </div>
+          <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="padding:24px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+            <div>
+              <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Terminal</label>
+              <div style="font-weight:600;">{{ getTerminalName(selectedSession()?.terminalId) }}</div>
+            </div>
+            <div>
+              <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Cashier</label>
+              <div style="font-weight:600;">{{ getStaffName(selectedSession()?.staffId) }}</div>
+            </div>
+            <div>
+              <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Opened At</label>
+              <div style="font-size:13px;">{{ selectedSession()?.openTime | date:'medium' }}</div>
+            </div>
+            <div>
+              <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Closed At</label>
+              <div style="font-size:13px;">{{ selectedSession()?.closeTime ? (selectedSession()?.closeTime | date:'medium') : 'Active' }}</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding:16px;background:var(--surface2);">
+            <div style="display:grid;gap:12px;">
+              <div style="display:flex;justify-content:space-between;">
+                <span style="font-size:13px;color:var(--text2);">Opening Float</span>
+                <span class="mono">₦{{ selectedSession()?.openBalance?.toLocaleString() }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="font-size:13px;color:var(--text2);">Expected Cash</span>
+                <span class="mono">₦{{ selectedSession()?.expectedBalance?.toLocaleString() }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;">
+                <span style="font-weight:700;">Actual Cash Count</span>
+                <span class="mono" style="font-weight:800;">₦{{ selectedSession()?.closeBalance?.toLocaleString() }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (selectedSession()?.status === 'CLOSED') {
+            <div style="margin-top:20px;padding:12px;border-radius:10px;text-align:center;background:rgba(0,0,0,0.05);">
+              <div style="font-size:11px;text-transform:uppercase;font-weight:800;color:var(--text3);">Variance</div>
+              <div style="font-size:20px;font-weight:900;" [style.color]="((selectedSession()?.closeBalance || 0) - (selectedSession()?.expectedBalance || 0)) < 0 ? 'var(--red)' : 'var(--green)'">
+                ₦{{ ((selectedSession()?.closeBalance || 0) - (selectedSession()?.expectedBalance || 0)).toLocaleString() }}
+              </div>
+            </div>
+          }
+        </div>
+
+        <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+          <button class="btn btn-secondary" (click)="closeModal()">Close</button>
+          <button class="btn btn-primary">X-Report</button>
+        </div>
       </div>
     </div>
   }

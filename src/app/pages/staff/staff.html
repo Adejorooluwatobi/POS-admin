@@ -127,9 +127,20 @@
               </select>
             </div>
 
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="label">Hired At</label>
+                <input type="date" class="inp" [(ngModel)]="selectedStaff().hiredAt" [disabled]="modalMode() === 'view'">
+              </div>
+              <div>
+                <label class="label">Login PIN</label>
+                <input type="password" class="inp" [(ngModel)]="selectedStaff().pin" placeholder="Enter new 4-digit PIN" maxlength="4" [disabled]="modalMode() === 'view'">
+              </div>
+            </div>
+
             <div>
-              <label class="label">Hired At</label>
-              <input type="date" class="inp" [(ngModel)]="selectedStaff().hiredAt" [disabled]="modalMode() === 'view'">
+              <label class="label">Portal Password <span style="text-transform:none;color:var(--text3);font-weight:400;">(Optional)</span></label>
+              <input type="password" class="inp" [(ngModel)]="selectedStaff().password" placeholder="Enter new password" [disabled]="modalMode() === 'view'">
             </div>
 
             <div style="display:flex;align-items:center;gap:12px;padding-top:10px;">

@@ -17,12 +17,13 @@ export class InventoryComponent implements OnInit {
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
-  public selectedItem = signal<Partial<InventoryItem>>({
+  public selectedItem = signal<any>({
     n: '',
     oh: 0,
     res: 0,
     ro: 0,
-    roQty: 0
+    roQty: 0,
+    reason: ''
   });
 
   constructor(
@@ -74,7 +75,8 @@ export class InventoryComponent implements OnInit {
       quantityOnHand: item.oh,
       quantityReserved: item.res,
       reorderPoint: item.ro,
-      reorderQty: item.roQty
+      reorderQty: item.roQty,
+      reason: item.reason
     };
 
     try {

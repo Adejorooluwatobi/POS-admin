@@ -30,7 +30,8 @@ export class StaffComponent implements OnInit {
     no: '',
     roleId: '',
     active: true,
-    hiredAt: new Date().toISOString().split('T')[0]
+    hiredAt: new Date().toISOString().split('T')[0],
+    pin: ''
   });
 
   constructor(
@@ -97,7 +98,9 @@ export class StaffComponent implements OnInit {
       roleId: '',
       active: true,
       storeId: '',
-      hiredAt: new Date().toISOString().split('T')[0]
+      hiredAt: new Date().toISOString().split('T')[0],
+      pin: '',
+      password: ''
     });
     this.isModalOpen.set(true);
   }
@@ -136,7 +139,8 @@ export class StaffComponent implements OnInit {
       isActive: s.active,
       hiredAt: s.hiredAt,
       tenantId: user?.tenantId,
-      pin: '1234' // Default PIN for new staff
+      pin: s.pin || (this.modalMode() === 'create' ? '1234' : undefined),
+      password: s.password || undefined
     };
 
     try {
