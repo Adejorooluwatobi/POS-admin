@@ -34,7 +34,31 @@ export class PromotionsComponent implements OnInit {
     private promotionService: PromotionService,
     private authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+  }
+
+  async togglePromotionStatus(promo: Promotion) {
+    if (!promo.id) return;
+    try {
+      await this.promotionService.updatePromotion(promo.id, { ...promo, isActive: !promo.isActive });
+      this.loadPromotions();
+    } catch (error) {
+      console.error('Failed to toggle promotion status', error);
+    }
+  }
+
+  async deletePromotion(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this promotion?')) return;
+
+    try {
+      await this.promotionService.deletePromotion(id);
+      this.loadPromotions();
+    } catch (error: any) {
+      console.error('Failed to delete promotion', error);
+      alert(`Error deleting promotion: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 
   ngOnInit() {

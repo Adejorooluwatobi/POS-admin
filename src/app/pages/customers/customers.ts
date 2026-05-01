@@ -85,19 +85,43 @@ export class CustomersComponent implements OnInit {
       lastName: c.lastName,
       email: c.e,
       phone: c.ph,
-      loyaltyCardNo: c.loy
+      loyaltyCardNo: c.loy,
+      isActive: c.active !== undefined ? c.active : true
     };
 
     try {
       if (this.modalMode() === 'create') {
         await this.customerService.createCustomer(dto);
       } else if (this.modalMode() === 'edit' && c.id) {
-        await this.customerService.updateCustomer(c.id, { ...dto, id: c.id, isActive: true });
+        await this.customerService.updateCustomer(c.id, { ...dto, id: c.id });
       }
       this.closeModal();
       this.loadCustomers();
     } catch (error) {
       console.error('Failed to save customer', error);
+    }
+  }
+
+  async toggleCustomerStatus(customer: Customer) {
+    if (!customer.id) return;
+    try {
+      await this.customerService.updateCustomer(customer.id, { ...customer, isActive: !customer.active });
+      this.loadCustomers();
+    } catch (error) {
+      console.error('Failed to toggle customer status', error);
+    }
+  }
+
+  async deleteCustomer(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this customer?')) return;
+
+    try {
+      await this.customerService.deleteCustomer(id);
+      this.loadCustomers();
+    } catch (error: any) {
+      console.error('Failed to delete customer', error);
+      alert(`Error deleting customer: ${error.error?.message || error.message || 'Unknown error'}`);
     }
   }
 }

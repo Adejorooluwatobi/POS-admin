@@ -29,7 +29,31 @@ export class CategoriesComponent implements OnInit {
     private categoryService: CategoryService,
     private authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+  }
+
+  async toggleCategoryStatus(cat: Category) {
+    if (!cat.id) return;
+    try {
+      await this.categoryService.updateCategory(cat.id, { ...cat, isActive: !cat.isActive });
+      this.loadCategories();
+    } catch (error) {
+      console.error('Failed to toggle category status', error);
+    }
+  }
+
+  async deleteCategory(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this category? Products in this category may be affected.')) return;
+
+    try {
+      await this.categoryService.deleteCategory(id);
+      this.loadCategories();
+    } catch (error: any) {
+      console.error('Failed to delete category', error);
+      alert(`Error deleting category: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 
   ngOnInit() {

@@ -30,7 +30,21 @@ export class StoresComponent implements OnInit {
   });
 
   constructor(private storeService: StoreService, private authService: AuthService) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+  }
+
+  async deleteStore(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this store? All historical data for this store will be affected.')) return;
+
+    try {
+      await this.storeService.deleteStore(id);
+      this.loadStores();
+    } catch (error: any) {
+      console.error('Failed to delete store', error);
+      alert(`Error deleting store: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 
   ngOnInit() {

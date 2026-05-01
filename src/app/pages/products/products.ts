@@ -38,7 +38,21 @@ export class ProductsComponent implements OnInit {
     private categoryService: CategoryService,
     public authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+  }
+
+  async deleteProduct(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      await this.productService.deleteProduct(id);
+      this.loadProducts();
+    } catch (error: any) {
+      console.error('Failed to delete product', error);
+      alert(`Error deleting product: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 
   async ngOnInit() {

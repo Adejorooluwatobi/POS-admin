@@ -71,4 +71,27 @@ export class GiftCardsComponent implements OnInit {
       alert('Error issuing gift card');
     }
   }
+
+  async toggleCardStatus(card: GiftCard) {
+    if (!card.id) return;
+    try {
+      await this.giftCardService.updateGiftCard(card.id, { id: card.id, isActive: !card.isActive });
+      this.loadGiftCards();
+    } catch (error) {
+      console.error('Failed to toggle card status', error);
+    }
+  }
+
+  async deleteCard(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this gift card?')) return;
+
+    try {
+      await this.giftCardService.deleteGiftCard(id);
+      this.loadGiftCards();
+    } catch (error: any) {
+      console.error('Failed to delete gift card', error);
+      alert(`Error deleting gift card: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
+  }
 }

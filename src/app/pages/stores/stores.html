@@ -63,6 +63,11 @@
                       style="flex:1;justify-content:center;" (click)="$event.stopPropagation(); toggleStoreStatus(s)">
                 {{ s.active ? '⊘ Disable' : '✓ Enable' }}
               </button>
+              @if (isOwner()) {
+                <button class="btn btn-danger btn-xs" (click)="$event.stopPropagation(); deleteStore(s.id)" style="background:var(--red);border-color:var(--red);padding:0 8px;min-height:32px;">
+                  🗑
+                </button>
+              }
             </div>
           </div>
         }

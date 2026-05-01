@@ -42,9 +42,11 @@ export class AuthService {
         return 'Use Store Manager role for this account';
       }
 
-      let mappedRole: any = 'SUPER_ADMIN';
-      if (role === 'StoreManager') mappedRole = 'STORE_MANAGER';
-      else if (role === 'Cashier') mappedRole = 'CASHIER';
+      let mappedRole: any = 'CASHIER';
+      if (role === 'SuperAdmin') mappedRole = 'SUPER_ADMIN';
+      else if (role === 'TenantAdmin') mappedRole = 'TENANT_ADMIN';
+      else if (role === 'StoreManager') mappedRole = 'STORE_MANAGER';
+      else if (role === 'Manager') mappedRole = 'MANAGER';
       else if (role === 'Supervisor') mappedRole = 'SUPERVISOR';
 
       const acct: Account = {

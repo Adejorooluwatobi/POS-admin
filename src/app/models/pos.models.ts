@@ -1,6 +1,6 @@
 export interface Account {
   pass: string;
-  role: 'SUPER_ADMIN' | 'STORE_MANAGER' | 'CASHIER' | 'SUPERVISOR';
+  role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'STORE_MANAGER' | 'MANAGER' | 'CASHIER' | 'SUPERVISOR';
   name: string;
   store: string | null;
   initials: string;

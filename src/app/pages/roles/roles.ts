@@ -29,6 +29,7 @@ export class RolesComponent implements OnInit {
 
   public systemRoles = [
     { id: 2, name: 'Store Manager', icon: '👔' },
+    { id: 5, name: 'Manager', icon: '💼' },
     { id: 4, name: 'Supervisor', icon: '🕵️' },
     { id: 3, name: 'Cashier', icon: '🛒' }
   ];
@@ -43,7 +44,31 @@ export class RolesComponent implements OnInit {
     private roleService: RoleService,
     private authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+  }
+
+  async toggleRoleStatus(role: Role) {
+    if (!role.id) return;
+    try {
+      await this.roleService.updateRole(role.id, { ...role, isActive: !role.isActive });
+      this.loadRoles();
+    } catch (error) {
+      console.error('Failed to toggle role status', error);
+    }
+  }
+
+  async deleteRole(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this role?')) return;
+
+    try {
+      await this.roleService.deleteRole(id);
+      this.loadRoles();
+    } catch (error: any) {
+      console.error('Failed to delete role', error);
+      alert(`Error deleting role: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 
   ngOnInit() {

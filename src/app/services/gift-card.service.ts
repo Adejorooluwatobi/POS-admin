@@ -27,4 +27,12 @@ export class GiftCardService {
   async redeemGiftCard(dto: any): Promise<any> {
     return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/redeem`, dto));
   }
+
+  async updateGiftCard(id: string, dto: any): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${this.apiUrl}/${id}`, dto));
+  }
+
+  async deleteGiftCard(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
 }

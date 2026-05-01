@@ -18,6 +18,7 @@ export class StaffComponent implements OnInit {
   public stores = signal<Store[]>([]);
   public roles = signal<Role[]>([]);
   public isOwner = signal<boolean>(false);
+  public canDelete = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
 
   // Modal State
@@ -40,7 +41,9 @@ export class StaffComponent implements OnInit {
     private roleService: RoleService,
     private authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+    this.canDelete.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
   }
 
   ngOnInit() {
@@ -190,5 +193,18 @@ export class StaffComponent implements OnInit {
 
   getRoleName(roleId: string) {
     return this.roles().find(r => r.id === roleId)?.name || 'No Role';
+  }
+
+  async deleteStaff(id: string | undefined) {
+    if (!id) return;
+    if (!confirm('Are you sure you want to delete this staff member? This action cannot be undone.')) return;
+
+    try {
+      await this.staffService.deleteStaff(id);
+      this.loadStaff();
+    } catch (error: any) {
+      console.error('Failed to delete staff', error);
+      alert(`Error deleting staff: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
   }
 }
