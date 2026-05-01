@@ -22,12 +22,16 @@ export class TerminalsComponent implements OnInit {
   public isModalOpen = signal<boolean>(false);
   public modalMode = signal<'create' | 'edit' | 'view'>('create');
   public selectedTerminal = signal<Partial<Terminal>>({
-    terminalNo: '',
     name: '',
     ipAddress: '',
     status: 'ONLINE',
     storeId: ''
   });
+
+  // Pairing Modal State
+  public showPairingCode = signal<boolean>(false);
+  public latestPairingCode = signal<string>('');
+  public latestTerminalName = signal<string>('');
 
   constructor(
     private terminalService: TerminalService,
@@ -66,12 +70,17 @@ export class TerminalsComponent implements OnInit {
   openCreateModal() {
     this.modalMode.set('create');
     this.selectedTerminal.set({
-      terminalNo: '',
       name: '',
       ipAddress: '',
       status: 'ONLINE',
       storeId: ''
     });
+    this.isModalOpen.set(true);
+  }
+
+  openViewModal(terminal: Terminal) {
+    this.modalMode.set('view');
+    this.selectedTerminal.set({ ...terminal });
     this.isModalOpen.set(true);
   }
 
@@ -84,18 +93,30 @@ export class TerminalsComponent implements OnInit {
   closeModal() {
     this.isModalOpen.set(false);
   }
+  
+  closePairingModal() {
+    this.showPairingCode.set(false);
+  }
 
   async saveTerminal() {
     const t = this.selectedTerminal();
-    const user = this.authService.currentUser();
     const payload = {
-      ...t,
-      tenantId: user?.tenantId
+      label: t.name,
+      ipAddress: t.ipAddress,
+      status: t.status,
+      storeId: t.storeId
     };
 
     try {
       if (this.modalMode() === 'create') {
-        await this.terminalService.createTerminal(payload);
+        const response = await this.terminalService.createTerminal(payload);
+        
+        // Show the pairing code to the admin
+        if (response && response.pairingCode) {
+          this.latestPairingCode.set(response.pairingCode);
+          this.latestTerminalName.set(response.label || 'New Terminal');
+          this.showPairingCode.set(true);
+        }
       } else if (this.modalMode() === 'edit' && t.id) {
         await this.terminalService.updateTerminal(t.id, payload);
       }

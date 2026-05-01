@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StaffService } from '../../services/staff.service';
@@ -20,6 +20,33 @@ export class StaffComponent implements OnInit {
   public isOwner = signal<boolean>(false);
   public canDelete = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
+  public currentUser = signal<any>(null);
+
+  public filteredRoles = computed(() => {
+    const roles = this.roles();
+    const user = this.currentUser();
+    if (!user) return [];
+
+    // SUPER_ADMIN can create everything
+    if (user.role === 'SUPER_ADMIN') return roles;
+
+    // TENANT_ADMIN can create everything in tenant except SuperAdmin (0)
+    if (user.role === 'TENANT_ADMIN') {
+      return roles.filter(r => r.systemRole !== 0);
+    }
+
+    // MANAGER (General Manager) can create Store Manager (2), Cashier (3), Supervisor (4)
+    if (user.role === 'MANAGER') {
+      return roles.filter(r => r.systemRole === 2 || r.systemRole === 3 || r.systemRole === 4);
+    }
+
+    // STORE_MANAGER can create Supervisor (4), Cashier (3)
+    if (user.role === 'STORE_MANAGER') {
+      return roles.filter(r => r.systemRole === 3 || r.systemRole === 4);
+    }
+
+    return [];
+  });
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -42,6 +69,7 @@ export class StaffComponent implements OnInit {
     private authService: AuthService
   ) {
     const user = this.authService.currentUser();
+    this.currentUser.set(user);
     this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
     this.canDelete.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
   }
@@ -57,7 +85,15 @@ export class StaffComponent implements OnInit {
     try {
       const data = await this.staffService.getStaff();
       const items = data.items || data;
-      this.staff.set(items.map((s: any) => ({
+      const user = this.currentUser();
+
+      let filteredItems = items;
+      if (user && (user.role === 'CASHIER' || user.role === 'SUPERVISOR')) {
+        // Lower roles only see themselves. user.sub is usually the staff ID.
+        filteredItems = items.filter((s: any) => s.id === user.sub || s.email === user.email);
+      }
+
+      this.staff.set(filteredItems.map((s: any) => ({
         ...s,
         n: `${s.firstName} ${s.lastName}`,
         no: s.employeeNo,
@@ -103,7 +139,7 @@ export class StaffComponent implements OnInit {
       no: '',
       roleId: '',
       active: true,
-      storeId: '',
+      storeId: this.currentUser()?.storeId || '', // Auto-fill if user belongs to a store
       hiredAt: new Date().toISOString().split('T')[0],
       pin: '',
       password: ''

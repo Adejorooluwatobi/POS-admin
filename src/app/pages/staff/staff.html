@@ -2,12 +2,14 @@
   <!-- Header with Action -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Staff Members</div>
-      <div style="font-size:12px;color:var(--text3);">Manage employees, roles and store assignments</div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">{{ (currentUser()?.role === 'CASHIER' || currentUser()?.role === 'SUPERVISOR') ? 'My Profile' : 'Staff Members' }}</div>
+      <div style="font-size:12px;color:var(--text3);">{{ (currentUser()?.role === 'CASHIER' || currentUser()?.role === 'SUPERVISOR') ? 'View and update your personal information' : 'Manage employees, roles and store assignments' }}</div>
     </div>
-    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      <span style="font-size:18px;margin-right:6px;">+</span> Add Staff
-    </button>
+    @if (currentUser()?.role !== 'CASHIER' && currentUser()?.role !== 'SUPERVISOR') {
+      <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+        <span style="font-size:18px;margin-right:6px;">+</span> Add Staff
+      </button>
+    }
   </div>
 
   @if (isLoading()) {
@@ -79,7 +81,7 @@
         <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;">
           <div>
             <div style="font-size:18px;font-weight:800;">
-              {{ modalMode() === 'create' ? 'Add New Staff' : modalMode() === 'edit' ? 'Edit Staff' : 'Staff Details' }}
+              {{ modalMode() === 'create' ? 'Add New Staff' : (selectedStaff().id === currentUser()?.sub) ? 'My Profile' : modalMode() === 'edit' ? 'Edit Staff' : 'Staff Details' }}
             </div>
             <div style="font-size:11px;color:var(--text3);">Configure employee details and permissions</div>
           </div>
@@ -113,7 +115,7 @@
                 <label class="label">Role</label>
                 <select class="inp" [(ngModel)]="selectedStaff().roleId" [disabled]="modalMode() === 'view'">
                   <option value="">Select a Role</option>
-                  @for (r of roles(); track r.id) {
+                  @for (r of filteredRoles(); track r.id) {
                     <option [value]="r.id">{{ r.name }}</option>
                   }
                 </select>
@@ -122,7 +124,7 @@
 
             <div>
               <label class="label">Assigned Store</label>
-              <select class="inp" [(ngModel)]="selectedStaff().storeId" [disabled]="modalMode() === 'view'">
+              <select class="inp" [(ngModel)]="selectedStaff().storeId" [disabled]="modalMode() === 'view' || (modalMode() === 'create' && !!currentUser()?.storeId)">
                 <option value="">Select a Store</option>
                 @for (st of stores(); track st.id) {
                   <option [value]="st.id">{{ st.name }}</option>
