@@ -1,4 +1,6 @@
 export interface Account {
+  sub: string;
+  email: string;
   pass: string;
   role: 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'STORE_MANAGER' | 'MANAGER' | 'CASHIER' | 'SUPERVISOR';
   name: string;
@@ -132,13 +134,15 @@ export interface Promotion {
   targetId?: string; // ProductId or CategoryId
 }
 export interface Terminal {
-  id?: string;
-  terminalNo: string;
+  id: string;
+  terminalCode: string;
   name: string;
-  ipAddress?: string;
-  lastSync?: string;
-  status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
   storeId: string;
+  ipAddress?: string;
+  status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
+  pairingCode?: string;
+  lastPingAt?: Date;
+  createdAt: Date;
 }
 
 export interface TillSession {

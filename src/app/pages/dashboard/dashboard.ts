@@ -40,20 +40,36 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   async loadData() {
     this.isLoading.set(true);
     try {
+      const user = this.authService.currentUser();
+      const role = user?.role;
+
       const storesData = await this.storeService.getStores();
       const storesList = storesData.items || storesData;
       this.stores.set(storesList);
       
-      this.activeStoresCount.set(storesList.filter((s: any) => s.active || s.isActive).length);
-      this.totalRevenue.set(storesList.reduce((acc: number, s: any) => acc + (s.todayRevenue || 0), 0));
-      this.totalTx.set(storesList.reduce((acc: number, s: any) => acc + (s.txCount || 0), 0));
-      
-      // If totals are 0, maybe we need to fetch transactions to calculate them
-      if (this.totalTx() === 0) {
-        const txData = await this.transactionService.getTransactions(1, 100);
+      if (role === 'CASHIER' || role === 'SUPERVISOR') {
+        // PERSONAL VIEW: Only see own sales
+        const txData = await this.transactionService.getTransactions(1, 1000);
         const txList = txData.items || txData;
-        this.totalTx.set(txList.length);
-        this.totalRevenue.set(txList.reduce((acc: number, t: any) => acc + (t.totalAmount || 0), 0));
+        
+        // Filter by name or ID
+        const myTx = txList.filter((t: any) => t.cashier === user?.name || t.cashierId === user?.sub);
+        
+        this.totalTx.set(myTx.length);
+        this.totalRevenue.set(myTx.reduce((acc: number, t: any) => acc + (t.grandTotal || t.totalAmount || 0), 0));
+        this.activeStoresCount.set(1);
+      } else {
+        // ADMIN/MANAGER VIEW: See store/tenant totals
+        this.activeStoresCount.set(storesList.filter((s: any) => s.active || s.isActive).length);
+        this.totalRevenue.set(storesList.reduce((acc: number, s: any) => acc + (s.todayRevenue || 0), 0));
+        this.totalTx.set(storesList.reduce((acc: number, s: any) => acc + (s.txCount || 0), 0));
+        
+        if (this.totalTx() === 0) {
+          const txData = await this.transactionService.getTransactions(1, 100);
+          const txList = txData.items || txData;
+          this.totalTx.set(txList.length);
+          this.totalRevenue.set(txList.reduce((acc: number, t: any) => acc + (t.grandTotal || t.totalAmount || 0), 0));
+        }
       }
     } catch (error) {
       console.error('Failed to load dashboard data', error);

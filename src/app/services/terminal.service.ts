@@ -21,7 +21,11 @@ export class TerminalService {
   }
 
   async createTerminal(terminal: any): Promise<any> {
-    return await firstValueFrom(this.http.post<any>(this.apiUrl, terminal));
+    const storeId = terminal.storeId;
+    // Remove storeId from payload as it's sent in URL
+    const payload = { ...terminal };
+    delete payload.storeId;
+    return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/${storeId}`, payload));
   }
 
   async updateTerminal(id: string, terminal: any): Promise<void> {
