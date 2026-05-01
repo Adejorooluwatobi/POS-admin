@@ -6,9 +6,9 @@ import { Account, Store, Transaction, Product, InventoryItem, Customer, Staff } 
 })
 export class DataService {
   public accounts: Record<string, Account> = {
-    'owner@retailos.ng': { pass: 'owner123', role: 'SUPER_ADMIN', name: 'Gold Adejoro (Owner)', store: null, initials: 'GA' },
-    'vi@retailos.ng': { pass: 'store123', role: 'STORE_MANAGER', name: 'Temi Oladipo', store: 'LG-01', initials: 'TO' },
-    'ik@retailos.ng': { pass: 'store123', role: 'STORE_MANAGER', name: 'Kunle Peters', store: 'LG-02', initials: 'KP' },
+    'owner@retailos.ng': { sub: 'owner-id', email: 'owner@retailos.ng', pass: 'owner123', role: 'SUPER_ADMIN', name: 'Gold Adejoro (Owner)', store: null, initials: 'GA' },
+    'vi@retailos.ng': { sub: 'vi-id', email: 'vi@retailos.ng', pass: 'store123', role: 'STORE_MANAGER', name: 'Temi Oladipo', store: 'LG-01', initials: 'TO' },
+    'ik@retailos.ng': { sub: 'ik-id', email: 'ik@retailos.ng', pass: 'store123', role: 'STORE_MANAGER', name: 'Kunle Peters', store: 'LG-02', initials: 'KP' },
   };
 
   public stores: Record<string, Store> = {

@@ -9,6 +9,8 @@ interface AuthResponseDto {
   role: string;
   tenantId: string | null;
   fullName: string;
+  userId: string;
+  email: string;
 }
 
 @Injectable({
@@ -50,6 +52,8 @@ export class AuthService {
       else if (role === 'Supervisor') mappedRole = 'SUPERVISOR';
 
       const acct: Account = {
+        sub: response.userId,
+        email: response.email,
         pass: '',
         role: mappedRole,
         name: response.fullName,
