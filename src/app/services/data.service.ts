@@ -12,8 +12,8 @@ export class DataService {
   };
 
   public stores: Record<string, Store> = {
-    'LG-01': { name: 'Victoria Island Store', city: 'Lagos', address: '23 Adeola Hopewell, VI', terminals: 4, active: true, todayRevenue: 842500, txCount: 247, staff: 5 },
-    'LG-02': { name: 'Ikeja Store', city: 'Lagos', address: '15 Allen Avenue, Ikeja', terminals: 3, active: true, todayRevenue: 621000, txCount: 183, staff: 4 },
+    'LG-01': { code: 'LG-01', name: 'Victoria Island Store', city: 'Lagos', address: '23 Adeola Hopewell, VI', terminals: 4, active: true, todayRevenue: 842500, txCount: 247, staff: 5 },
+    'LG-02': { code: 'LG-02', name: 'Ikeja Store', city: 'Lagos', address: '15 Allen Avenue, Ikeja', terminals: 3, active: true, todayRevenue: 621000, txCount: 183, staff: 4 },
   };
 
   public transactions: Transaction[] = [

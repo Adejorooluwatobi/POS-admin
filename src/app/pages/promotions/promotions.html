@@ -1,0 +1,167 @@
+<div class="fade-up">
+  <!-- Header with Action -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Promotions</div>
+      <div style="font-size:12px;color:var(--text3);">Manage marketing campaigns, coupons and discounts</div>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+      <span style="font-size:18px;margin-right:6px;">+</span> New Promotion
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading promotions...</span>
+    </div>
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>PROMOTION</th>
+              <th>CODE</th>
+              <th>TYPE</th>
+              <th>VALUE</th>
+              <th>VALIDITY</th>
+              <th>SCOPE</th>
+              <th>STATUS</th>
+              <th style="text-align:right;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of promotions(); track p.id) {
+              <tr>
+                <td>
+                  <div style="font-weight:600;font-size:13px;">{{ p.name }}</div>
+                </td>
+                <td>
+                  <code style="background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;">{{ p.code }}</code>
+                </td>
+                <td>
+                  <span class="badge badge-dim">{{ p.discountType }}</span>
+                </td>
+                <td class="mono" style="font-weight:700;">
+                  {{ p.discountType === 'PERCENT' ? p.value + '%' : '₦' + p.value.toLocaleString() }}
+                </td>
+                <td style="font-size:11px;color:var(--text2);">
+                  {{ p.startDate | date:'MMM d' }} — {{ p.endDate | date:'MMM d, y' }}
+                </td>
+                <td>
+                  <span class="badge badge-accent">{{ p.scope }}</span>
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="p.isActive ? 'badge-green' : 'badge-red'">
+                    {{ p.isActive ? 'ACTIVE' : 'INACTIVE' }}
+                  </span>
+                </td>
+                <td style="text-align:right;">
+                  <div style="display:flex;justify-content:flex-end;gap:6px;">
+                    <button class="btn btn-secondary btn-xs" (click)="openViewModal(p)">View</button>
+                    <button class="btn btn-primary btn-xs" (click)="openEditModal(p)">Edit</button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @if (promotions().length === 0) {
+              <tr>
+                <td colspan="8" style="text-align:center;padding:40px;color:var(--text3);">
+                  No promotions found. Create your first campaign to get started!
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- PROMOTION MODAL -->
+@if (isModalOpen()) {
+  <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+        <div>
+          <div style="font-size:18px;font-weight:800;">
+            {{ modalMode() === 'create' ? 'New Promotion' : modalMode() === 'edit' ? 'Edit Promotion' : 'Promotion Details' }}
+          </div>
+          <div style="font-size:11px;color:var(--text3);">Configure discount details and validity</div>
+        </div>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+      </div>
+
+      <div style="padding:24px;">
+        <div style="display:grid;gap:16px;">
+          <div>
+            <label class="label">Campaign Name</label>
+            <input class="inp" [(ngModel)]="selectedPromotion().name" placeholder="e.g. Easter Weekend Sale" [disabled]="modalMode() === 'view'">
+          </div>
+
+          <div>
+            <label class="label">Coupon Code</label>
+            <input class="inp mono" [(ngModel)]="selectedPromotion().code" placeholder="e.g. EASTER15" style="text-transform:uppercase;" [disabled]="modalMode() === 'view'">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="label">Discount Type</label>
+              <select class="inp" [(ngModel)]="selectedPromotion().discountType" [disabled]="modalMode() === 'view'">
+                <option value="PERCENT">Percentage (%)</option>
+                <option value="FIXED">Fixed Amount (₦)</option>
+                <option value="BOGO">Buy One Get One</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Value</label>
+              <input class="inp mono" type="number" [(ngModel)]="selectedPromotion().value" placeholder="0" [disabled]="modalMode() === 'view'">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="label">Start Date</label>
+              <input type="date" class="inp" [(ngModel)]="selectedPromotion().startDate" [disabled]="modalMode() === 'view'">
+            </div>
+            <div>
+              <label class="label">End Date</label>
+              <input type="date" class="inp" [(ngModel)]="selectedPromotion().endDate" [disabled]="modalMode() === 'view'">
+            </div>
+          </div>
+
+          <div>
+            <label class="label">Applied To (Scope)</label>
+            <select class="inp" [(ngModel)]="selectedPromotion().scope" [disabled]="modalMode() === 'view'">
+              <option value="CART">Entire Cart</option>
+              <option value="PRODUCT">Specific Product</option>
+              <option value="CATEGORY">Specific Category</option>
+            </select>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding-top:10px;">
+            <input type="checkbox" [(ngModel)]="selectedPromotion().isActive" [disabled]="modalMode() === 'view'">
+            <label style="font-size:13px;font-weight:600;">Promotion Active</label>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+        <button class="btn btn-secondary" (click)="closeModal()">{{ modalMode() === 'view' ? 'Close' : 'Cancel' }}</button>
+        @if (modalMode() !== 'view') {
+          <button class="btn btn-primary" (click)="savePromotion()">
+            {{ modalMode() === 'create' ? 'Create Promotion' : 'Save Changes' }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<style>
+  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.3s ease-out forwards; }
+</style>

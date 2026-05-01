@@ -11,6 +11,13 @@ import { SettingsComponent } from './pages/settings/settings';
 import { ReportsComponent } from './pages/reports/reports';
 import { AuditComponent } from './pages/audit/audit';
 import { StoresComponent } from './pages/stores/stores';
+import { RolesComponent } from './pages/roles/roles';
+import { PromotionsComponent } from './pages/promotions/promotions';
+import { TerminalsComponent } from './pages/terminals/terminals';
+import { TillSessionsComponent } from './pages/till-sessions/till-sessions';
+import { CategoriesComponent } from './pages/categories/categories';
+import { GiftCardsComponent } from './pages/gift-cards/gift-cards';
+import { LoyaltyComponent } from './pages/loyalty/loyalty';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,6 +36,13 @@ export const routes: Routes = [
       { path: 'reports', title: 'Reports — RetailOS', component: ReportsComponent },
       { path: 'audit', title: 'Audit Logs — RetailOS', component: AuditComponent },
       { path: 'stores', title: 'All Stores — RetailOS', component: StoresComponent },
+      { path: 'roles', title: 'Roles — RetailOS', component: RolesComponent },
+      { path: 'promotions', title: 'Promotions — RetailOS', component: PromotionsComponent },
+      { path: 'terminals', title: 'Terminals — RetailOS', component: TerminalsComponent },
+      { path: 'till-sessions', title: 'Till Sessions — RetailOS', component: TillSessionsComponent },
+      { path: 'categories', title: 'Categories — RetailOS', component: CategoriesComponent },
+      { path: 'gift-cards', title: 'Gift Cards — RetailOS', component: GiftCardsComponent },
+      { path: 'loyalty', title: 'Loyalty Ledger — RetailOS', component: LoyaltyComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

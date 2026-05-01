@@ -17,6 +17,7 @@ export class LoginComponent {
   public password = '';
   public selectedStore = 'LG-01';
   public loginError = signal<string | null>(null);
+  public isLoading = signal<boolean>(false);
 
   constructor(
     public authService: AuthService,
@@ -28,13 +29,20 @@ export class LoginComponent {
     this.selectedLoginRole.set(role);
   }
 
-  doLogin() {
-    const error = this.authService.login(this.email, this.password, this.selectedLoginRole());
-    if (error) {
-      this.loginError.set(error);
-    } else {
-      this.loginError.set(null);
-      this.router.navigate(['/app/dashboard']);
+  async doLogin() {
+    this.isLoading.set(true);
+    this.loginError.set(null);
+    try {
+      const error = await this.authService.login(this.email, this.password, this.selectedLoginRole());
+      if (error) {
+        this.loginError.set(error);
+      } else {
+        this.router.navigate(['/app/dashboard']);
+      }
+    } catch (e) {
+      this.loginError.set('An unexpected error occurred during login.');
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }

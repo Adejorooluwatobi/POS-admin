@@ -13,12 +13,25 @@ Chart.register(...registerables);
 export class ReportsComponent implements AfterViewInit, OnDestroy {
   @ViewChild('monthChart') monthChartCanvas!: ElementRef<HTMLCanvasElement>;
   private monthChart?: Chart;
+  public isModalOpen = signal<boolean>(false);
+  public selectedReport = signal<string>('');
 
   public reportCards = [
-    { icon: '📋', title: 'Z-Report (EOD)', desc: 'End-of-day summary per terminal' },
-    { icon: '📈', title: 'Sales Report', desc: 'Revenue, transactions, AOV by staff' },
-    { icon: '📦', title: 'Inventory Report', desc: 'Stock movement & shrinkage' },
+    { id: 'z-report', icon: '📋', title: 'Z-Report (EOD)', desc: 'End-of-day summary per terminal' },
+    { id: 'sales', icon: '📈', title: 'Sales Report', desc: 'Revenue, transactions, AOV by staff' },
+    { id: 'inventory', icon: '📦', title: 'Inventory Report', desc: 'Stock movement & shrinkage' },
   ];
+
+  public openReport(id: string) {
+    if (id === 'z-report') {
+      this.selectedReport.set('Z-REPORT (EOD) - 2024-04-24');
+      this.isModalOpen.set(true);
+    }
+  }
+
+  public closeModal() {
+    this.isModalOpen.set(false);
+  }
 
   constructor() {}
 

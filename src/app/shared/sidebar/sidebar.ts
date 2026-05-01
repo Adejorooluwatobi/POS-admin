@@ -23,37 +23,34 @@ export class SidebarComponent {
   }
 
   setupNav() {
-    const user = this.authService.currentUser();
-    if (!user) return;
+    this.navItems = [
+      { section: 'Overview' },
+      { id: 'dashboard', icon: 'grid', label: 'Dashboard', route: '/app/dashboard' },
+      { id: 'stores', icon: 'store', label: 'All Stores', route: '/app/stores' },
+      { id: 'transactions', icon: 'receipt', label: 'Transactions', route: '/app/transactions' },
+      { id: 'till-sessions', icon: 'stack', label: 'Till Sessions', route: '/app/till-sessions' },
+      
+      { section: 'Commerce' },
+      { id: 'products', icon: 'box', label: 'Products', route: '/app/products' },
+      { id: 'categories', icon: 'grid', label: 'Categories', route: '/app/categories' },
+      { id: 'inventory', icon: 'stack', label: 'Inventory', route: '/app/inventory' },
+      { id: 'customers', icon: 'users', label: 'Customers', route: '/app/customers' },
+      { id: 'promotions', icon: 'tag', label: 'Promotions', route: '/app/promotions' },
+      
+      { section: 'Financials' },
+      { id: 'gift-cards', icon: 'credit-card', label: 'Gift Cards', route: '/app/gift-cards' },
+      { id: 'loyalty', icon: 'star', label: 'Loyalty Ledger', route: '/app/loyalty' },
+      
+      { section: 'Management' },
+      { id: 'staff', icon: 'person', label: 'Staff', route: '/app/staff' },
+      { id: 'roles', icon: 'shield', label: 'Roles', route: '/app/roles' },
+      { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports' },
+      { id: 'audit', icon: 'shield', label: 'Audit Logs', route: '/app/audit' },
+      { id: 'settings', icon: 'cog', label: 'Settings', route: '/app/settings' },
 
-    if (user.role === 'SUPER_ADMIN') {
-      this.navItems = [
-        { section: 'Overview' },
-        { id: 'dashboard', icon: 'grid', label: 'Dashboard', route: '/app/dashboard' },
-        { id: 'stores', icon: 'store', label: 'All Stores', route: '/app/stores' },
-        { section: 'Data' },
-        { id: 'transactions', icon: 'receipt', label: 'Transactions', route: '/app/transactions' },
-        { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports' },
-        { section: 'Monitor' },
-        { id: 'audit', icon: 'shield', label: 'Audit Logs', route: '/app/audit' },
-      ];
-    } else {
-      this.navItems = [
-        { section: 'Overview' },
-        { id: 'dashboard', icon: 'grid', label: 'Dashboard', route: '/app/dashboard' },
-        { id: 'transactions', icon: 'receipt', label: 'Transactions', route: '/app/transactions' },
-        { section: 'Inventory' },
-        { id: 'products', icon: 'box', label: 'Products', route: '/app/products' },
-        { id: 'inventory', icon: 'stack', label: 'Inventory', route: '/app/inventory' },
-        { section: 'Commerce' },
-        { id: 'customers', icon: 'users', label: 'Customers', route: '/app/customers' },
-        { id: 'promotions', icon: 'tag', label: 'Promotions', route: '/app/promotions' },
-        { section: 'Management' },
-        { id: 'staff', icon: 'person', label: 'Staff', route: '/app/staff' },
-        { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports' },
-        { id: 'settings', icon: 'cog', label: 'Store Settings', route: '/app/settings' },
-      ];
-    }
+      { section: 'Infrastructure' },
+      { id: 'terminals', icon: 'grid', label: 'Terminals', route: '/app/terminals' },
+    ];
   }
 
   getStoreName() {

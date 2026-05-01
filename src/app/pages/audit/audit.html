@@ -1,33 +1,67 @@
-<div class="card fade-up">
-  <div style="overflow-x:auto;">
-    <table class="tbl">
-      <thead>
-        <tr>
-          <th>TIMESTAMP</th>
-          <th>STAFF</th>
-          <th>ACTION</th>
-          <th>ENTITY</th>
-          <th>STORE</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (l of logs(); track l.ts + l.entity) {
-          <tr>
-            <td class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</td>
-            <td style="font-weight:600;">{{ l.staff }}</td>
-            <td>
-              <span class="badge"
-                    [ngClass]="{
-                      'badge-red': l.action.startsWith('VOID') || l.action.startsWith('DEACTIVATE'),
-                      'badge-amber': l.action.startsWith('APPLY'),
-                      'badge-dim': !l.action.startsWith('VOID') && !l.action.startsWith('DEACTIVATE') && !l.action.startsWith('APPLY')
-                    }">{{ l.action }}</span>
-            </td>
-            <td class="mono" style="font-size:11px;">{{ l.entity }}</td>
-            <td style="color:var(--text2);">{{ l.store }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+<div class="fade-up">
+  <!-- Header -->
+  <div style="margin-bottom:20px;">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Audit Logs</div>
+    <div style="font-size:12px;color:var(--text3);">Complete trail of administrative and operational actions</div>
   </div>
+
+  <div class="card" style="margin-bottom:20px;padding:12px;">
+    <div style="display:flex;gap:12px;">
+      <div style="flex:1;position:relative;">
+        <input type="text" class="inp" placeholder="Search by staff, action or entity..." style="padding-left:36px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);">🔍</span>
+      </div>
+      <select class="inp" style="width:180px;">
+        <option value="">All Actions</option>
+        <option value="CREATE">Create</option>
+        <option value="UPDATE">Update</option>
+        <option value="DELETE">Delete</option>
+      </select>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading audit logs...</span>
+    </div>
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>TIMESTAMP</th>
+              <th>STAFF</th>
+              <th>ACTION</th>
+              <th>ENTITY</th>
+              <th>STORE</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (l of logs(); track l.ts + l.entity) {
+              <tr>
+                <td class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</td>
+                <td style="font-weight:600;font-size:13px;">{{ l.staff }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'badge-red': l.action?.includes('VOID') || l.action?.includes('DELETE') || l.action?.includes('DEACTIVATE'),
+                    'badge-amber': l.action?.includes('UPDATE') || l.action?.includes('ADJUST'),
+                    'badge-green': l.action?.includes('CREATE') || l.action?.includes('OPEN'),
+                    'badge-dim': !l.action
+                  }">{{ l.action }}</span>
+                </td>
+                <td class="mono" style="font-size:11px;color:var(--text3);">{{ l.entity }}</td>
+                <td style="color:var(--text2);font-size:12px;">{{ l.store }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
 </div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

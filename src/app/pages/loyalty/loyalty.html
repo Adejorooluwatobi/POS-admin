@@ -1,0 +1,69 @@
+<div class="fade-up">
+  <!-- Header -->
+  <div style="margin-bottom:24px;">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Loyalty Ledger</div>
+    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Audit trail of all customer point earnings and redemptions</div>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Retrieving ledger...</span>
+    </div>
+  } @else {
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>DATE</th>
+              <th>CUSTOMER</th>
+              <th>REASON / TRANSACTION</th>
+              <th style="text-align:right;">POINTS</th>
+              <th style="text-align:right;">NEW BALANCE</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of ledger(); track entry.id) {
+              <tr>
+                <td style="font-size:11px;color:var(--text3);">
+                  {{ entry.createdAt | date:'short' }}
+                </td>
+                <td>
+                  <div style="font-weight:700;font-size:13px;">{{ getCustomerName(entry.customerId) }}</div>
+                </td>
+                <td>
+                  <div style="font-size:12px;">{{ entry.reason }}</div>
+                  @if (entry.transactionId) {
+                    <div style="font-size:10px;color:var(--accent);font-weight:600;cursor:pointer;">View Tx #{{ entry.transactionId.substring(0,8) }}</div>
+                  }
+                </td>
+                <td style="text-align:right;">
+                  <span [ngClass]="entry.delta > 0 ? 'text-green' : 'text-red'" style="font-weight:800;font-size:14px;">
+                    {{ entry.delta > 0 ? '+' : '' }}{{ entry.delta }}
+                  </span>
+                </td>
+                <td style="text-align:right;font-weight:700;" class="mono">
+                  {{ entry.balanceAfter }} pts
+                </td>
+              </tr>
+            }
+            @if (ledger().length === 0) {
+              <tr>
+                <td colspan="5" style="text-align:center;padding:48px;color:var(--text3);">
+                  No point transactions recorded yet.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+  .text-green { color: var(--green); }
+  .text-red { color: var(--red); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
