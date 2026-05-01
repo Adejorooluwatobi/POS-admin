@@ -1,0 +1,155 @@
+<div class="fade-up">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Security Roles</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px;">Manage access levels and fine-tune permissions for your retail team</div>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+      <span style="font-size:18px;margin-right:6px;">+</span> Create Custom Role
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading roles...</span>
+    </div>
+  } @else {
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:20px;">
+      @for (r of roles(); track r.id) {
+        <div class="card role-card" style="padding:20px;border-radius:14px;transition:all .25s ease;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;border:1px solid var(--border);">
+              {{ r.systemRole === 2 ? '👔' : r.systemRole === 4 ? '🕵️' : '🛒' }}
+            </div>
+            <span class="badge" [ngClass]="r.isActive ? 'badge-green' : 'badge-red'">{{ r.isActive ? 'ACTIVE' : 'INACTIVE' }}</span>
+          </div>
+          <div style="font-size:16px;font-weight:800;margin-bottom:4px;">{{ r.name }}</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.5;">{{ r.description || 'No description provided.' }}</div>
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;margin-bottom:14px;">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:6px;">Permissions</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              @for (p of getPermissionsKeys(r.permissions).slice(0, 4); track p) {
+                <span style="font-size:10px;color:var(--text2);background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:5px;">{{ p.split('_').join(' ') }}</span>
+              }
+              @if (getPermissionsKeys(r.permissions).length > 4) {
+                <span style="font-size:10px;color:var(--accent);font-weight:700;">+{{ getPermissionsKeys(r.permissions).length - 4 }} more</span>
+              }
+              @if (getPermissionsKeys(r.permissions).length === 0) {
+                <span style="font-size:10px;color:var(--text3);">No permissions assigned</span>
+              }
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-secondary" style="flex:1;font-size:12px;" (click)="openViewModal(r)">View</button>
+            <button class="btn btn-secondary" style="flex:1;font-size:12px;" (click)="openEditModal(r)">Edit</button>
+            <button class="btn btn-danger btn-xs" style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;">🗑️</button>
+          </div>
+        </div>
+      }
+      @if (roles().length === 0) {
+        <div class="card" style="padding:48px;text-align:center;grid-column:1/-1;color:var(--text3);">
+          <div style="font-size:32px;margin-bottom:12px;">🔐</div>
+          <div style="font-weight:600;margin-bottom:6px;">No Roles Yet</div>
+          <div style="font-size:12px;">Click "Create Custom Role" to define your first role.</div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- =====================================================
+     MODAL — placed OUTSIDE .fade-up to avoid the CSS
+     transform stacking context that traps position:fixed
+     ===================================================== -->
+@if (isModalOpen()) {
+  <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35);">
+
+      <!-- Modal Header -->
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;">
+        <div>
+          <div style="font-size:18px;font-weight:800;">
+            {{ modalMode() === 'create' ? 'New Role' : modalMode() === 'edit' ? 'Edit Role' : 'Role Details' }}
+          </div>
+          <div style="font-size:11px;color:var(--text3);">Configure access rules and permissions</div>
+        </div>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;line-height:1;padding:0 4px;">&times;</button>
+      </div>
+
+      <!-- Modal Body (scrollable) -->
+      <div style="padding:20px 24px;overflow-y:auto;flex:1;">
+        <div style="display:grid;gap:20px;">
+
+          <!-- Base Role Template -->
+          <div>
+            <label class="lbl">Base Role Template</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;">
+              @for (sr of systemRoles; track sr.id) {
+                <div (click)="selectSystemRole(sr.id)"
+                     [ngClass]="{'tmpl-active': selectedRole().systemRole === sr.id}"
+                     style="padding:12px 8px;border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;text-align:center;user-select:none;">
+                  <div style="font-size:22px;margin-bottom:4px;">{{ sr.icon }}</div>
+                  <div style="font-size:11px;font-weight:700;">{{ sr.name }}</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Name & Description -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label class="lbl">Role Name</label>
+              <input class="inp" [(ngModel)]="selectedRole().name" placeholder="e.g. Supervisor" [disabled]="modalMode() === 'view'">
+            </div>
+            <div>
+              <label class="lbl">Description</label>
+              <input class="inp" [(ngModel)]="selectedRole().description" placeholder="Who is this for?" [disabled]="modalMode() === 'view'">
+            </div>
+          </div>
+
+          <!-- Permissions -->
+          <div>
+            <label class="lbl">Permissions</label>
+            <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              @for (p of availablePermissions; track p) {
+                <label style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;gap:8px;">
+                  <span style="font-size:11px;font-weight:600;color:var(--text2);flex:1;">{{ p.split('_').join(' ') }}</span>
+                  <input type="checkbox" [checked]="selectedRole().permissions?.[p]" (change)="togglePermission(p)" style="accent-color:var(--accent);cursor:pointer;flex-shrink:0;" [disabled]="modalMode() === 'view'">
+                </label>
+              }
+            </div>
+          </div>
+
+          <!-- Active toggle -->
+          <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);">
+            <input type="checkbox" [(ngModel)]="selectedRole().isActive" style="accent-color:var(--accent);width:16px;height:16px;" [disabled]="modalMode() === 'view'">
+            <label style="font-size:13px;font-weight:600;cursor:pointer;">Mark as Active Role</label>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);flex-shrink:0;">
+        <button class="btn btn-secondary" (click)="closeModal()">{{ modalMode() === 'view' ? 'Close' : 'Cancel' }}</button>
+        @if (modalMode() !== 'view') {
+          <button class="btn btn-primary" (click)="saveRole()">
+            {{ modalMode() === 'create' ? 'Create Role' : 'Save Changes' }}
+          </button>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+
+<style>
+  .lbl { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .tmpl-active { border-color: var(--accent) !important; background: var(--accent-d) !important; }
+  .role-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.12); border-color: var(--border2); transform: translateY(-2px); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

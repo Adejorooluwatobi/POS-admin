@@ -55,8 +55,9 @@
         <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:5px;">Password</label>
         <input id="loginPassword" type="password" class="inp" placeholder="••••••••" [(ngModel)]="password">
       </div>
-      <button (click)="doLogin()" class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;font-size:13px;border-radius:9px;">Sign In →</button>
-
+      <button (click)="doLogin()" [disabled]="isLoading()" class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;font-size:13px;border-radius:9px;opacity:{{ isLoading() ? 0.7 : 1 }};">
+        {{ isLoading() ? 'Signing In...' : 'Sign In →' }}
+      </button>
       @if (loginError()) {
         <div style="margin-top:10px;text-align:center;font-size:11px;color:var(--red);">{{ loginError() }}</div>
       }

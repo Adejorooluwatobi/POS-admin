@@ -1,52 +1,80 @@
 <div class="fade-up">
   @if (isOwner()) {
-    <div style="text-align:center;padding:40px;color:var(--red);font-size:13px;">
-      ⊘ Super Admin cannot modify store settings. Please log in as a Store Manager.
+    <div class="card" style="text-align:center;padding:60px;border:1px dashed var(--border);background:var(--surface);">
+      <div style="font-size:32px;margin-bottom:16px;">⊘</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">Configuration Restricted</div>
+      <div style="font-size:13px;color:var(--text3);max-width:300px;margin:0 auto;">
+        Super Admins can monitor all stores but cannot modify specific store operational settings. Please log in as a Store Manager.
+      </div>
     </div>
   } @else {
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    @if (isLoading()) {
+      <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+        <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+        <span style="margin-left:12px;font-size:13px;">Loading settings...</span>
+      </div>
+    } @else {
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div class="card" style="padding:24px;">
+          <div style="font-size:15px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+            <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
+            Store Information
+          </div>
+          <div style="display:grid;gap:16px;">
+            <div>
+              <label class="label">Store Name</label>
+              <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Lagos Mainland Store">
+            </div>
+            <div>
+              <label class="label">Store Code</label>
+              <input class="inp" [(ngModel)]="store().code" readonly style="background:var(--surface2);color:var(--text3);">
+            </div>
+            <div>
+              <label class="label">Address</label>
+              <textarea class="inp" [(ngModel)]="store().address" style="height:80px;resize:none;" placeholder="Enter physical address..."></textarea>
+            </div>
+            <div>
+              <label class="label">Phone Number</label>
+              <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 000 0000">
+            </div>
+            <div style="padding-top:10px;">
+              <button (click)="saveChanges()" class="btn btn-primary">Save Store Details</button>
+            </div>
+          </div>
+        </div>
 
-      <div class="card" style="padding:18px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Store Information</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Store Name</label>
-            <input class="inp" [value]="store()?.name">
+        <div class="card" style="padding:24px;">
+          <div style="font-size:15px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+            <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
+            Regional Settings
           </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Address</label>
-            <input class="inp" [value]="store()?.address">
+          <div style="display:grid;gap:16px;">
+            <div>
+              <label class="label">Currency</label>
+              <select class="inp">
+                <option value="NGN">Nigerian Naira (₦)</option>
+                <option value="USD">US Dollar ($)</option>
+              </select>
+            </div>
+            <div>
+              <label class="label">Timezone</label>
+              <input class="inp" [(ngModel)]="store().timezone" placeholder="Africa/Lagos">
+            </div>
+            <div>
+              <label class="label">Tax Rate (%)</label>
+              <input class="inp" type="number" value="7.5">
+            </div>
+            <div style="padding-top:10px;">
+              <button (click)="saveChanges()" class="btn btn-primary">Save Config</button>
+            </div>
           </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Phone</label>
-            <input class="inp" value="+234 800 000 0001">
-          </div>
-          <button (click)="saveChanges()" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
         </div>
       </div>
-
-      <div class="card" style="padding:18px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">POS Configuration</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Tax Rate</label>
-            <input class="inp" value="7.5" type="number">
-          </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Receipt Footer</label>
-            <input class="inp" value="Thank you for shopping with us!">
-          </div>
-          <div>
-            <label style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px;">Currency</label>
-            <select class="inp">
-              <option>NGN (₦)</option>
-              <option>USD ($)</option>
-            </select>
-          </div>
-          <button (click)="saveChanges()" class="btn btn-primary btn-sm" style="align-self:flex-start;">Save Changes</button>
-        </div>
-      </div>
-
-    </div>
+    }
   }
 </div>
+
+<style>
+  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
