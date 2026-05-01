@@ -46,7 +46,9 @@ export interface Product {
   cat: string; // Category
   cost: number;
   price: number;
+  barcode?: string;
   tax: 'STANDARD' | 'ZERO' | 'EXEMPT' | 'REDUCED';
+  taxRate?: number;
   status: 'ACTIVE' | 'INACTIVE';
   brand?: string;
   description?: string;

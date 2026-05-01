@@ -20,6 +20,10 @@ export class ProductService {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
   }
 
+  async getProductByBarcode(barcode: string): Promise<any> {
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/barcode/${barcode}`));
+  }
+
   async createProduct(product: any): Promise<any> {
     return await firstValueFrom(this.http.post<any>(this.apiUrl, product));
   }

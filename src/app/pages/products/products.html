@@ -5,9 +5,24 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Products Catalog</div>
       <div style="font-size:12px;color:var(--text3);">Manage your product listings, categories and pricing</div>
     </div>
-    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      <span style="font-size:18px;margin-right:6px;">+</span> New Product
-    </button>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <div style="position:relative;width:240px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span>
+        <input class="inp" style="padding-left:36px;" placeholder="Search products..." (input)="filterProducts($any($event.target).value)">
+      </div>
+      <div style="position:relative;width:240px;display:flex;gap:6px;">
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">🛒</span>
+          <input class="inp" style="padding-left:36px;border-color:var(--accent);" placeholder="Scan Barcode..." (keyup.enter)="onBarcodeScanned($any($event.target).value); $any($event.target).value = ''">
+        </div>
+        <button class="btn btn-secondary" (click)="openScanner('search')" style="padding:0 12px;display:flex;align-items:center;justify-content:center;" title="Scan with camera">
+          📷
+        </button>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;margin-left:auto;">
+        <span style="font-size:18px;margin-right:6px;">+</span> New Product
+      </button>
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -100,8 +115,22 @@
               </div>
               <div>
                 <label class="label">Brand</label>
-                <input class="inp" [(ngModel)]="selectedProduct().brand" placeholder="Brand Name">
+                <input class="inp" [(ngModel)]="selectedProduct().brand" placeholder="Brand Name" [disabled]="modalMode() === 'view'">
               </div>
+            </div>
+
+            <div>
+              <label class="label">Barcode / Scan Code</label>
+              <div style="display:flex;gap:8px;">
+                <div style="position:relative;flex:1;">
+                  <input class="inp" [(ngModel)]="selectedProduct().barcode" placeholder="Scan or enter barcode" [disabled]="modalMode() === 'view'">
+                  <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;">║▌║</span>
+                </div>
+                @if (modalMode() !== 'view') {
+                  <button class="btn btn-secondary" (click)="openScanner('create')" style="padding:0 12px;" title="Scan with camera">📷</button>
+                }
+              </div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">Used for quick lookup at checkout</div>
             </div>
 
             <div>
@@ -131,14 +160,20 @@
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div>
-                <label class="label">Tax Category</label>
-                <select class="inp" [(ngModel)]="selectedProduct().tax">
-                  <option value="STANDARD">Standard (7.5%)</option>
-                  <option value="ZERO">Zero Rated</option>
-                  <option value="EXEMPT">Exempt</option>
-                  <option value="REDUCED">Reduced</option>
-                </select>
+              <div style="display:grid;grid-template-columns:1fr 100px;gap:12px;">
+                <div>
+                  <label class="label">Tax Category</label>
+                  <select class="inp" [(ngModel)]="selectedProduct().tax" (change)="selectedProduct().taxRate = selectedProduct().tax === 'STANDARD' ? 7.5 : 0" [disabled]="modalMode() === 'view'">
+                    <option value="STANDARD">Standard</option>
+                    <option value="ZERO">Zero Rated</option>
+                    <option value="EXEMPT">Exempt</option>
+                    <option value="REDUCED">Reduced</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">Rate (%)</label>
+                  <input type="number" class="inp" [(ngModel)]="selectedProduct().taxRate" placeholder="0.00" [disabled]="modalMode() === 'view'">
+                </div>
               </div>
               <div style="display:flex;align-items:center;gap:12px;padding-top:20px;">
                 <input type="checkbox" [checked]="selectedProduct().status === 'ACTIVE'" (change)="selectedProduct().status = $any($event.target).checked ? 'ACTIVE' : 'INACTIVE'" [disabled]="modalMode() === 'view'">
@@ -175,6 +210,11 @@
           }
         </div>
       </div>
+    </div>
+  }
+  @if (isScannerOpen()) {
+    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:2000;padding:20px;">
+      <app-barcode-scanner (scanned)="handleScan($event)" (closed)="closeScanner()"></app-barcode-scanner>
     </div>
   }
 </div>

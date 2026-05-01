@@ -6,10 +6,12 @@ import { CategoryService } from '../../services/category.service';
 import { AuthService } from '../../services/auth.service';
 import { Product, Category } from '../../models/pos.models';
 
+import { BarcodeScannerComponent } from '../../components/barcode-scanner/barcode-scanner';
+
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, BarcodeScannerComponent],
   templateUrl: './products.html'
 })
 export class ProductsComponent implements OnInit {
@@ -30,8 +32,13 @@ export class ProductsComponent implements OnInit {
     cost: 0,
     price: 0,
     tax: 'STANDARD',
-    status: 'ACTIVE'
+    taxRate: 7.5,
+    status: 'ACTIVE',
+    barcode: ''
   });
+  public allProducts = signal<Product[]>([]);
+  public isScannerOpen = signal<boolean>(false);
+  public scannerTarget = signal<'search' | 'create'>('search');
 
   constructor(
     private productService: ProductService,
@@ -90,9 +97,12 @@ export class ProductsComponent implements OnInit {
           weight: p.weightGrams,
           uom: p.unitOfMeasure,
           status: p.isActive !== undefined ? (p.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
-          tax: p.taxCategory || 'STANDARD'
+          tax: p.taxCategory !== undefined ? (p.taxCategory === 0 ? 'STANDARD' : p.taxCategory === 1 ? 'ZERO' : p.taxCategory === 2 ? 'EXEMPT' : 'REDUCED') : 'STANDARD',
+          taxRate: p.taxRate || 0,
+          barcode: p.barcode
         };
       }));
+      this.allProducts.set(this.products());
     } catch (error) {
       console.error('Failed to load products', error);
     }
@@ -109,7 +119,9 @@ export class ProductsComponent implements OnInit {
       cost: 0,
       price: 0,
       tax: 'STANDARD',
-      status: 'ACTIVE'
+      taxRate: 7.5,
+      status: 'ACTIVE',
+      barcode: ''
     });
     this.isModalOpen.set(true);
   }
@@ -143,9 +155,11 @@ export class ProductsComponent implements OnInit {
       weightGrams: p.weight,
       unitOfMeasure: p.uom || 'Each',
       taxCategory: p.tax === 'STANDARD' ? 0 : p.tax === 'ZERO' ? 1 : p.tax === 'EXEMPT' ? 2 : 3,
+      taxRate: p.taxRate,
       isActive: p.status === 'ACTIVE',
       tenantId: user?.tenantId,
-      categoryId: p.categoryId
+      categoryId: p.categoryId,
+      barcode: p.barcode
     };
 
     try {
@@ -159,6 +173,78 @@ export class ProductsComponent implements OnInit {
     } catch (error: any) {
       console.error('Failed to save product', error);
       alert(`Error saving product: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
+  }
+
+  filterProducts(query: string) {
+    if (!query) {
+      this.products.set(this.allProducts());
+      return;
+    }
+    const q = query.toLowerCase();
+    this.products.set(this.allProducts().filter(p => 
+      p.n.toLowerCase().includes(q) || 
+      p.sku.toLowerCase().includes(q) || 
+      p.barcode?.toLowerCase().includes(q)
+    ));
+  }
+
+  async onBarcodeScanned(barcode: string) {
+    if (!barcode) return;
+    
+    // First check local list
+    const foundLocal = this.allProducts().find(p => p.barcode === barcode);
+    if (foundLocal) {
+      this.openViewModal(foundLocal);
+      return;
+    }
+
+    // If not in local list, search API
+    try {
+      const product = await this.productService.getProductByBarcode(barcode);
+      if (product) {
+        // Map backend product to frontend model
+        const mapped = {
+          ...product,
+          n: product.name,
+          sku: product.masterSku,
+          e: '📦',
+          price: product.basePrice || 0,
+          cost: product.costPrice || 0,
+          weight: product.weightGrams,
+          uom: product.unitOfMeasure,
+          status: product.isActive ? 'ACTIVE' : 'INACTIVE',
+          tax: product.taxCategory === 0 ? 'STANDARD' : product.taxCategory === 1 ? 'ZERO' : product.taxCategory === 2 ? 'EXEMPT' : 'REDUCED',
+          taxRate: product.taxRate || 0,
+          barcode: product.barcode
+        };
+        this.openViewModal(mapped);
+      }
+    } catch (error) {
+      console.warn('Product not found by barcode', barcode);
+      // Optional: open create modal with barcode pre-filled
+      if (confirm('Product not found. Would you like to create a new product with this barcode?')) {
+        this.openCreateModal();
+        this.selectedProduct.update(p => ({ ...p, barcode }));
+      }
+    }
+  }
+
+  openScanner(target: 'search' | 'create') {
+    this.scannerTarget.set(target);
+    this.isScannerOpen.set(true);
+  }
+
+  closeScanner() {
+    this.isScannerOpen.set(false);
+  }
+
+  handleScan(barcode: string) {
+    this.closeScanner();
+    if (this.scannerTarget() === 'search') {
+      this.onBarcodeScanned(barcode);
+    } else {
+      this.selectedProduct.update(p => ({ ...p, barcode }));
     }
   }
 }
