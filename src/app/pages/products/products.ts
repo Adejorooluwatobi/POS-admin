@@ -4,20 +4,23 @@ import { FormsModule } from '@angular/forms';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { AuthService } from '../../services/auth.service';
-import { Product, Category } from '../../models/pos.models';
+import { StoreService } from '../../services/store.service';
+import { Product, Category, Store } from '../../models/pos.models';
 
 import { BarcodeScannerComponent } from '../../components/barcode-scanner/barcode-scanner';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule, BarcodeScannerComponent],
+  imports: [CommonModule, FormsModule, BarcodeScannerComponent],
   templateUrl: './products.html'
 })
 export class ProductsComponent implements OnInit {
   public products = signal<Product[]>([]);
   public categories = signal<Category[]>([]);
+  public stores = signal<Store[]>([]);
   public isOwner = signal<boolean>(false);
+  public isGeneral = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
 
   // Modal State
@@ -34,7 +37,10 @@ export class ProductsComponent implements OnInit {
     tax: 'STANDARD',
     taxRate: 7.5,
     status: 'ACTIVE',
-    barcode: ''
+    barcode: '',
+    barcodes: [],
+    targetStoreIds: [],
+    storeOverrides: []
   });
   public allProducts = signal<Product[]>([]);
   public isScannerOpen = signal<boolean>(false);
@@ -43,10 +49,14 @@ export class ProductsComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private categoryService: CategoryService,
+    private storeService: StoreService,
     public authService: AuthService
   ) {
     const user = this.authService.currentUser();
-    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+    // Generals are SuperAdmin, TenantAdmin, and Manager (5)
+    this.isGeneral.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    // Staff who can access the catalog at all
+    this.isOwner.set(!!user);
   }
 
   async deleteProduct(id: string | undefined) {
@@ -65,6 +75,7 @@ export class ProductsComponent implements OnInit {
   async ngOnInit() {
     this.isLoading.set(true);
     await this.loadCategories();
+    await this.loadStores();
     await this.loadProducts();
     this.isLoading.set(false);
   }
@@ -78,21 +89,45 @@ export class ProductsComponent implements OnInit {
     }
   }
 
+  async loadStores() {
+    try {
+      const data = await this.storeService.getStores();
+      this.stores.set(data.items || data);
+    } catch (error) {
+      console.error('Failed to load stores', error);
+    }
+  }
+
   async loadProducts() {
     try {
       const data = await this.productService.getProducts();
       const items = data.items || data;
+      const user = this.authService.currentUser();
       const cats = this.categories();
 
-      this.products.set(items.map((p: any) => {
+      let filteredItems = items;
+      
+      if (user && (user.role === 'STORE_MANAGER' || user.role === 'SUPERVISOR')) {
+        filteredItems = items.filter((p: any) => p.storeId === null || p.storeId === user.store);
+      }
+
+      this.products.set(filteredItems.map((p: any) => {
         const catObj = cats.find(c => c.id === p.categoryId);
+        
+        // Resolve Effective Price (Override for current store)
+        let effectivePrice = p.basePrice || 0;
+        if (user?.store && p.storeOverrides) {
+          const over = p.storeOverrides.find((o: any) => o.storeId === user.store && o.isActive);
+          if (over) effectivePrice = over.price;
+        }
+
         return {
           ...p,
           n: p.name,
           sku: p.masterSku,
           cat: catObj ? catObj.name : 'General',
           e: '📦',
-          price: p.basePrice || 0,
+          price: effectivePrice,
           cost: p.costPrice || 0,
           weight: p.weightGrams,
           uom: p.unitOfMeasure,
@@ -121,14 +156,20 @@ export class ProductsComponent implements OnInit {
       tax: 'STANDARD',
       taxRate: 7.5,
       status: 'ACTIVE',
-      barcode: ''
+      barcode: '',
+      barcodes: [],
+      targetStoreIds: []
     });
     this.isModalOpen.set(true);
   }
 
   openEditModal(product: Product) {
     this.modalMode.set('edit');
-    this.selectedProduct.set({ ...product });
+    this.selectedProduct.set({ 
+      ...product,
+      barcodes: product.barcodes || (product.barcode ? [product.barcode] : []),
+      targetStoreIds: [] 
+    });
     this.isModalOpen.set(true);
   }
 
@@ -159,7 +200,8 @@ export class ProductsComponent implements OnInit {
       isActive: p.status === 'ACTIVE',
       tenantId: user?.tenantId,
       categoryId: p.categoryId,
-      barcode: p.barcode
+      targetStoreIds: p.targetStoreIds,
+      barcodes: p.barcodes
     };
 
     try {
@@ -173,6 +215,44 @@ export class ProductsComponent implements OnInit {
     } catch (error: any) {
       console.error('Failed to save product', error);
       alert(`Error saving product: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
+  }
+
+  addBarcode(bc: string) {
+    if (!bc) return;
+    const current = this.selectedProduct();
+    const barcodes = [...(current.barcodes || [])];
+    if (!barcodes.includes(bc)) {
+      barcodes.push(bc);
+      this.selectedProduct.update(p => ({ ...p, barcodes, barcode: bc }));
+    }
+  }
+
+  removeBarcode(bc: string) {
+    const current = this.selectedProduct();
+    const barcodes = (current.barcodes || []).filter(b => b !== bc);
+    this.selectedProduct.update(p => ({ ...p, barcodes }));
+  }
+
+  toggleStoreTarget(storeId: string | undefined) {
+    if (!storeId) return;
+    const current = this.selectedProduct();
+    let targets = [...(current.targetStoreIds || [])];
+    if (targets.includes(storeId)) {
+      targets = targets.filter(id => id !== storeId);
+    } else {
+      targets.push(storeId);
+    }
+    this.selectedProduct.update(p => ({ ...p, targetStoreIds: targets }));
+  }
+
+  toggleAllStores() {
+    const current = this.selectedProduct();
+    if (current.targetStoreIds?.length === this.stores().length) {
+      this.selectedProduct.update(p => ({ ...p, targetStoreIds: [] }));
+    } else {
+      const allIds = this.stores().map(s => s.id!).filter(id => !!id);
+      this.selectedProduct.update(p => ({ ...p, targetStoreIds: allIds }));
     }
   }
 
@@ -244,7 +324,7 @@ export class ProductsComponent implements OnInit {
     if (this.scannerTarget() === 'search') {
       this.onBarcodeScanned(barcode);
     } else {
-      this.selectedProduct.update(p => ({ ...p, barcode }));
+      this.addBarcode(barcode);
     }
   }
 }

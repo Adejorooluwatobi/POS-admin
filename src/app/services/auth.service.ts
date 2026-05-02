@@ -11,6 +11,7 @@ interface AuthResponseDto {
   fullName: string;
   userId: string;
   email: string;
+  storeId: string | null;
 }
 
 @Injectable({
@@ -29,20 +30,13 @@ export class AuthService {
     }
   }
 
-  async login(email: string, pass: string, selectedRole: string): Promise<string | null> {
+  async login(email: string, pass: string): Promise<string | null> {
     try {
       const response = await firstValueFrom(
         this.http.post<AuthResponseDto>(`${this.apiUrl}/login-admin`, { email, password: pass })
       );
 
       const role = response.role;
-
-      if (selectedRole === 'manager' && role === 'SuperAdmin') {
-        return 'Use Super Admin role for this account';
-      }
-      if (selectedRole === 'owner' && role === 'StoreManager') {
-        return 'Use Store Manager role for this account';
-      }
 
       let mappedRole: any = 'CASHIER';
       if (role === 'SuperAdmin') mappedRole = 'SUPER_ADMIN';
@@ -57,7 +51,7 @@ export class AuthService {
         pass: '',
         role: mappedRole,
         name: response.fullName,
-        store: null,
+        store: response.storeId,
         initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U',
         tenantId: response.tenantId
       };

@@ -58,6 +58,17 @@ export interface Product {
   weight?: number;
   uom?: string;
   isActive?: boolean;
+  barcodes?: string[];
+  targetStoreIds?: string[];
+  storeOverrides?: StoreProductOverride[];
+}
+
+export interface StoreProductOverride {
+  id: string;
+  storeId: string;
+  price: number;
+  isActive: boolean;
+  modifiedBy?: string;
 }
 
 export interface InventoryItem {

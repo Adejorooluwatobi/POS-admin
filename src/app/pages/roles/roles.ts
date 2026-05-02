@@ -28,10 +28,10 @@ export class RolesComponent implements OnInit {
   });
 
   public systemRoles = [
-    { id: 2, name: 'Store Manager', icon: '👔' },
-    { id: 5, name: 'Manager', icon: '💼' },
-    { id: 4, name: 'Supervisor', icon: '🕵️' },
-    { id: 3, name: 'Cashier', icon: '🛒' }
+    { id: 2, name: 'Store Manager', icon: '👔', key: 'StoreManager' },
+    { id: 5, name: 'Manager', icon: '💼', key: 'Manager' },
+    { id: 4, name: 'Supervisor', icon: '🕵️', key: 'Supervisor' },
+    { id: 3, name: 'Cashier', icon: '🛒', key: 'Cashier' }
   ];
 
   public availablePermissions = [
@@ -67,7 +67,12 @@ export class RolesComponent implements OnInit {
       this.loadRoles();
     } catch (error: any) {
       console.error('Failed to delete role', error);
-      alert(`Error deleting role: ${error.error?.message || error.message || 'Unknown error'}`);
+      const msg = error.error?.message || error.message || 'Unknown error';
+      if (msg.includes('FK_Staff_Roles_RoleId') || msg.includes('assigned to')) {
+        alert('Cannot delete this role because it is currently assigned to one or more staff members. Please reassign the staff to a different role first.');
+      } else {
+        alert(`Error deleting role: ${msg}`);
+      }
     }
   }
 
@@ -79,7 +84,11 @@ export class RolesComponent implements OnInit {
     this.isLoading.set(true);
     try {
       const data = await this.roleService.getRoles();
-      this.roles.set(data.items || data);
+      const items = (data.items || data).map((r: any) => ({
+        ...r,
+        systemRole: this.mapSystemRoleToId(r.systemRole)
+      }));
+      this.roles.set(items);
     } catch (error) {
       console.error('Failed to load roles', error);
     } finally {
@@ -127,6 +136,8 @@ export class RolesComponent implements OnInit {
     const perms: { [key: string]: boolean } = {};
     if (id === 2) { // Store Manager
       ['VIEW_DASHBOARD', 'VIEW_TRANSACTIONS', 'MANAGE_PRODUCTS', 'MANAGE_INVENTORY', 'MANAGE_STAFF', 'VIEW_REPORTS'].forEach(p => perms[p] = true);
+    } else if (id === 5) { // Manager
+      ['VIEW_DASHBOARD', 'VIEW_TRANSACTIONS', 'MANAGE_PRODUCTS', 'MANAGE_INVENTORY', 'MANAGE_STAFF', 'VIEW_REPORTS'].forEach(p => perms[p] = true);
     } else if (id === 4) { // Supervisor
       ['VIEW_DASHBOARD', 'VIEW_TRANSACTIONS', 'MANAGE_PRODUCTS', 'MANAGE_INVENTORY', 'VIEW_REPORTS'].forEach(p => perms[p] = true);
     } else if (id === 3) { // Cashier
@@ -149,6 +160,7 @@ export class RolesComponent implements OnInit {
     const payload = {
       name: r.name,
       description: r.description,
+      systemRole: r.systemRole,
       permissions: r.permissions || {}
     };
 
@@ -170,5 +182,11 @@ export class RolesComponent implements OnInit {
   getPermissionsKeys(permissions?: { [key: string]: boolean }): string[] {
     if (!permissions) return [];
     return Object.keys(permissions).filter(k => permissions[k]);
+  }
+
+  private mapSystemRoleToId(role: string | number): number {
+    if (typeof role === 'number') return role;
+    const found = this.systemRoles.find(sr => sr.key === role || sr.name === role);
+    return found ? found.id : 3; // Default to Cashier
   }
 }
