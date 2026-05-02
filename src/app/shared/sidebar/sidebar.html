@@ -13,23 +13,20 @@
 
   <!-- Role badge -->
   <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06);">
-    @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:13px;">👑</span>
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Super Admin</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.3);">All Stores · Owner</div>
-        </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:13px;">
+        @if (authService.currentUser()?.role === 'SUPER_ADMIN') { 👑 }
+        @else if (authService.currentUser()?.role === 'TENANT_ADMIN') { 🏢 }
+        @else if (authService.currentUser()?.role === 'MANAGER') { 👔 }
+        @else if (authService.currentUser()?.role === 'STORE_MANAGER') { 🏪 }
+        @else if (authService.currentUser()?.role === 'SUPERVISOR') { 🛂 }
+        @else { 💰 }
+      </span>
+      <div>
+        <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">{{ authService.currentUser()?.role?.replace('_', ' ') }}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.3);">{{ getStoreName() || 'Global Access' }}</div>
       </div>
-    } @else {
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:13px;">🏪</span>
-        <div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;">Store Manager</div>
-          <div style="font-size:9px;color:rgba(255,255,255,.3);">{{ getStoreName() }}</div>
-        </div>
-      </div>
-    }
+    </div>
   </div>
 
   <!-- Nav -->

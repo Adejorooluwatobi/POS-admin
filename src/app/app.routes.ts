@@ -18,6 +18,7 @@ import { TillSessionsComponent } from './pages/till-sessions/till-sessions';
 import { CategoriesComponent } from './pages/categories/categories';
 import { GiftCardsComponent } from './pages/gift-cards/gift-cards';
 import { LoyaltyComponent } from './pages/loyalty/loyalty';
+import { ProfileComponent } from './pages/profile/profile';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -43,6 +44,7 @@ export const routes: Routes = [
       { path: 'categories', title: 'Categories — RetailOS', component: CategoriesComponent },
       { path: 'gift-cards', title: 'Gift Cards — RetailOS', component: GiftCardsComponent },
       { path: 'loyalty', title: 'Loyalty Ledger — RetailOS', component: LoyaltyComponent },
+      { path: 'profile', title: 'My Profile — RetailOS', component: ProfileComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

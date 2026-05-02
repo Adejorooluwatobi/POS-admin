@@ -1,0 +1,117 @@
+<div class="fade-up" style="padding:24px; max-width:800px; margin:0 auto;">
+  
+  <!-- Header -->
+  <div style="margin-bottom:32px;">
+    <h1 style="font-size:24px; font-weight:800; letter-spacing:-0.03em;">My Profile</h1>
+    <p style="color:var(--text3); font-size:13px;">Manage your personal information and security settings.</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:24px;">
+    
+    <!-- Sidebar / Identity -->
+    <div>
+      <div class="card" style="padding:24px; text-align:center;">
+        <div style="width:80px; height:80px; border-radius:50%; background:var(--accent-d); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800; margin:0 auto 16px;">
+          {{ user()?.initials }}
+        </div>
+        <h2 style="font-size:18px; font-weight:700; margin-bottom:4px;">{{ user()?.name }}</h2>
+        <div class="badge badge-accent" style="margin-bottom:20px;">{{ user()?.role }}</div>
+        
+        <div style="text-align:left; border-top:1px solid var(--border); padding-top:20px; display:flex; flex-direction:column; gap:12px;">
+          <div>
+            <label style="font-size:10px; color:var(--text3); text-transform:uppercase; font-weight:700;">Employee ID</label>
+            <div style="font-size:13px; font-weight:600; font-family:var(--mono);">{{ user()?.sub?.substring(0,8) }}</div>
+          </div>
+          <div>
+            <label style="font-size:10px; color:var(--text3); text-transform:uppercase; font-weight:700;">Assigned Store</label>
+            <div style="font-size:13px; font-weight:600;">{{ user()?.store || 'Global Access' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div style="display:flex; flex-direction:column; gap:24px;">
+      
+      <!-- Profile Info -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h3 style="font-size:16px; font-weight:700;">Personal Information</h3>
+          <button (click)="isEditing.set(!isEditing())" class="btn btn-secondary btn-sm">
+            {{ isEditing() ? 'Cancel' : 'Edit Profile' }}
+          </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="grid-column: span {{ isEditing() ? 1 : 2 }}">
+            <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">Email Address</label>
+            @if (isEditing()) {
+              <input type="email" class="inp" [(ngModel)]="profileForm.email">
+            } @else {
+              <div style="font-size:14px; font-weight:500;">{{ user()?.email }}</div>
+            }
+          </div>
+          @if (isEditing()) {
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">First Name</label>
+              <input type="text" class="inp" [(ngModel)]="profileForm.firstName">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">Last Name</label>
+              <input type="text" class="inp" [(ngModel)]="profileForm.lastName">
+            </div>
+            <div style="grid-column: 1 / -1; margin-top:8px;">
+              <button (click)="updateProfile()" class="btn btn-primary" style="width:100%; justify-content:center;">Save Changes</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Security / PIN -->
+      <div class="card" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+          <h3 style="font-size:16px; font-weight:700;">Security</h3>
+          <button (click)="isChangingPin.set(!isChangingPin())" class="btn btn-secondary btn-sm">
+            {{ isChangingPin() ? 'Cancel' : 'Change PIN' }}
+          </button>
+        </div>
+
+        @if (isChangingPin()) {
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div>
+              <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">Current PIN</label>
+              <input type="password" class="inp" placeholder="••••" maxlength="4" [(ngModel)]="pinForm.currentPin">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+              <div>
+                <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">New PIN</label>
+                <input type="password" class="inp" placeholder="••••" maxlength="4" [(ngModel)]="pinForm.newPin">
+              </div>
+              <div>
+                <label style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; display:block; margin-bottom:6px;">Confirm New PIN</label>
+                <input type="password" class="inp" placeholder="••••" maxlength="4" [(ngModel)]="pinForm.confirmPin">
+              </div>
+            </div>
+            <button (click)="changePin()" class="btn btn-primary" style="margin-top:8px; justify-content:center;">Update PIN</button>
+          </div>
+        } @else {
+          <div style="display:flex; align-items:center; gap:12px; padding:12px; background:var(--surface2); border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:20px;">🔒</div>
+            <div>
+              <div style="font-size:13px; font-weight:700;">Login PIN</div>
+              <div style="font-size:11px; color:var(--text3);">Used for quick terminal access and authorization.</div>
+            </div>
+            <div style="margin-left:auto; font-family:var(--mono); letter-spacing:4px; font-weight:800;">••••</div>
+          </div>
+        }
+      </div>
+
+      @if (statusMsg()) {
+        <div class="alert-banner" [ngClass]="statusMsg()?.type === 'success' ? 'badge-green' : 'badge-red'" style="justify-content:center;">
+          {{ statusMsg()?.text }}
+        </div>
+      }
+    </div>
+
+  </div>
+</div>

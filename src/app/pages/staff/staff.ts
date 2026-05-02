@@ -45,6 +45,11 @@ export class StaffComponent implements OnInit {
       return roles.filter(r => r.systemRole === 3 || r.systemRole === 4);
     }
 
+    // SUPERVISOR can only create Cashier (3)
+    if (user.role === 'SUPERVISOR') {
+      return roles.filter(r => r.systemRole === 3);
+    }
+
     return [];
   });
 
@@ -88,9 +93,19 @@ export class StaffComponent implements OnInit {
       const user = this.currentUser();
 
       let filteredItems = items;
-      if (user && (user.role === 'CASHIER' || user.role === 'SUPERVISOR')) {
-        // Lower roles only see themselves. user.sub is usually the staff ID.
-        filteredItems = items.filter((s: any) => s.id === user.sub || s.email === user.email);
+      if (user) {
+        if (user.role === 'CASHIER') {
+          filteredItems = items.filter((s: any) => s.id === user.sub || s.email === user.email);
+        } else if (user.role === 'SUPERVISOR') {
+          // Supervisors see themselves and Cashiers in their store
+          filteredItems = items.filter((s: any) => 
+            (s.id === user.sub || s.email === user.email) || 
+            (s.storeId === user.store && s.systemRole === 3)
+          );
+        } else if (user.role === 'STORE_MANAGER') {
+          // Store Managers see everyone in their store
+          filteredItems = items.filter((s: any) => s.storeId === user.store);
+        }
       }
 
       this.staff.set(filteredItems.map((s: any) => ({
@@ -139,7 +154,7 @@ export class StaffComponent implements OnInit {
       no: '',
       roleId: '',
       active: true,
-      storeId: this.currentUser()?.storeId || '', // Auto-fill if user belongs to a store
+      storeId: this.currentUser()?.store || '', // Use 'store' property which contains the storeId
       hiredAt: new Date().toISOString().split('T')[0],
       pin: '',
       password: ''

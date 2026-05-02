@@ -45,7 +45,8 @@ export class SidebarComponent {
       { id: 'loyalty', icon: 'star', label: 'Loyalty Ledger', route: '/app/loyalty', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       
       { section: 'Management', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
-      { id: 'staff', icon: 'person', label: role === 'CASHIER' || role === 'SUPERVISOR' ? 'My Profile' : 'Staff', route: '/app/staff', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
+      { id: 'profile', icon: 'person', label: 'My Profile', route: '/app/profile', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
+      { id: 'staff', icon: 'users', label: 'Staff Management', route: '/app/staff', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR'] },
       { id: 'roles', icon: 'shield', label: 'Roles', route: '/app/roles', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
       { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       { id: 'audit', icon: 'shield', label: 'Audit Logs', route: '/app/audit', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
