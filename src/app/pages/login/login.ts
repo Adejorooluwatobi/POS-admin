@@ -12,10 +12,8 @@ import { Router } from '@angular/router';
   templateUrl: './login.html'
 })
 export class LoginComponent {
-  public selectedLoginRole = signal<'owner' | 'manager'>('owner');
   public email = '';
   public password = '';
-  public selectedStore = 'LG-01';
   public loginError = signal<string | null>(null);
   public isLoading = signal<boolean>(false);
 
@@ -25,15 +23,16 @@ export class LoginComponent {
     private router: Router
   ) {}
 
-  selectRole(role: 'owner' | 'manager') {
-    this.selectedLoginRole.set(role);
-  }
-
   async doLogin() {
+    if (!this.email || !this.password) {
+      this.loginError.set('Please enter both email and password.');
+      return;
+    }
+
     this.isLoading.set(true);
     this.loginError.set(null);
     try {
-      const error = await this.authService.login(this.email, this.password, this.selectedLoginRole());
+      const error = await this.authService.login(this.email, this.password);
       if (error) {
         this.loginError.set(error);
       } else {
