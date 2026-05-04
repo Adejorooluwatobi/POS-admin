@@ -1,0 +1,166 @@
+<div class="fade-up" style="padding:24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Stock Requisitions</div>
+      <div style="font-size:12px;color:var(--text3);">Manage internal stock requests and store fulfillments.</div>
+    </div>
+    <button (click)="openCreateModal()" class="btn btn-primary" style="padding:10px 20px;border-radius:12px;">+ New Requisition</button>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:20px;margin-bottom:30px;">
+    <div class="card" style="padding:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Pending</div>
+      <div style="font-size:24px;font-weight:800;">{{ requisitions().length }}</div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Under Review</div>
+      <div style="font-size:24px;font-weight:800;color:var(--amber);">0</div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Fulfilled</div>
+      <div style="font-size:24px;font-weight:800;color:var(--green);">0</div>
+    </div>
+    <div class="card" style="padding:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Avg. Fulfillment</div>
+      <div style="font-size:24px;font-weight:800;color:var(--accent);">2.4 Days</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>NUMBER</th>
+            <th>STORE</th>
+            <th>STATUS</th>
+            <th>ITEMS</th>
+            <th>DATE</th>
+            <th style="text-align:right;">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of requisitions()">
+            <td style="font-weight:700;color:var(--text1);">{{ req.requisitionNumber }}</td>
+            <td style="color:var(--text2);">{{ req.requestingStoreName }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-amber': req.status === 'Pending',
+                'badge-accent': req.status === 'Approved',
+                'badge-green': req.status === 'FullyFulfilled',
+                'badge-red': req.status === 'Rejected'
+              }">{{ req.status }}</span>
+            </td>
+            <td style="color:var(--text2);">{{ req.items.length }} Items</td>
+            <td style="color:var(--text3);font-size:11px;">{{ req.createdAt | date:'short' }}</td>
+            <td style="text-align:right;">
+              <div style="display:flex;justify-content:flex-end;gap:8px;">
+                <button *ngIf="isGenerals() && req.status === 'Pending'" (click)="openApproveModal(req)" class="btn btn-secondary btn-xs" style="color:var(--green);">Approve</button>
+                <a [routerLink]="['/app/inventory/requisitions', req.id]" class="btn btn-secondary btn-xs">View</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div *ngIf="requisitions().length === 0 && !isLoading()" style="padding:60px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:16px;">📄</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text1);">No Requisitions Found</div>
+      <div style="font-size:13px;color:var(--text3);">New requests from stores will appear here.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div *ngIf="isModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:600px;">
+    <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+      <div>
+        <div style="font-size:18px;font-weight:800;">New Requisition</div>
+        <div style="font-size:11px;color:var(--text3);">Request stock from another location</div>
+      </div>
+      <button (click)="isModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+    
+    <div style="padding:24px;max-height:60vh;overflow-y:auto;">
+      <div style="margin-bottom:20px;">
+        <label class="label">Notes / Reason</label>
+        <textarea [(ngModel)]="newReq.notes" class="inp" style="height:80px;resize:none;" placeholder="Why is this stock needed?"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Requested Items</div>
+        <button (click)="addItem()" class="btn btn-secondary btn-xs" style="color:var(--accent);">+ Add Item</button>
+      </div>
+
+      <div style="display:grid;gap:12px;">
+        <div *ngFor="let item of newReq.items; let i = index" style="display:flex;gap:12px;align-items:flex-end;background:var(--surface2);padding:12px;border-radius:12px;border:1px solid var(--border);">
+          <div style="flex:1;">
+            <label class="label" style="font-size:9px;">Select Product / Variant</label>
+            <select [(ngModel)]="item.variantId" class="inp">
+              <option value="" disabled>Choose a product...</option>
+              <option *ngFor="let p of products()" [value]="p.id">{{ p.name }} ({{ p.sku }})</option>
+            </select>
+          </div>
+          <div style="width:80px;">
+            <label class="label" style="font-size:9px;">Qty</label>
+            <input type="number" [(ngModel)]="item.quantityRequested" class="inp" style="text-align:center;">
+          </div>
+          <button (click)="newReq.items.splice(i, 1)" class="btn btn-danger btn-xs" style="height:32px;">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:20px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:flex-end;gap:12px;">
+      <button (click)="isModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitRequisition()" class="btn btn-primary">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div *ngIf="selectedReq()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:800px;">
+    <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+      <div>
+        <div style="font-size:18px;font-weight:800;">Approve Requisition: {{ selectedReq().requisitionNumber }}</div>
+        <div style="font-size:11px;color:var(--text3);">Plan fulfillment from various sources</div>
+      </div>
+      <button (click)="selectedReq.set(null)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+    
+    <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+      <div>
+        <div class="label" style="margin-bottom:12px;">Original Request</div>
+        <div style="display:grid;gap:8px;">
+          <div *ngFor="let item of selectedReq().items" style="padding:10px;background:var(--surface2);border-radius:8px;display:flex;justify-content:space-between;font-size:12px;">
+            <span style="font-weight:600;">{{ item.variantName }}</span>
+            <span style="font-weight:800;color:var(--accent);">x{{ item.quantityRequested }}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:12px;">Fulfillment Plan</div>
+        <div *ngFor="let plan of fulfillmentPlans()" style="padding:16px;background:var(--accent-d);border:1px solid var(--accent);border-radius:12px;margin-bottom:16px;">
+          <label class="label" style="color:var(--accent);">Source Store ID</label>
+          <input [(ngModel)]="plan.sourceStoreId" class="inp" style="background:var(--surface);margin-bottom:12px;" placeholder="Empty for HQ">
+          
+          <div style="display:grid;gap:8px;">
+            <div *ngFor="let item of plan.items" style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:11px;font-weight:600;">{{ item.sku }}</span>
+              <input type="number" [(ngModel)]="item.quantity" class="inp" style="width:60px;padding:4px;text-align:center;background:var(--surface);">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+      <button (click)="selectedReq.set(null)" class="btn btn-secondary">Cancel</button>
+      <button (click)="approve()" class="btn btn-primary" style="background:var(--green);">Confirm Approval</button>
+    </div>
+  </div>
+</div>

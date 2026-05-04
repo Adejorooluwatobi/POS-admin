@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ─── THEME VARS ──────────────────────────────────── */
 :root {
   --bg:        #f1f4f8;
@@ -76,6 +78,10 @@ body { background: var(--bg); color: var(--text); transition: background .2s, co
 .nav-link.active .nav-icon { color: var(--sidebar-ab); }
 .nav-icon { width: 15px; height: 15px; flex-shrink: 0; }
 .nav-section { font-size: 9px; font-weight: 700; color: rgba(255,255,255,.2); letter-spacing: .08em; text-transform: uppercase; padding: 10px 14px 4px; }
+.sub-nav { padding: 4px 0 4px 28px; margin-bottom: 4px; border-left: 1px solid rgba(255,255,255,.05); margin-left: 21px; }
+.sub-link { display: block; padding: 5px 12px; font-size: 11px; color: var(--sidebar-t); text-decoration: none; border-radius: 6px; transition: all .1s; }
+.sub-link:hover { color: var(--sidebar-a); background: var(--sidebar-s); }
+.sub-link.active { color: var(--sidebar-ab); font-weight: 600; }
 
 /* Cards */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }

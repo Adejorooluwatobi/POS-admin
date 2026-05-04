@@ -81,4 +81,20 @@ export class AuthService {
   isLoggedIn(): boolean {
     return this.currentUser() !== null;
   }
+
+  getSystemRole(): string {
+    const user = this.currentUser();
+    if (!user) return '';
+    // Map back to original system role if needed, or return the internal enum
+    if (user.role === 'SUPER_ADMIN') return 'SuperAdmin';
+    if (user.role === 'TENANT_ADMIN') return 'TenantAdmin';
+    if (user.role === 'MANAGER') return 'Manager';
+    if (user.role === 'STORE_MANAGER') return 'StoreManager';
+    if (user.role === 'SUPERVISOR') return 'Supervisor';
+    return 'Cashier';
+  }
+
+  getStoreId(): string | null {
+    return this.currentUser()?.store || null;
+  }
 }

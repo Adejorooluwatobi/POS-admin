@@ -2,8 +2,11 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
+import { StockMovementService } from '../../services/stock-movement.service';
+import { ProductService } from '../../services/product.service';
+import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
-import { InventoryItem } from '../../models/pos.models';
+import { InventoryItem, Product, Store } from '../../models/pos.models';
 
 @Component({
   selector: 'app-inventory',
@@ -15,7 +18,7 @@ export class InventoryComponent implements OnInit {
   public inventory = signal<InventoryItem[]>([]);
   public isLoading = signal<boolean>(false);
 
-  // Modal State
+  // Adjustment Modal State
   public isModalOpen = signal<boolean>(false);
   public selectedItem = signal<any>({
     n: '',
@@ -26,13 +29,76 @@ export class InventoryComponent implements OnInit {
     reason: ''
   });
 
+  // Add Modal State
+  public isAddModalOpen = signal<boolean>(false);
+  public products = signal<Product[]>([]);
+  public stores = signal<Store[]>([]);
+  public newInventoryItem = {
+    variantId: '',
+    storeId: '',
+    quantityOnHand: 0,
+    reorderPoint: 5,
+    reorderQty: 10
+  };
+
+  public isGenerals = signal<boolean>(false);
+  public lowStockAlerts = signal<any[]>([]);
+  public crossStoreStock = signal<any[]>([]);
+  public isCrossStoreModalOpen = signal<boolean>(false);
+
   constructor(
     private inventoryService: InventoryService,
+    private stockService: StockMovementService,
+    private productService: ProductService,
+    private storeService: StoreService,
     private authService: AuthService
   ) {}
 
   ngOnInit() {
+    this.checkUserRole();
     this.loadInventory();
+    this.loadAlerts();
+    this.loadInitialData();
+  }
+
+  async loadInitialData() {
+    try {
+      const prodData = await this.productService.getProducts(1, 100);
+      const items = prodData.items || prodData;
+      this.products.set(items.map((p: any) => ({
+        ...p,
+        name: p.name || p.Name || p.n,
+        Name: p.name || p.Name || p.n
+      })));
+
+      if (this.isGenerals()) {
+        const storeData = await this.storeService.getStores(1, 100);
+        this.stores.set(storeData.items || storeData);
+      }
+    } catch (error) {}
+  }
+
+  checkUserRole() {
+    const role = this.authService.getSystemRole();
+    this.isGenerals.set(role === 'SuperAdmin' || role === 'TenantAdmin' || role === 'Manager');
+  }
+
+  async loadAlerts() {
+    const storeId = this.authService.getStoreId();
+    if (storeId) {
+      try {
+        this.lowStockAlerts.set(await this.stockService.getLowStockAlerts(storeId));
+      } catch (error) {}
+    }
+  }
+
+  async viewCrossStore(item: any) {
+    if (!this.isGenerals()) return;
+    try {
+      this.crossStoreStock.set(await this.stockService.getCrossStoreStock(item.variantId));
+      this.selectedItem.set(item);
+      this.isCrossStoreModalOpen.set(true);
+    } catch (error) {}
   }
 
   async loadInventory() {
@@ -43,6 +109,7 @@ export class InventoryComponent implements OnInit {
       this.inventory.set(items.map((i: any) => ({
         ...i,
         n: i.variantName || 'Unknown Product',
+        sku: i.sku || i.SKU,
         e: '📦',
         oh: i.quantityOnHand,
         res: i.quantityReserved,
@@ -57,6 +124,33 @@ export class InventoryComponent implements OnInit {
     }
   }
 
+  openAddModal() {
+    this.newInventoryItem = {
+      variantId: '',
+      storeId: this.authService.getStoreId() || '',
+      quantityOnHand: 0,
+      reorderPoint: 5,
+      reorderQty: 10
+    };
+    this.isAddModalOpen.set(true);
+  }
+
+  async saveNewInventory() {
+    if (!this.newInventoryItem.variantId || !this.newInventoryItem.storeId) {
+      alert('Please select a product and store.');
+      return;
+    }
+
+    try {
+      await this.inventoryService.createInventory(this.newInventoryItem);
+      this.isAddModalOpen.set(false);
+      this.loadInventory();
+    } catch (error) {
+      console.error('Failed to add inventory', error);
+      alert('Failed to add product to inventory. It might already exist.');
+    }
+  }
+
   openStockAdj(item: InventoryItem) {
     this.selectedItem.set({ ...item });
     this.isModalOpen.set(true);
@@ -64,6 +158,7 @@ export class InventoryComponent implements OnInit {
 
   closeModal() {
     this.isModalOpen.set(false);
+    this.isAddModalOpen.set(false);
   }
 
   async saveAdjustment() {

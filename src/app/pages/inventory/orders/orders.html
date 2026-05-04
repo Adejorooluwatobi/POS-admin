@@ -1,0 +1,63 @@
+<div class="fade-up" style="padding:24px;">
+  <div style="margin-bottom:30px;">
+    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Movement Orders</div>
+    <div style="font-size:12px;color:var(--text3);">Track inbound and outbound stock transfers between stores.</div>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>ORDER NO</th>
+            <th>DIRECTION</th>
+            <th>STATUS</th>
+            <th>FROM → TO</th>
+            <th>ITEMS</th>
+            <th style="text-align:right;">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders()">
+            <td style="font-weight:700;color:var(--text1);">{{ order.orderNumber }}</td>
+            <td>
+              <span *ngIf="order.destinationStoreId === userStoreId()" style="color:var(--accent);display:flex;align-items:center;gap:4px;font-weight:600;font-size:11px;">
+                <span style="font-size:16px;">↓</span> Inbound
+              </span>
+              <span *ngIf="order.sourceStoreId === userStoreId()" style="color:var(--amber);display:flex;align-items:center;gap:4px;font-weight:600;font-size:11px;">
+                <span style="font-size:16px;">↑</span> Outbound
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-dim': order.status === 'Draft',
+                'badge-accent': order.status === 'Dispatched',
+                'badge-amber': order.status === 'Received',
+                'badge-green': order.status === 'Approved',
+                'badge-red': order.status === 'Disputed'
+              }">{{ order.status }}</span>
+            </td>
+            <td style="font-size:11px;color:var(--text2);">
+              {{ order.sourceStoreName }} <span style="color:var(--text3);margin:0 4px;">→</span> {{ order.destinationStoreName }}
+            </td>
+            <td style="color:var(--text2);">{{ order.items.length }} SKU(s)</td>
+            <td style="text-align:right;">
+              <div style="display:flex;justify-content:flex-end;gap:8px;">
+                <button *ngIf="order.status === 'Draft' && order.sourceStoreId === userStoreId()" (click)="dispatch(order)" class="btn btn-primary btn-xs">Dispatch</button>
+                <button *ngIf="order.status === 'Dispatched' && order.destinationStoreId === userStoreId()" (click)="receive(order)" class="btn btn-amber btn-xs">Receive</button>
+                <button *ngIf="order.status === 'Received' && order.sourceStoreId === userStoreId()" (click)="approve(order)" class="btn btn-primary btn-xs" style="background:var(--green);">Approve</button>
+                <a [routerLink]="['/app/inventory/orders', order.id]" class="btn btn-secondary btn-xs">View</a>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="orders().length === 0 && !isLoading()" style="padding:80px;text-align:center;">
+      <div style="font-size:50px;margin-bottom:20px;">🚚</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text1);">No Orders Tracked</div>
+      <div style="font-size:13px;color:var(--text3);">Store transfers and HQ shipments will be listed here once created.</div>
+    </div>
+  </div>
+</div>

@@ -5,6 +5,10 @@ import { DashboardComponent } from './pages/dashboard/dashboard';
 import { TransactionsComponent } from './pages/transactions/transactions';
 import { ProductsComponent } from './pages/products/products';
 import { InventoryComponent } from './pages/inventory/inventory';
+import { RequisitionsComponent } from './pages/inventory/requisitions/requisitions';
+import { RequisitionDetailComponent } from './pages/inventory/requisitions/detail/requisition-detail';
+import { OrdersComponent } from './pages/inventory/orders/orders';
+import { OrderDetailComponent } from './pages/inventory/orders/detail/order-detail';
 import { CustomersComponent } from './pages/customers/customers';
 import { StaffComponent } from './pages/staff/staff';
 import { SettingsComponent } from './pages/settings/settings';
@@ -31,6 +35,10 @@ export const routes: Routes = [
       { path: 'transactions', title: 'Transactions — RetailOS', component: TransactionsComponent },
       { path: 'products', title: 'Products — RetailOS', component: ProductsComponent },
       { path: 'inventory', title: 'Inventory — RetailOS', component: InventoryComponent },
+      { path: 'inventory/requisitions', title: 'Requisitions — RetailOS', component: RequisitionsComponent },
+      { path: 'inventory/requisitions/:id', title: 'Requisition Details — RetailOS', component: RequisitionDetailComponent },
+      { path: 'inventory/orders', title: 'Movement Orders — RetailOS', component: OrdersComponent },
+      { path: 'inventory/orders/:id', title: 'Order Details — RetailOS', component: OrderDetailComponent },
       { path: 'customers', title: 'Customers — RetailOS', component: CustomersComponent },
       { path: 'staff', title: 'Staff — RetailOS', component: StaffComponent },
       { path: 'settings', title: 'Settings — RetailOS', component: SettingsComponent },
