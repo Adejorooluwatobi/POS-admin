@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { DataService } from '../../services/data.service';
@@ -17,6 +17,7 @@ export class SidebarComponent {
   constructor(
     public authService: AuthService,
     public themeService: ThemeService,
+    public router: Router,
     private dataService: DataService
   ) {
     this.setupNav();
@@ -36,7 +37,13 @@ export class SidebarComponent {
       { section: 'Commerce', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       { id: 'products', icon: 'box', label: 'Products', route: '/app/products', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       { id: 'categories', icon: 'grid', label: 'Categories', route: '/app/categories', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'inventory', icon: 'stack', label: 'Inventory', route: '/app/inventory', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'inventory', icon: 'stack', label: 'Inventory', route: '/app/inventory', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'],
+        children: [
+          { label: 'Stock Levels', route: '/app/inventory' },
+          { label: 'Requisitions', route: '/app/inventory/requisitions' },
+          { label: 'Movement Orders', route: '/app/inventory/orders' }
+        ]
+      },
       { id: 'customers', icon: 'users', label: 'Customers', route: '/app/customers', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       { id: 'promotions', icon: 'tag', label: 'Promotions', route: '/app/promotions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
       
