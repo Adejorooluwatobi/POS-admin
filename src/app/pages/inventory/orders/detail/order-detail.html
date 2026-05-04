@@ -1,0 +1,178 @@
+<div class="fade-up" style="padding:24px;">
+  <div *ngIf="order()" style="max-width:1100px;margin:0 auto;">
+    <!-- Breadcrumbs -->
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:20px;">
+      <a href="/app/inventory/orders" style="color:inherit;text-decoration:none;">Orders</a>
+      <span>/</span>
+      <span style="font-weight:700;color:var(--text1);">{{ order().orderNumber }}</span>
+    </div>
+
+    <!-- Header Card -->
+    <div class="card" style="padding:32px;display:flex;justify-content:space-between;align-items:start;margin-bottom:30px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <h1 style="font-size:28px;font-weight:800;margin:0;">{{ order().orderNumber }}</h1>
+          <span class="badge" [ngClass]="{
+            'badge-dim': order().status === 'Draft',
+            'badge-accent': order().status === 'Dispatched',
+            'badge-amber': order().status === 'Received',
+            'badge-green': order().status === 'Approved',
+            'badge-red': order().status === 'Disputed'
+          }">{{ order().status }}</span>
+        </div>
+        <div style="font-size:13px;color:var(--text3);">
+          Created by <span style="color:var(--text1);font-weight:600;">{{ order().createdByName }}</span> on {{ order().createdAt | date:'medium' }}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <!-- Contextual Actions -->
+        <button *ngIf="order().status === 'Draft' && order().sourceStoreId === userStoreId()" (click)="dispatch()" class="btn btn-primary" style="padding:12px 24px;">Dispatch Order</button>
+        <button *ngIf="order().status === 'Dispatched' && order().destinationStoreId === userStoreId()" (click)="openReceiveModal()" class="btn btn-amber" style="padding:12px 24px;">Receive Stock</button>
+        <button *ngIf="order().status === 'Received' && (isGeneral() || order().destinationStoreId === userStoreId())" (click)="approve()" class="btn btn-primary" style="padding:12px 24px;background:var(--green);">Finalize & Approve</button>
+        
+        <!-- Referral Actions -->
+        <div *ngIf="order().isReferredTransfer && !order().referralAccepted && order().sourceStoreId === userStoreId()" style="display:flex;gap:8px;">
+          <button (click)="acceptReferral()" class="btn btn-primary" style="background:var(--green);padding:12px 24px;">Accept Referral</button>
+          <button (click)="declineReferral()" class="btn btn-danger" style="padding:12px 24px;">Decline</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Stepper -->
+    <div class="card" style="padding:16px;margin-bottom:30px;">
+      <app-status-stepper 
+        [steps]="['Draft', 'Dispatched', 'Received', 'Approved']" 
+        [currentStatus]="order().status">
+      </app-status-stepper>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:30px;">
+      <!-- Main Content -->
+      <div style="display:grid;gap:30px;">
+        <!-- Route Info -->
+        <div class="card" style="padding:24px;">
+          <div class="label" style="margin-bottom:24px;">Shipment Route</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:relative;">
+            <!-- Line -->
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%, -50%);width:50%;height:1px;background:var(--border2);border-top:1px dashed var(--border2);z-index:0;"></div>
+            
+            <div style="position:relative;z-index:1;text-align:center;">
+              <div style="width:48px;height:48px;background:var(--surface2);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;margin-left:auto;margin-right:auto;">🏢</div>
+              <div style="font-weight:800;font-size:13px;color:var(--text1);">{{ order().sourceStoreName || 'Headquarters' }}</div>
+              <div class="label" style="font-size:9px;">Source</div>
+            </div>
+            
+            <div style="position:relative;z-index:1;text-align:center;">
+              <div style="width:48px;height:48px;background:var(--accent-d);border:1px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;margin-left:auto;margin-right:auto;">📍</div>
+              <div style="font-weight:800;font-size:13px;color:var(--text1);">{{ order().destinationStoreName }}</div>
+              <div class="label" style="font-size:9px;">Destination</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items -->
+        <div class="card" style="overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface2);">
+            <div class="label">Order Items</div>
+          </div>
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>ITEM DETAIL</th>
+                <th style="text-align:center;">ORDERED</th>
+                <th style="text-align:center;">RECEIVED</th>
+                <th style="text-align:right;">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of order().items">
+                <td>
+                  <div style="font-weight:700;color:var(--text1);">{{ item.variantName }}</div>
+                  <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
+                </td>
+                <td style="text-align:center;font-weight:700;">{{ item.quantityOrdered }}</td>
+                <td style="text-align:center;font-weight:800;color:var(--accent);">{{ item.quantityReceived || '-' }}</td>
+                <td style="text-align:right;">
+                  <span *ngIf="item.quantityReceived === item.quantityOrdered" style="color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase;">Verified</span>
+                  <span *ngIf="item.quantityReceived < item.quantityOrdered" style="color:var(--red);font-size:10px;font-weight:800;text-transform:uppercase;">Shortage</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div style="display:grid;gap:30px;align-content:start;">
+        <!-- Tracking Card -->
+        <div class="card" style="padding:24px;">
+          <div class="label" style="margin-bottom:20px;">Tracking History</div>
+          <div style="display:grid;gap:24px;">
+            <div style="display:flex;gap:16px;position:relative;">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:6px;z-index:1;"></div>
+              <div style="position:absolute;left:3.5px;top:14px;width:1px;height:24px;background:var(--border);"></div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text1);">Ordered</div>
+                <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">{{ order().createdAt | date:'short' }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;position:relative;" *ngIf="order().dispatchedAt">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px;z-index:1;"></div>
+              <div style="position:absolute;left:3.5px;top:14px;width:1px;height:24px;background:var(--border);"></div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text1);">Dispatched</div>
+                <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">{{ order().dispatchedAt | date:'short' }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;">
+              <div [style.background]="order().receivedAt ? 'var(--amber)' : 'var(--border2)'" style="width:8px;height:8px;border-radius:50%;margin-top:6px;z-index:1;"></div>
+              <div>
+                <div [style.color]="order().receivedAt ? 'var(--text1)' : 'var(--text3)'" style="font-size:13px;font-weight:700;">Received</div>
+                <div *ngIf="order().receivedAt" style="font-size:10px;color:var(--text3);text-transform:uppercase;">{{ order().receivedAt | date:'short' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="order().stockRequisitionId" style="background:var(--accent);border-radius:16px;padding:24px;color:#fff;box-shadow:0 10px 25px var(--accent-d);">
+          <div style="font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;margin-bottom:8px;">Linked Requisition</div>
+          <div style="font-size:20px;font-weight:900;margin-bottom:16px;">REQ-{{ order().stockRequisitionId.substring(0,8).toUpperCase() }}</div>
+          <a [routerLink]="['/app/inventory/requisitions', order().stockRequisitionId]" class="btn" style="width:100%;background:rgba(255,255,255,.15);color:#fff;justify-content:center;padding:10px;font-size:12px;text-decoration:none;">View Requisition</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Receive Modal -->
+<div *ngIf="isReceiveModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:600px;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);background:var(--amber-d);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--amber);">Receive Stock</div>
+        <div style="font-size:12px;color:var(--text3);">Verify quantities physically before confirming</div>
+      </div>
+      <button (click)="isReceiveModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+    
+    <div style="padding:24px;max-height:60vh;overflow-y:auto;display:grid;gap:12px;">
+      <div *ngFor="let item of receivedItems()" class="card" style="padding:16px;display:flex;justify-content:space-between;align-items:center;background:var(--surface2);">
+        <div>
+          <div style="font-weight:800;color:var(--text1);">{{ item.variantName }}</div>
+          <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
+          <div style="font-size:9px;font-weight:800;color:var(--text3);margin-top:4px;text-transform:uppercase;">Ordered: {{ item.quantityOrdered }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <label class="label" style="margin:0;font-size:9px;">Received:</label>
+          <input type="number" [(ngModel)]="item.quantityReceived" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface2);">
+      <button (click)="isReceiveModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitReceive()" class="btn btn-primary" style="background:var(--amber);padding:12px 24px;">Confirm & Save Receipt</button>
+    </div>
+  </div>
+</div>

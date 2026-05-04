@@ -43,6 +43,8 @@ export interface Transaction {
 export interface Product {
   id?: string;
   n: string; // Name
+  name?: string; // Alias for name
+  Name?: string; // Alias for Name
   e: string; // Emoji/Icon
   sku: string; // MasterSku
   cat: string; // Category
@@ -61,6 +63,21 @@ export interface Product {
   barcodes?: string[];
   targetStoreIds?: string[];
   storeOverrides?: StoreProductOverride[];
+  variants?: ProductVariant[];
+  Variants?: ProductVariant[];
+}
+
+export interface ProductVariant {
+  id: string;
+  Id?: string;
+  sku: string;
+  SKU?: string;
+  name?: string;
+  Name?: string;
+  barcode?: string;
+  basePrice?: number;
+  costPrice?: number;
+  unitOfMeasure?: string;
 }
 
 export interface StoreProductOverride {
@@ -75,6 +92,7 @@ export interface InventoryItem {
   id?: string;
   n: string; // Product/Variant Name
   e: string; // Icon
+  sku?: string; // SKU
   oh: number; // Quantity On Hand
   res: number; // Quantity Reserved
   ro: number; // Reorder Point
@@ -196,4 +214,56 @@ export interface LoyaltyLedgerEntry {
   reason: string;
   balanceAfter: number;
   createdAt: string;
+}
+
+export interface InventoryOrder {
+  id: string;
+  orderNumber: string;
+  type: 'HqToStore' | 'StoreToStore';
+  status: 'Draft' | 'Dispatched' | 'Received' | 'Approved' | 'Disputed' | 'Resolved' | 'Cancelled';
+  sourceStoreId?: string;
+  sourceStoreName?: string;
+  destinationStoreId: string;
+  destinationStoreName?: string;
+  createdByStaffId: string;
+  createdByName?: string;
+  dispatchedAt?: string;
+  receivedAt?: string;
+  approvedAt?: string;
+  items: InventoryOrderItemLine[];
+  disputeNotes?: string;
+  disputePhotoUrl?: string;
+  stockRequisitionId?: string;
+}
+
+export interface InventoryOrderItemLine {
+  id: string;
+  variantId: string;
+  variantName?: string;
+  sku?: string;
+  quantityOrdered: number;
+  quantityReceived?: number;
+}
+
+export interface StockRequisition {
+  id: string;
+  requisitionNumber: string;
+  status: 'Pending' | 'UnderReview' | 'Approved' | 'PartiallyFulfilled' | 'FullyFulfilled' | 'Rejected' | 'Cancelled';
+  requestingStoreId: string;
+  requestingStoreName?: string;
+  createdByStaffId: string;
+  createdByName?: string;
+  notes?: string;
+  rejectionReason?: string;
+  createdAt: string;
+  items: StockRequisitionItemLine[];
+}
+
+export interface StockRequisitionItemLine {
+  id: string;
+  variantId: string;
+  variantName?: string;
+  sku?: string;
+  quantityRequested: number;
+  quantityFulfilled: number;
 }
