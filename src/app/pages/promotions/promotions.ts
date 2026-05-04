@@ -3,7 +3,8 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PromotionService } from '../../services/promotion.service';
 import { AuthService } from '../../services/auth.service';
-import { Promotion } from '../../models/pos.models';
+import { StoreService } from '../../services/store.service';
+import { Promotion, Store } from '../../models/pos.models';
 
 @Component({
   selector: 'app-promotions',
@@ -13,8 +14,10 @@ import { Promotion } from '../../models/pos.models';
 })
 export class PromotionsComponent implements OnInit {
   public promotions = signal<Promotion[]>([]);
+  public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
   public isOwner = signal<boolean>(false);
+  public isAdmin = signal<boolean>(false);
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -27,15 +30,18 @@ export class PromotionsComponent implements OnInit {
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     isActive: true,
-    scope: 'CART'
+    scope: 'CART',
+    storeId: null
   });
 
   constructor(
     private promotionService: PromotionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private storeService: StoreService
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+    this.isAdmin.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
   }
 
   async togglePromotionStatus(promo: Promotion) {
@@ -63,6 +69,18 @@ export class PromotionsComponent implements OnInit {
 
   ngOnInit() {
     this.loadPromotions();
+    if (this.isAdmin()) {
+      this.loadStores();
+    }
+  }
+
+  async loadStores() {
+    try {
+      const data = await this.storeService.getStores();
+      this.stores.set(data.items || data);
+    } catch (error) {
+      console.error('Failed to load stores', error);
+    }
   }
 
   async loadPromotions() {
@@ -94,7 +112,8 @@ export class PromotionsComponent implements OnInit {
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       isActive: true,
-      scope: 'CART'
+      scope: 'CART',
+      storeId: null
     });
     this.isModalOpen.set(true);
   }
@@ -120,12 +139,14 @@ export class PromotionsComponent implements OnInit {
     const user = this.authService.currentUser();
     const payload = {
       name: p.name,
+      code: p.code,
       type: p.discountType === 'PERCENT' ? 'Percent' : p.discountType === 'FIXED' ? 'Fixed' : p.discountType === 'BOGO' ? 'Bogo' : 'Bundle',
       scope: p.scope === 'PRODUCT' ? 'Product' : p.scope === 'CATEGORY' ? 'Category' : 'Cart',
       value: p.value,
       startsAt: p.startDate,
       endsAt: p.endDate,
-      tenantId: user?.tenantId
+      tenantId: user?.tenantId,
+      storeId: p.storeId
     };
 
     try {
