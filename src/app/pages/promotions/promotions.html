@@ -140,6 +140,21 @@
             </select>
           </div>
 
+          @if (isAdmin()) {
+            <div>
+              <label class="label">Store Availability</label>
+              <select class="inp" [(ngModel)]="selectedPromotion().storeId" [disabled]="modalMode() === 'view'">
+                <option [ngValue]="null">All Stores (Global)</option>
+                @for (store of stores(); track store.id) {
+                  <option [value]="store.id">{{ store.name }}</option>
+                }
+              </select>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">
+                Global promotions can be redeemed at any branch.
+              </div>
+            </div>
+          }
+
           <div style="display:flex;align-items:center;gap:12px;padding-top:10px;">
             <input type="checkbox" [(ngModel)]="selectedPromotion().isActive" [disabled]="modalMode() === 'view'">
             <label style="font-size:13px;font-weight:600;">Promotion Active</label>

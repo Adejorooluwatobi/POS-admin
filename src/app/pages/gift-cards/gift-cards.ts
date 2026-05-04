@@ -2,7 +2,9 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GiftCardService } from '../../services/gift-card.service';
-import { GiftCard } from '../../models/pos.models';
+import { AuthService } from '../../services/auth.service';
+import { StoreService } from '../../services/store.service';
+import { GiftCard, Store } from '../../models/pos.models';
 
 @Component({
   selector: 'app-gift-cards',
@@ -12,7 +14,9 @@ import { GiftCard } from '../../models/pos.models';
 })
 export class GiftCardsComponent implements OnInit {
   public giftCards = signal<GiftCard[]>([]);
+  public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
+  public isAdmin = signal<boolean>(false);
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -21,13 +25,33 @@ export class GiftCardsComponent implements OnInit {
     cardNumber: '',
     initialValue: 0,
     expiresAt: '',
-    pin: ''
+    pin: '',
+    issuingStoreId: null as string | null
   });
 
-  constructor(private giftCardService: GiftCardService) {}
+  constructor(
+    private giftCardService: GiftCardService,
+    private authService: AuthService,
+    private storeService: StoreService
+  ) {
+    const user = this.authService.currentUser();
+    this.isAdmin.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+  }
 
   ngOnInit() {
     this.loadGiftCards();
+    if (this.isAdmin()) {
+      this.loadStores();
+    }
+  }
+
+  async loadStores() {
+    try {
+      const data = await this.storeService.getStores();
+      this.stores.set(data.items || data);
+    } catch (error) {
+      console.error('Failed to load stores', error);
+    }
   }
 
   async loadGiftCards() {
@@ -48,7 +72,8 @@ export class GiftCardsComponent implements OnInit {
       cardNumber: this.generateCardNumber(),
       initialValue: 0,
       expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
-      pin: Math.floor(1000 + Math.random() * 9000).toString()
+      pin: Math.floor(1000 + Math.random() * 9000).toString(),
+      issuingStoreId: null
     });
     this.isModalOpen.set(true);
   }

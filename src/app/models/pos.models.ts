@@ -160,6 +160,7 @@ export interface Promotion {
   endDate: string;
   isActive: boolean;
   scope: 'PRODUCT' | 'CATEGORY' | 'CART';
+  storeId?: string | null;
   targetId?: string; // ProductId or CategoryId
 }
 export interface Terminal {
@@ -204,6 +205,7 @@ export interface GiftCard {
   expiresAt?: string;
   isActive: boolean;
   issuedAt: string;
+  issuingStoreId?: string | null;
 }
 
 export interface LoyaltyLedgerEntry {
