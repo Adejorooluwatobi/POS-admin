@@ -77,8 +77,11 @@ export class TillSessionsComponent implements OnInit {
     this.isModalOpen.set(true);
 
     try {
-      const details = await this.tillService.getTillSessionById(session.id);
-      this.selectedSession.set({ ...session, ...details });
+      const [details, progress] = await Promise.all([
+        this.tillService.getTillSessionById(session.id),
+        this.tillService.getTillSessionProgress(session.id)
+      ]);
+      this.selectedSession.set({ ...session, ...details, progress });
     } catch (error) {
       console.error('Failed to fetch session details', error);
     }
