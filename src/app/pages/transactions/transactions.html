@@ -89,8 +89,8 @@
             @for (item of selectedTx()?.details?.items; track item.id) {
               <div style="margin-bottom:12px;">
                 <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;">
-                  <span>{{ item.productName }}</span>
-                  <span>₦{{ (item.totalPrice || 0).toLocaleString() }}</span>
+                  <span>{{ item.variantName }}</span>
+                  <span>₦{{ (item.lineTotal || 0).toLocaleString() }}</span>
                 </div>
                 <div style="font-size:11px;color:var(--text3);">{{ item.quantity }} x ₦{{ (item.unitPrice || 0).toLocaleString() }}</div>
               </div>
