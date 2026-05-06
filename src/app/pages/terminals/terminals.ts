@@ -17,6 +17,9 @@ export class TerminalsComponent implements OnInit {
   public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
   public isOwner = signal<boolean>(false);
+  public isStoreManager = signal<boolean>(false);
+  public assignedStoreId = signal<string | null>(null);
+
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -38,8 +41,12 @@ export class TerminalsComponent implements OnInit {
     private storeService: StoreService,
     private authService: AuthService
   ) {
-    this.isOwner.set(this.authService.currentUser()?.role === 'SUPER_ADMIN');
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'SUPER_ADMIN');
+    this.isStoreManager.set(user?.role === 'STORE_MANAGER');
+    this.assignedStoreId.set(user?.store || null);
   }
+
 
   ngOnInit() {
     this.loadTerminals();
@@ -73,10 +80,11 @@ export class TerminalsComponent implements OnInit {
       name: '',
       ipAddress: '',
       status: 'ONLINE',
-      storeId: ''
+      storeId: this.isStoreManager() ? (this.assignedStoreId() || '') : ''
     });
     this.isModalOpen.set(true);
   }
+
 
   openViewModal(terminal: Terminal) {
     this.modalMode.set('view');
@@ -129,6 +137,10 @@ export class TerminalsComponent implements OnInit {
   }
 
   getStoreName(storeId: string) {
-    return this.stores().find(s => s.id === storeId)?.name || 'Unknown Store';
+    const store = this.stores().find(s => s.id === storeId);
+    if (store) return store.name;
+    if (storeId && storeId === this.assignedStoreId()) return 'My Store';
+    return 'Unknown Store';
   }
+
 }
