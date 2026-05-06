@@ -36,22 +36,23 @@
               <tr>
                 <td>
                   <div style="font-weight:600;font-size:13px;">{{ getTerminalName(s.terminalId) }}</div>
+                  <div style="font-size:10px;color:var(--text3);">Created: {{ s.createdAt | date:'MMM d, HH:mm' }}</div>
                 </td>
                 <td>
                   <div style="font-size:13px;">{{ getStaffName(s.staffId) }}</div>
                 </td>
                 <td style="font-size:11px;color:var(--text2);">
-                  {{ s.openTime | date:'MMM d, HH:mm' }}
+                  {{ (s.openedAt || s.openTime) | date:'MMM d, HH:mm' }}
                 </td>
-                <td class="mono" style="text-align:right;">₦{{ s.openBalance.toLocaleString() }}</td>
+                <td class="mono" style="text-align:right;">₦{{ (s.openingFloat || s.openBalance || 0).toLocaleString() }}</td>
                 <td class="mono" style="text-align:right;font-weight:700;">
-                  ₦{{ (s.closeBalance || 0).toLocaleString() }}
+                  ₦{{ (s.closingCash || s.closeBalance || 0).toLocaleString() }}
                 </td>
-                <td class="mono" style="text-align:right;" [style.color]="(s.actualBalance || 0) - (s.expectedBalance || 0) < 0 ? 'var(--red)' : 'var(--green)'">
-                  {{ (s.actualBalance || 0) - (s.expectedBalance || 0) !== 0 ? '₦' + ((s.actualBalance || 0) - (s.expectedBalance || 0)).toLocaleString() : '—' }}
+                <td class="mono" style="text-align:right;" [style.color]="(s.variance || 0) < 0 ? 'var(--red)' : 'var(--green)'">
+                  {{ (s.variance || 0) !== 0 ? '₦' + (s.variance || 0).toLocaleString() : '—' }}
                 </td>
                 <td>
-                  <span class="badge" [ngClass]="s.status === 'OPEN' ? 'badge-green' : 'badge-dim'">
+                  <span class="badge" [ngClass]="(s.status === 'OPEN' || s.status === 'Open') ? 'badge-green' : 'badge-dim'">
                     {{ s.status }}
                   </span>
                 </td>
@@ -96,11 +97,11 @@
             </div>
             <div>
               <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Opened At</label>
-              <div style="font-size:13px;">{{ selectedSession()?.openTime | date:'medium' }}</div>
+              <div style="font-size:13px;">{{ (selectedSession()?.openedAt || selectedSession()?.openTime) | date:'medium' }}</div>
             </div>
             <div>
               <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:800;display:block;margin-bottom:4px;">Closed At</label>
-              <div style="font-size:13px;">{{ selectedSession()?.closeTime ? (selectedSession()?.closeTime | date:'medium') : 'Active' }}</div>
+              <div style="font-size:13px;">{{ (selectedSession()?.closedAt || selectedSession()?.closeTime) ? ((selectedSession()?.closedAt || selectedSession()?.closeTime) | date:'medium') : 'Active' }}</div>
             </div>
           </div>
 
@@ -125,15 +126,15 @@
             <div style="display:grid;gap:12px;">
               <div style="display:flex;justify-content:space-between;">
                 <span style="font-size:13px;color:var(--text2);">Opening Float</span>
-                <span class="mono">₦{{ selectedSession()?.openBalance?.toLocaleString() || selectedSession()?.openingFloat?.toLocaleString() }}</span>
+                <span class="mono">₦{{ (selectedSession()?.openingFloat || selectedSession()?.openBalance || 0).toLocaleString() }}</span>
               </div>
               <div style="display:flex;justify-content:space-between;">
                 <span style="font-size:13px;color:var(--text2);">Expected Cash</span>
-                <span class="mono">₦{{ selectedSession()?.expectedBalance?.toLocaleString() || selectedSession()?.progress?.expectedCash?.toLocaleString() }}</span>
+                <span class="mono">₦{{ (selectedSession()?.expectedCash || selectedSession()?.expectedBalance || selectedSession()?.progress?.expectedCash || 0).toLocaleString() }}</span>
               </div>
               <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;">
                 <span style="font-weight:700;">Actual Cash Count</span>
-                <span class="mono" style="font-weight:800;">₦{{ selectedSession()?.closeBalance?.toLocaleString() || selectedSession()?.closingCash?.toLocaleString() || '—' }}</span>
+                <span class="mono" style="font-weight:800;">₦{{ (selectedSession()?.closingCash || selectedSession()?.closeBalance || 0) || '—' }}</span>
               </div>
             </div>
           </div>
@@ -141,8 +142,8 @@
           @if (selectedSession()?.status === 'CLOSED' || selectedSession()?.status === 'Closed') {
             <div style="margin-top:20px;padding:12px;border-radius:10px;text-align:center;background:rgba(0,0,0,0.05);">
               <div style="font-size:11px;text-transform:uppercase;font-weight:800;color:var(--text3);">Variance</div>
-              <div style="font-size:20px;font-weight:900;" [style.color]="((selectedSession()?.closeBalance || selectedSession()?.closingCash || 0) - (selectedSession()?.expectedBalance || selectedSession()?.progress?.expectedCash || 0)) < 0 ? 'var(--red)' : 'var(--green)'">
-                ₦{{ ((selectedSession()?.closeBalance || selectedSession()?.closingCash || 0) - (selectedSession()?.expectedBalance || selectedSession()?.progress?.expectedCash || 0)).toLocaleString() }}
+              <div style="font-size:20px;font-weight:900;" [style.color]="(selectedSession()?.variance || 0) < 0 ? 'var(--red)' : 'var(--green)'">
+                ₦{{ (selectedSession()?.variance || 0).toLocaleString() }}
               </div>
             </div>
           }

@@ -180,13 +180,23 @@ export interface TillSession {
   terminalId: string;
   staffId: string;
   staffName?: string;
-  openTime: string;
+  openedAt: string;
+  closedAt?: string;
+  openingFloat: number;
+  closingCash?: number;
+  expectedCash?: number;
+  variance?: number;
+  status: 'Open' | 'Closed' | 'OPEN' | 'CLOSED';
+  createdAt?: string;
+  notes?: string;
+
+  // Legacy field support for older data or UI
+  openTime?: string;
   closeTime?: string;
-  openBalance: number;
+  openBalance?: number;
   closeBalance?: number;
   expectedBalance?: number;
   actualBalance?: number;
-  status: 'OPEN' | 'CLOSED';
 }
 
 export interface Category {
