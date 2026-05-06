@@ -104,28 +104,45 @@
             </div>
           </div>
 
+          <!-- LIVE PROGRESS SECTION -->
+          @if (selectedSession()?.progress; as p) {
+            <div style="margin-bottom:24px;">
+              <label style="font-size:10px;text-transform:uppercase;color:var(--accent);font-weight:900;display:block;margin-bottom:12px;">Live Sales Progress</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="card" style="padding:12px;background:var(--surface2);border-color:var(--accent-alpha);">
+                  <div style="font-size:10px;color:var(--text3);">Total Sales</div>
+                  <div style="font-size:16px;font-weight:800;" class="mono">₦{{ p.totalSales.toLocaleString() }}</div>
+                </div>
+                <div class="card" style="padding:12px;background:var(--surface2);">
+                  <div style="font-size:10px;color:var(--text3);">Transactions</div>
+                  <div style="font-size:16px;font-weight:800;">{{ p.transactionCount }}</div>
+                </div>
+              </div>
+            </div>
+          }
+
           <div class="card" style="padding:16px;background:var(--surface2);">
             <div style="display:grid;gap:12px;">
               <div style="display:flex;justify-content:space-between;">
                 <span style="font-size:13px;color:var(--text2);">Opening Float</span>
-                <span class="mono">₦{{ selectedSession()?.openBalance?.toLocaleString() }}</span>
+                <span class="mono">₦{{ selectedSession()?.openBalance?.toLocaleString() || selectedSession()?.openingFloat?.toLocaleString() }}</span>
               </div>
               <div style="display:flex;justify-content:space-between;">
                 <span style="font-size:13px;color:var(--text2);">Expected Cash</span>
-                <span class="mono">₦{{ selectedSession()?.expectedBalance?.toLocaleString() }}</span>
+                <span class="mono">₦{{ selectedSession()?.expectedBalance?.toLocaleString() || selectedSession()?.progress?.expectedCash?.toLocaleString() }}</span>
               </div>
               <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px;">
                 <span style="font-weight:700;">Actual Cash Count</span>
-                <span class="mono" style="font-weight:800;">₦{{ selectedSession()?.closeBalance?.toLocaleString() }}</span>
+                <span class="mono" style="font-weight:800;">₦{{ selectedSession()?.closeBalance?.toLocaleString() || selectedSession()?.closingCash?.toLocaleString() || '—' }}</span>
               </div>
             </div>
           </div>
 
-          @if (selectedSession()?.status === 'CLOSED') {
+          @if (selectedSession()?.status === 'CLOSED' || selectedSession()?.status === 'Closed') {
             <div style="margin-top:20px;padding:12px;border-radius:10px;text-align:center;background:rgba(0,0,0,0.05);">
               <div style="font-size:11px;text-transform:uppercase;font-weight:800;color:var(--text3);">Variance</div>
-              <div style="font-size:20px;font-weight:900;" [style.color]="((selectedSession()?.closeBalance || 0) - (selectedSession()?.expectedBalance || 0)) < 0 ? 'var(--red)' : 'var(--green)'">
-                ₦{{ ((selectedSession()?.closeBalance || 0) - (selectedSession()?.expectedBalance || 0)).toLocaleString() }}
+              <div style="font-size:20px;font-weight:900;" [style.color]="((selectedSession()?.closeBalance || selectedSession()?.closingCash || 0) - (selectedSession()?.expectedBalance || selectedSession()?.progress?.expectedCash || 0)) < 0 ? 'var(--red)' : 'var(--green)'">
+                ₦{{ ((selectedSession()?.closeBalance || selectedSession()?.closingCash || 0) - (selectedSession()?.expectedBalance || selectedSession()?.progress?.expectedCash || 0)).toLocaleString() }}
               </div>
             </div>
           }

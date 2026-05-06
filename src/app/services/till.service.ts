@@ -19,4 +19,8 @@ export class TillService {
   async getTillSessionById(id: string): Promise<any> {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
   }
+
+  async getTillSessionProgress(id: string): Promise<any> {
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/progress`));
+  }
 }

@@ -77,6 +77,7 @@ export class StaffComponent implements OnInit {
   // Modal State
   public isModalOpen = signal<boolean>(false);
   public modalMode = signal<'create' | 'edit' | 'view'>('create');
+  public saveError = signal<string | null>(null);
   public selectedStaff = signal<Partial<Staff>>({
     firstName: '',
     lastName: '',
@@ -218,6 +219,7 @@ export class StaffComponent implements OnInit {
     });
     // Always reload roles when opening modal to ensure dropdown is populated
     if (this.roles().length === 0) this.loadRoles();
+    this.saveError.set(null);
     this.isModalOpen.set(true);
   }
 
@@ -229,6 +231,7 @@ export class StaffComponent implements OnInit {
       pin: staff.hasPin ? '****' : '', 
       password: staff.hasPassword ? '********' : '' 
     });
+    this.saveError.set(null);
     this.isModalOpen.set(true);
   }
 
@@ -295,6 +298,7 @@ export class StaffComponent implements OnInit {
 
 
     try {
+      this.saveError.set(null);
       if (this.modalMode() === 'create') {
         await this.staffService.createStaff(dto);
       } else if (this.modalMode() === 'edit' && s.id) {
@@ -304,7 +308,16 @@ export class StaffComponent implements OnInit {
       this.loadStaff();
     } catch (error: any) {
       console.error('Failed to save staff', error);
-      alert(`Error saving staff: ${error.error?.message || error.message || 'Unknown error'}`);
+      let msg = error.error?.message || error.message || 'An unexpected error occurred.';
+      
+      const detail = error.error?.detail || '';
+      if (detail.includes('IX_Staff_EmployeeNo') || detail.includes('EmployeeNo')) {
+        msg = 'An employee with this Employee Number already exists. Please use a different one.';
+      } else if (detail.includes('IX_Staff_Email') || detail.includes('Email')) {
+        msg = 'An employee with this email address already exists.';
+      }
+
+      this.saveError.set(msg);
     }
   }
 
