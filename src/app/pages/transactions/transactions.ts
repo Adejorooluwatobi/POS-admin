@@ -28,13 +28,13 @@ export class TransactionsComponent implements OnInit {
       const items = data.items || data;
       this.transactions.set(items.map((t: any) => ({
         ...t,
-        date: new Date(t.createdAt).toLocaleDateString(),
-        time: new Date(t.createdAt).toLocaleTimeString(),
-        cashier: t.staffName || 'Unknown',
+        date: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'N/A',
+        time: t.createdAt ? new Date(t.createdAt).toLocaleTimeString() : 'N/A',
+        cashier: t.cashierName || 'Unknown',
         customer: t.customerName || 'Walk-in',
-        method: t.paymentMethod || 'CASH',
-        items: t.totalItems,
-        amount: t.totalAmount,
+        method: t.payments && t.payments.length > 0 ? t.payments[0].method : 'CASH',
+        items: t.items ? t.items.length : 0,
+        amount: t.grandTotal || 0,
         status: (t.status === 'Completed' || t.status === 3) ? 'COMPLETED' : 
                 (t.status === 'Open' || t.status === 0) ? 'OPEN' :
                 (t.status === 'Voided' || t.status === 4) ? 'VOIDED' : 'REFUNDED',
