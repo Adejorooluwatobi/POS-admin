@@ -170,12 +170,30 @@ export class StaffComponent implements OnInit {
         ...r,
         systemRole: this.mapSystemRoleToId(r.systemRole)
       }));
-      this.roles.set(mapped);
+
+      // If API returns roles, use them; otherwise fall back to built-in system roles
+      if (mapped.length > 0) {
+        this.roles.set(mapped);
+      } else {
+        this.useFallbackRoles();
+      }
     } catch (error) {
-      console.error('Failed to load roles', error);
+      console.error('Failed to load roles, using fallback', error);
+      this.useFallbackRoles();
     }
   }
 
+  private useFallbackRoles() {
+    // Generate role options from the local systemRoles definition
+    // so the dropdown always has options even if the API is unavailable
+    const fallback = this.systemRoles.map(sr => ({
+      id: `system-${sr.id}`,
+      name: sr.name,
+      systemRole: sr.id,
+      isActive: true
+    }));
+    this.roles.set(fallback as any);
+  }
 
   private mapSystemRoleToId(role: string | number): number {
     if (typeof role === 'number') return role;
@@ -198,6 +216,8 @@ export class StaffComponent implements OnInit {
       pin: '',
       password: ''
     });
+    // Always reload roles when opening modal to ensure dropdown is populated
+    if (this.roles().length === 0) this.loadRoles();
     this.isModalOpen.set(true);
   }
 
@@ -254,12 +274,15 @@ export class StaffComponent implements OnInit {
     // If it's a General Manager (systemRole 5), force storeId to null
     const finalStoreId = (systemRole === 5) ? null : s.storeId;
 
+    // Handle fallback role IDs (e.g. 'system-3') - send null roleId and rely on systemRole
+    const finalRoleId = s.roleId?.startsWith('system-') ? null : s.roleId;
+
     const dto = {
       firstName: s.firstName,
       lastName: s.lastName,
       email: s.email,
       employeeNo: s.no,
-      roleId: s.roleId,
+      roleId: finalRoleId,
       systemRole: systemRole,
       storeId: finalStoreId,
       isActive: s.active,
