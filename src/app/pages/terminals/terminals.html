@@ -123,15 +123,25 @@
             <input class="inp" [(ngModel)]="selectedTerminal().name" placeholder="e.g. Front Counter 01" [disabled]="modalMode() === 'view'">
           </div>
 
-          <div>
-            <label class="label">Assigned Store</label>
-            <select class="inp" [(ngModel)]="selectedTerminal().storeId" [disabled]="modalMode() === 'view'">
-              <option value="">Select a Store</option>
-              @for (st of stores(); track st.id) {
-                <option [value]="st.id">{{ st.name }}</option>
-              }
-            </select>
-          </div>
+          @if (isStoreManager()) {
+            <div>
+              <label class="label">Assigned Store</label>
+              <div class="inp" style="background:var(--surface2);display:flex;align-items:center;color:var(--text2);">
+                {{ getStoreName(assignedStoreId() || '') }}
+              </div>
+            </div>
+          } @else {
+            <div>
+              <label class="label">Assigned Store</label>
+              <select class="inp" [(ngModel)]="selectedTerminal().storeId" [disabled]="modalMode() === 'view'">
+                <option value="">Select a Store</option>
+                @for (st of stores(); track st.id) {
+                  <option [value]="st.id">{{ st.name }}</option>
+                }
+              </select>
+            </div>
+          }
+
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div>

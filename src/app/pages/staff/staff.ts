@@ -21,8 +21,26 @@ export class StaffComponent implements OnInit {
   public canDelete = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
   public currentUser = signal<any>(null);
+  public isStoreManager = signal<boolean>(false);
+
+  public assignedStoreId = signal<string | null>(null);
+
+  public systemRoles = [
+    { id: 2, name: 'Store Manager', icon: '👔', key: 'StoreManager' },
+    { id: 5, name: 'Manager', icon: '💼', key: 'Manager' },
+    { id: 4, name: 'Supervisor', icon: '🕵️', key: 'Supervisor' },
+    { id: 3, name: 'Cashier', icon: '🛒', key: 'Cashier' }
+  ];
+
+  public selectedRoleSystemRole = computed(() => {
+    const roleId = this.selectedStaff().roleId;
+    if (!roleId) return null;
+    return this.roles().find(r => r.id === roleId)?.systemRole || null;
+  });
 
   public filteredRoles = computed(() => {
+
+
     const roles = this.roles();
     const user = this.currentUser();
     if (!user) return [];
@@ -35,20 +53,23 @@ export class StaffComponent implements OnInit {
       return roles.filter(r => r.systemRole !== 0);
     }
 
-    // MANAGER (General Manager) can create Store Manager (2), Cashier (3), Supervisor (4)
+    // MANAGER (General Manager) can create everything in tenant except SuperAdmin (0) and Manager (5)
     if (user.role === 'MANAGER') {
-      return roles.filter(r => r.systemRole === 2 || r.systemRole === 3 || r.systemRole === 4);
+      return roles.filter(r => r.systemRole !== 0 && r.systemRole !== 5);
     }
 
-    // STORE_MANAGER can create Supervisor (4), Cashier (3)
+    // STORE_MANAGER can create everything in tenant except SuperAdmin (0), Manager (5), and Store Manager (2)
     if (user.role === 'STORE_MANAGER') {
-      return roles.filter(r => r.systemRole === 3 || r.systemRole === 4);
+      return roles.filter(r => r.systemRole !== 0 && r.systemRole !== 5 && r.systemRole !== 2);
     }
+
 
     // SUPERVISOR can only create Cashier (3)
     if (user.role === 'SUPERVISOR') {
       return roles.filter(r => r.systemRole === 3);
     }
+
+
 
     return [];
   });
@@ -77,7 +98,10 @@ export class StaffComponent implements OnInit {
     this.currentUser.set(user);
     this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
     this.canDelete.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    this.isStoreManager.set(user?.role === 'STORE_MANAGER');
+    this.assignedStoreId.set(user?.store || null);
   }
+
 
   ngOnInit() {
     this.loadStaff();
@@ -138,12 +162,27 @@ export class StaffComponent implements OnInit {
 
   async loadRoles() {
     try {
-      const data = await this.roleService.getRoles();
-      this.roles.set(data.items || data);
+      const response = await this.roleService.getRoles();
+      // Handle different response structures (array, {items: []}, {data: []})
+      const rawRoles = Array.isArray(response) ? response : (response.items || response.data || []);
+      
+      const mapped = rawRoles.map((r: any) => ({
+        ...r,
+        systemRole: this.mapSystemRoleToId(r.systemRole)
+      }));
+      this.roles.set(mapped);
     } catch (error) {
       console.error('Failed to load roles', error);
     }
   }
+
+
+  private mapSystemRoleToId(role: string | number): number {
+    if (typeof role === 'number') return role;
+    const found = this.systemRoles.find(sr => sr.key === role || sr.name === role);
+    return found ? found.id : 3; // Default to Cashier
+  }
+
 
   openCreateModal() {
     this.modalMode.set('create');
@@ -154,13 +193,14 @@ export class StaffComponent implements OnInit {
       no: '',
       roleId: '',
       active: true,
-      storeId: this.currentUser()?.store || '', // Use 'store' property which contains the storeId
+      storeId: this.assignedStoreId() || '',
       hiredAt: new Date().toISOString().split('T')[0],
       pin: '',
       password: ''
     });
     this.isModalOpen.set(true);
   }
+
 
   openEditModal(staff: Staff) {
     this.modalMode.set('edit');
@@ -209,20 +249,27 @@ export class StaffComponent implements OnInit {
       finalPassword = s.password;
     }
 
+    const systemRole = selectedRole?.systemRole || 3;
+    
+    // If it's a General Manager (systemRole 5), force storeId to null
+    const finalStoreId = (systemRole === 5) ? null : s.storeId;
+
     const dto = {
       firstName: s.firstName,
       lastName: s.lastName,
       email: s.email,
       employeeNo: s.no,
       roleId: s.roleId,
-      systemRole: selectedRole?.systemRole || 3, // Fallback to Cashier if not found
-      storeId: s.storeId,
+      systemRole: systemRole,
+      storeId: finalStoreId,
       isActive: s.active,
       hiredAt: s.hiredAt,
       tenantId: user?.tenantId,
       pin: finalPin,
       password: finalPassword
     };
+
+
 
     try {
       if (this.modalMode() === 'create') {
@@ -239,8 +286,12 @@ export class StaffComponent implements OnInit {
   }
 
   getStoreName(storeId: string) {
-    return this.stores().find(st => st.id === storeId)?.name || 'Unknown';
+    const store = this.stores().find(st => st.id === storeId);
+    if (store) return store.name;
+    if (storeId && storeId === this.assignedStoreId()) return 'My Store';
+    return 'Unknown';
   }
+
 
   getRoleName(roleId: string) {
     return this.roles().find(r => r.id === roleId)?.name || 'No Role';

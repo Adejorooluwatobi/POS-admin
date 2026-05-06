@@ -122,15 +122,30 @@
               </div>
             </div>
 
-            <div>
-              <label class="label">Assigned Store</label>
-              <select class="inp" [(ngModel)]="selectedStaff().storeId" [disabled]="modalMode() === 'view' || (modalMode() === 'create' && !!currentUser()?.storeId)">
-                <option value="">Select a Store</option>
-                @for (st of stores(); track st.id) {
-                  <option [value]="st.id">{{ st.name }}</option>
-                }
-              </select>
-            </div>
+            @if (selectedRoleSystemRole() === 5) {
+              <div style="padding:12px;background:var(--surface2);border-radius:8px;border:1px dashed var(--border);color:var(--text3);font-size:11px;text-align:center;">
+                Managers oversee all stores. No specific store assignment required.
+              </div>
+            } @else if (isStoreManager()) {
+              <div>
+                <label class="label">Assigned Store</label>
+                <div class="inp" style="background:var(--surface2);display:flex;align-items:center;color:var(--text2);">
+                  {{ getStoreName(assignedStoreId() || '') }}
+                </div>
+              </div>
+            } @else {
+              <div>
+                <label class="label">Assigned Store</label>
+                <select class="inp" [(ngModel)]="selectedStaff().storeId" [disabled]="modalMode() === 'view' || (modalMode() === 'create' && !!currentUser()?.store)">
+                  <option value="">Select a Store</option>
+                  @for (st of stores(); track st.id) {
+                    <option [value]="st.id">{{ st.name }}</option>
+                  }
+                </select>
+              </div>
+            }
+
+
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
