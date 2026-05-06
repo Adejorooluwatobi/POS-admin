@@ -35,7 +35,9 @@ export class TransactionsComponent implements OnInit {
         method: t.paymentMethod || 'CASH',
         items: t.totalItems,
         amount: t.totalAmount,
-        status: t.status === 0 ? 'COMPLETED' : t.status === 1 ? 'VOIDED' : 'REFUNDED',
+        status: (t.status === 'Completed' || t.status === 3) ? 'COMPLETED' : 
+                (t.status === 'Open' || t.status === 0) ? 'OPEN' :
+                (t.status === 'Voided' || t.status === 4) ? 'VOIDED' : 'REFUNDED',
         store: t.storeName || 'Store'
       })));
     } catch (error) {
