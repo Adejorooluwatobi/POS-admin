@@ -21,4 +21,11 @@ export class TenantService {
       headers: { 'Content-Type': 'application/json' }
     }));
   }
+
+  async getTenantDetails(id: string, year?: number, month?: number): Promise<any> {
+    let params = new HttpParams();
+    if (year) params = params.set('year', year);
+    if (month) params = params.set('month', month);
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/details`, { params }));
+  }
 }
