@@ -67,6 +67,9 @@ export interface Product {
   Variants?: ProductVariant[];
   singlesPerRoll?: number;
   rollsPerPack?: number;
+  singlesPerPack?: number;
+  rollPrice?: number;
+  packPrice?: number;
 }
 
 export interface ProductVariant {
