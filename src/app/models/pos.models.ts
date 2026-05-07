@@ -89,6 +89,8 @@ export interface StoreProductOverride {
   id: string;
   storeId: string;
   price: number;
+  rollPrice?: number;
+  packPrice?: number;
   isActive: boolean;
   modifiedBy?: string;
 }
