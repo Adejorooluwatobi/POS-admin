@@ -115,7 +115,10 @@ export class InventoryComponent implements OnInit {
         res: i.quantityReserved,
         ro: i.reorderPoint,
         roQty: i.reorderQty,
-        s: i.quantityOnHand <= i.reorderPoint ? (i.quantityOnHand <= 0 ? 'OUT' : 'LOW') : 'OK'
+        singlesPerRoll: i.singlesPerRoll || 1,
+        rollsPerPack: i.rollsPerPack || 1,
+        s: i.quantityOnHand <= i.reorderPoint ? (i.quantityOnHand <= 0 ? 'OUT' : 'LOW') : 'OK',
+        formatted: this.formatStock(i.quantityOnHand, i.singlesPerRoll, i.rollsPerPack)
       })));
     } catch (error) {
       console.error('Failed to load inventory', error);
@@ -181,5 +184,25 @@ export class InventoryComponent implements OnInit {
     } catch (error) {
       console.error('Failed to adjust stock', error);
     }
+  }
+
+  formatStock(total: number, sr: number | undefined, rp: number | undefined): string {
+    const singlesPerRoll = sr && sr > 0 ? sr : 1;
+    const rollsPerPack = rp && rp > 0 ? rp : 1;
+    const singlesPerPack = singlesPerRoll * rollsPerPack;
+
+    if (singlesPerPack <= 1 && singlesPerRoll <= 1) return `${total} Sgl`;
+
+    const packs = Math.floor(total / singlesPerPack);
+    const remPacks = total % singlesPerPack;
+    const rolls = Math.floor(remPacks / singlesPerRoll);
+    const singles = remPacks % singlesPerRoll;
+
+    const parts = [];
+    if (packs > 0) parts.push(`${packs} Pks`);
+    if (rolls > 0) parts.push(`${rolls} Rls`);
+    if (singles > 0 || (packs === 0 && rolls === 0)) parts.push(`${singles} Sgl`);
+
+    return parts.join(', ');
   }
 }
