@@ -119,11 +119,18 @@ export class ProductsComponent implements OnInit {
       this.products.set(filteredItems.map((p: any) => {
         const catObj = cats.find(c => c.id === p.categoryId);
         
-        // Resolve Effective Price (Override for current store)
+        // Resolve Effective Prices (Overrides for current store)
         let effectivePrice = p.basePrice || 0;
+        let effectiveRollPrice = p.rollPrice || 0;
+        let effectivePackPrice = p.packPrice || 0;
+
         if (user?.store && p.storeOverrides) {
           const over = p.storeOverrides.find((o: any) => o.storeId === user.store && o.isActive);
-          if (over) effectivePrice = over.price;
+          if (over) {
+            effectivePrice = over.price;
+            if (over.rollPrice) effectiveRollPrice = over.rollPrice;
+            if (over.packPrice) effectivePackPrice = over.packPrice;
+          }
         }
 
         return {
@@ -143,8 +150,8 @@ export class ProductsComponent implements OnInit {
           singlesPerRoll: p.singlesPerRoll || 1,
           rollsPerPack: p.rollsPerPack || 1,
           singlesPerPack: p.singlesPerPack || (p.singlesPerRoll * p.rollsPerPack) || 1,
-          rollPrice: p.rollPrice || 0,
-          packPrice: p.packPrice || 0
+          rollPrice: effectiveRollPrice,
+          packPrice: effectivePackPrice
         };
       }));
       this.allProducts.set(this.products());
