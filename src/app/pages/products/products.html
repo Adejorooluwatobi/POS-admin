@@ -209,6 +209,28 @@
               </div>
             </div>
 
+            <!-- Packaging Config -->
+            <div style="margin-top:20px;padding:16px;background:var(--surface);border-radius:12px;border:1px solid var(--border);">
+              <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em;">📦 Packaging Configuration</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-group">
+                  <label class="label">Singles per Roll</label>
+                  <input type="number" class="inp" [(ngModel)]="selectedProduct().singlesPerRoll" placeholder="e.g. 12" [disabled]="modalMode() === 'view'">
+                  <div style="font-size:10px;color:var(--text3);margin-top:4px;">How many single items make 1 Roll</div>
+                </div>
+                <div class="form-group">
+                  <label class="label">Rolls per Pack</label>
+                  <input type="number" class="inp" [(ngModel)]="selectedProduct().rollsPerPack" placeholder="e.g. 6" [disabled]="modalMode() === 'view'">
+                  <div style="font-size:10px;color:var(--text3);margin-top:4px;">How many Rolls make 1 Pack</div>
+                </div>
+              </div>
+              <div style="margin-top:12px;padding:10px;background:var(--bg);border-radius:8px;border:1px solid var(--border);text-align:center;">
+                <div style="font-size:11px;color:var(--text2);font-weight:600;">
+                  Calculated: 1 Pack = {{ (selectedProduct().singlesPerRoll || 0) * (selectedProduct().rollsPerPack || 0) }} Singles
+                </div>
+              </div>
+            </div>
+
             <!-- Targeted Updates (For Generals) -->
             @if (isGeneral()) {
               <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
