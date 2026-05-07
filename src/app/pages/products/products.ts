@@ -42,7 +42,10 @@ export class ProductsComponent implements OnInit {
     targetStoreIds: [],
     storeOverrides: [],
     singlesPerRoll: 1,
-    rollsPerPack: 1
+    rollsPerPack: 1,
+    singlesPerPack: 1,
+    rollPrice: 0,
+    packPrice: 0
   });
   public allProducts = signal<Product[]>([]);
   public isScannerOpen = signal<boolean>(false);
@@ -138,7 +141,10 @@ export class ProductsComponent implements OnInit {
           taxRate: p.taxRate || 0,
           barcode: p.barcode,
           singlesPerRoll: p.singlesPerRoll || 1,
-          rollsPerPack: p.rollsPerPack || 1
+          rollsPerPack: p.rollsPerPack || 1,
+          singlesPerPack: p.singlesPerPack || (p.singlesPerRoll * p.rollsPerPack) || 1,
+          rollPrice: p.rollPrice || 0,
+          packPrice: p.packPrice || 0
         };
       }));
       this.allProducts.set(this.products());
@@ -164,7 +170,10 @@ export class ProductsComponent implements OnInit {
       barcodes: [],
       targetStoreIds: [],
       singlesPerRoll: 1,
-      rollsPerPack: 1
+      rollsPerPack: 1,
+      singlesPerPack: 1,
+      rollPrice: 0,
+      packPrice: 0
     });
     this.isModalOpen.set(true);
   }
@@ -209,7 +218,10 @@ export class ProductsComponent implements OnInit {
       targetStoreIds: p.targetStoreIds,
       barcodes: p.barcodes,
       singlesPerRoll: p.singlesPerRoll,
-      rollsPerPack: p.rollsPerPack
+      rollsPerPack: p.rollsPerPack,
+      singlesPerPack: p.singlesPerPack,
+      rollPrice: p.rollPrice,
+      packPrice: p.packPrice
     };
 
     try {
