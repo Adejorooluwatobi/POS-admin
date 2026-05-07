@@ -40,7 +40,9 @@ export class ProductsComponent implements OnInit {
     barcode: '',
     barcodes: [],
     targetStoreIds: [],
-    storeOverrides: []
+    storeOverrides: [],
+    singlesPerRoll: 1,
+    rollsPerPack: 1
   });
   public allProducts = signal<Product[]>([]);
   public isScannerOpen = signal<boolean>(false);
@@ -134,7 +136,9 @@ export class ProductsComponent implements OnInit {
           status: p.isActive !== undefined ? (p.isActive ? 'ACTIVE' : 'INACTIVE') : 'ACTIVE',
           tax: p.taxCategory !== undefined ? (p.taxCategory === 0 ? 'STANDARD' : p.taxCategory === 1 ? 'ZERO' : p.taxCategory === 2 ? 'EXEMPT' : 'REDUCED') : 'STANDARD',
           taxRate: p.taxRate || 0,
-          barcode: p.barcode
+          barcode: p.barcode,
+          singlesPerRoll: p.singlesPerRoll || 1,
+          rollsPerPack: p.rollsPerPack || 1
         };
       }));
       this.allProducts.set(this.products());
@@ -158,7 +162,9 @@ export class ProductsComponent implements OnInit {
       status: 'ACTIVE',
       barcode: '',
       barcodes: [],
-      targetStoreIds: []
+      targetStoreIds: [],
+      singlesPerRoll: 1,
+      rollsPerPack: 1
     });
     this.isModalOpen.set(true);
   }
@@ -201,7 +207,9 @@ export class ProductsComponent implements OnInit {
       tenantId: user?.tenantId,
       categoryId: p.categoryId,
       targetStoreIds: p.targetStoreIds,
-      barcodes: p.barcodes
+      barcodes: p.barcodes,
+      singlesPerRoll: p.singlesPerRoll,
+      rollsPerPack: p.rollsPerPack
     };
 
     try {

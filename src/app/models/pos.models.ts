@@ -65,6 +65,8 @@ export interface Product {
   storeOverrides?: StoreProductOverride[];
   variants?: ProductVariant[];
   Variants?: ProductVariant[];
+  singlesPerRoll?: number;
+  rollsPerPack?: number;
 }
 
 export interface ProductVariant {
@@ -101,6 +103,9 @@ export interface InventoryItem {
   storeId?: string;
   variantId?: string;
   reason?: string;
+  singlesPerRoll?: number;
+  rollsPerPack?: number;
+  formatted?: string;
 }
 
 export interface Customer {
