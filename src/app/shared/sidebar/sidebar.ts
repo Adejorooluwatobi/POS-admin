@@ -56,6 +56,7 @@ export class SidebarComponent {
       { id: 'staff', icon: 'users', label: 'Staff Management', route: '/app/staff', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR'] },
       { id: 'roles', icon: 'shield', label: 'Roles', route: '/app/roles', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
       { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'tenants', icon: 'grid', label: 'Tenants', route: '/app/tenants', roles: ['SUPER_ADMIN'] },
       { id: 'audit', icon: 'shield', label: 'Audit Logs', route: '/app/audit', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
       { id: 'settings', icon: 'cog', label: 'Settings', route: '/app/settings', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
 

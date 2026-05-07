@@ -24,6 +24,8 @@ import { GiftCardsComponent } from './pages/gift-cards/gift-cards';
 import { LoyaltyComponent } from './pages/loyalty/loyalty';
 import { ProfileComponent } from './pages/profile/profile';
 
+import { TenantsComponent } from './pages/tenants/tenants';
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', title: 'Login — RetailOS', component: LoginComponent },
@@ -32,6 +34,7 @@ export const routes: Routes = [
     component: LayoutComponent,
     children: [
       { path: 'dashboard', title: 'Dashboard — RetailOS', component: DashboardComponent },
+      { path: 'tenants', title: 'Tenants — RetailOS', component: TenantsComponent },
       { path: 'transactions', title: 'Transactions — RetailOS', component: TransactionsComponent },
       { path: 'products', title: 'Products — RetailOS', component: ProductsComponent },
       { path: 'inventory', title: 'Inventory — RetailOS', component: InventoryComponent },

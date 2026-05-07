@@ -3,6 +3,8 @@ import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
+import { TenantService } from '../../services/tenant.service';
+import { ActivatedRoute } from '@angular/router';
 import { Store } from '../../models/pos.models';
 
 @Component({
@@ -14,7 +16,10 @@ import { Store } from '../../models/pos.models';
 export class StoresComponent implements OnInit {
   public stores = signal<Store[]>([]);
   public isOwner = signal<boolean>(false);
+  public isSuperAdmin = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
+  public tenants = signal<any[]>([]);
+  public selectedTenantId = signal<string | null>(null);
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -29,9 +34,15 @@ export class StoresComponent implements OnInit {
     timezone: 'Africa/Lagos'
   });
 
-  constructor(private storeService: StoreService, private authService: AuthService) {
+  constructor(
+    private storeService: StoreService, 
+    private authService: AuthService,
+    private tenantService: TenantService,
+    private route: ActivatedRoute
+  ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+    this.isSuperAdmin.set(user?.role === 'SUPER_ADMIN');
   }
 
   async deleteStore(id: string | undefined) {
@@ -48,13 +59,31 @@ export class StoresComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadStores();
+    this.route.queryParams.subscribe(params => {
+      if (params['tenantId']) {
+        this.selectedTenantId.set(params['tenantId']);
+      }
+      this.loadStores();
+    });
+
+    if (this.isSuperAdmin()) {
+      this.loadTenants();
+    }
+  }
+
+  async loadTenants() {
+    try {
+      const data = await this.tenantService.getTenants();
+      this.tenants.set(data.items || data);
+    } catch (error) {
+      console.error('Failed to load tenants', error);
+    }
   }
 
   async loadStores() {
     this.isLoading.set(true);
     try {
-      const data = await this.storeService.getStores();
+      const data = await this.storeService.getStores(1, 50, this.selectedTenantId() || undefined);
       this.stores.set((data.items || data).map((s: any) => ({
         ...s,
         active: s.isActive !== undefined ? s.isActive : s.active

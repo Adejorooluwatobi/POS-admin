@@ -5,11 +5,21 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Stores</div>
       <div style="font-size:12px;color:var(--text3);">Manage your business locations and performance</div>
     </div>
-    @if (isOwner()) {
-      <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-        <span style="font-size:18px;margin-right:6px;">+</span> New Store
-      </button>
-    }
+    <div style="display:flex;gap:12px;align-items:center;">
+      @if (isSuperAdmin()) {
+        <select class="inp" [(ngModel)]="selectedTenantId" (change)="loadStores()" style="width:200px;font-size:13px;border-radius:10px;height:40px;">
+          <option [value]="null">All Businesses</option>
+          @for (t of tenants(); track t.id) {
+            <option [value]="t.id">{{ t.businessName }}</option>
+          }
+        </select>
+      }
+      @if (isOwner()) {
+        <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+          <span style="font-size:18px;margin-right:6px;">+</span> New Store
+        </button>
+      }
+    </div>
   </div>
 
   @if (isLoading()) {
