@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../../services/tenant.service';
+import { AuthService } from '../../../services/auth.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -28,7 +29,8 @@ export class TenantDetailsComponent implements OnInit {
   constructor(
     private tenantService: TenantService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    public authService: AuthService
   ) {}
 
   ngOnInit() {
