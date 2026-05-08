@@ -21,9 +21,6 @@ export interface Store {
   timezone?: string;
   terminals: number;
   active: boolean;
-  todayRevenue: number;
-  txCount: number;
-  staff: number;
   isActive?: boolean;
 }
 

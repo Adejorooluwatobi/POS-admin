@@ -36,9 +36,6 @@
               <th>STORE</th>
               <th>CODE</th>
               <th>CITY</th>
-              <th style="text-align:right;">TODAY REVENUE</th>
-              <th style="text-align:right;">TXS</th>
-              <th style="text-align:right;">STAFF</th>
               <th>STATUS</th>
               <th style="text-align:right;">ACTIONS</th>
             </tr>
@@ -56,9 +53,6 @@
                 </td>
                 <td class="mono" style="font-size:11px;color:var(--text2);">{{ s.code }}</td>
                 <td style="color:var(--text2);font-size:11px;">{{ s.city }}</td>
-                <td class="mono" style="text-align:right;font-weight:700;color:var(--green);">₦{{ (s.todayRevenue || 0).toLocaleString() }}</td>
-                <td class="mono" style="text-align:right;font-size:11px;">{{ s.txCount || 0 }}</td>
-                <td class="mono" style="text-align:right;font-size:11px;">{{ s.staff || 0 }}</td>
                 <td>
                   <span class="badge" [ngClass]="s.active ? 'badge-green' : 'badge-red'" style="font-size:10px;">
                     {{ s.active ? 'LIVE' : 'DISABLED' }}
