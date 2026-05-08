@@ -34,4 +34,11 @@ export class StoreService {
   async deleteStore(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
   }
+
+  async getStoreDetails(id: string, year?: number, month?: number): Promise<any> {
+    let params = new HttpParams();
+    if (year) params = params.set('year', year);
+    if (month) params = params.set('month', month);
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/details`, { params }));
+  }
 }
