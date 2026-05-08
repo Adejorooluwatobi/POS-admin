@@ -2,12 +2,12 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../../services/tenant.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-tenant-details',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterModule],
   templateUrl: './tenant-details.html'
 })
 export class TenantDetailsComponent implements OnInit {

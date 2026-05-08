@@ -2,12 +2,12 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../../services/store.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-store-details',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterModule],
   templateUrl: './store-details.html'
 })
 export class StoreDetailsComponent implements OnInit {
