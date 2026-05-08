@@ -172,6 +172,30 @@
               <input type="checkbox" [(ngModel)]="selectedStaff().active" [disabled]="modalMode() === 'view'">
               <label style="font-size:13px;font-weight:600;">Account Active</label>
             </div>
+
+            @if (modalMode() === 'view' && selectedStaff().revenue) {
+              <div style="margin-top:20px;padding:20px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+                <div style="font-size:12px;font-weight:800;color:var(--text1);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.05em;">Performance Analytics</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                  <div class="stat-mini">
+                    <div class="stat-mini-label">Today</div>
+                    <div class="stat-mini-value" style="color:var(--accent);">₦{{ (selectedStaff().revenue?.daily || 0).toLocaleString() }}</div>
+                  </div>
+                  <div class="stat-mini">
+                    <div class="stat-mini-label">This Week</div>
+                    <div class="stat-mini-value">₦{{ (selectedStaff().revenue?.weekly || 0).toLocaleString() }}</div>
+                  </div>
+                  <div class="stat-mini">
+                    <div class="stat-mini-label">This Month</div>
+                    <div class="stat-mini-value">₦{{ (selectedStaff().revenue?.monthly || 0).toLocaleString() }}</div>
+                  </div>
+                  <div class="stat-mini highlight">
+                    <div class="stat-mini-label">Lifetime Sales</div>
+                    <div class="stat-mini-value">₦{{ (selectedStaff().revenue?.lifetime || 0).toLocaleString() }}</div>
+                  </div>
+                </div>
+              </div>
+            }
           </div>
         </div>
 
@@ -190,5 +214,11 @@
 
 <style>
   .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .stat-mini { padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  .stat-mini.highlight { background: var(--text1); border-color: var(--text1); }
+  .stat-mini.highlight .stat-mini-label { color: rgba(255,255,255,0.6); }
+  .stat-mini.highlight .stat-mini-value { color: #fff; }
+  .stat-mini-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; font-weight: 700; }
+  .stat-mini-value { font-size: 15px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
