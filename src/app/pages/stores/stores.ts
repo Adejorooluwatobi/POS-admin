@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
 import { TenantService } from '../../services/tenant.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '../../models/pos.models';
 
 @Component({
   selector: 'app-stores',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterModule],
   templateUrl: './stores.html'
 })
 export class StoresComponent implements OnInit {
