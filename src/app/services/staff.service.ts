@@ -31,4 +31,11 @@ export class StaffService {
   async deleteStaff(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
   }
+
+  async getStaffStats(id: string, year?: number, month?: number): Promise<any> {
+    let params = new HttpParams();
+    if (year) params = params.set('year', year.toString());
+    if (month) params = params.set('month', month.toString());
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/stats`, { params }));
+  }
 }

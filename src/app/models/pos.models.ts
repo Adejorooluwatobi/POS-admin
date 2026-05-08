@@ -148,6 +148,13 @@ export interface Staff {
   hiredAt?: string;
   password?: string;
   hasPassword?: boolean;
+  revenue?: {
+    daily: number;
+    weekly: number;
+    monthly: number;
+    yearly: number;
+    lifetime: number;
+  };
 }
 
 export interface Role {

@@ -86,7 +86,8 @@ export class StaffComponent implements OnInit {
     roleId: '',
     active: true,
     hiredAt: new Date().toISOString().split('T')[0],
-    pin: ''
+    pin: '',
+    revenue: { daily: 0, weekly: 0, monthly: 0, yearly: 0, lifetime: 0 }
   });
 
   constructor(
@@ -142,7 +143,7 @@ export class StaffComponent implements OnInit {
         hasPin: s.hasPin,
         hasPassword: s.hasPassword,
         last: 'Never', // Placeholder
-        sales: 0,
+        sales: s.todayRevenue || 0,
         txCount: 0
       })));
     } catch (error) {
@@ -235,7 +236,7 @@ export class StaffComponent implements OnInit {
     this.isModalOpen.set(true);
   }
 
-  openViewModal(staff: Staff) {
+  async openViewModal(staff: Staff) {
     this.modalMode.set('view');
     this.selectedStaff.set({ 
       ...staff, 
@@ -243,6 +244,14 @@ export class StaffComponent implements OnInit {
       password: staff.hasPassword ? '********' : '' 
     });
     this.isModalOpen.set(true);
+
+    // Fetch full stats
+    try {
+      const stats = await this.staffService.getStaffStats(staff.id!);
+      this.selectedStaff.set({ ...this.selectedStaff(), ...stats });
+    } catch (error) {
+      console.error('Failed to load staff stats', error);
+    }
   }
 
   closeModal() {
