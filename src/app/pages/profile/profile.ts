@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { StaffService } from '../../services/staff.service';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
@@ -31,13 +33,35 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private staffService: StaffService
+    private staffService: StaffService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
+    this.loadProfile();
+  }
+
+  async loadProfile() {
     const currentUser = this.authService.currentUser();
-    this.user.set(currentUser);
-    if (currentUser) {
+    if (!currentUser) return;
+
+    try {
+      const staff = await this.staffService.getStaffById(currentUser.sub);
+      this.user.set({ ...currentUser, ...staff });
+      
+      this.profileForm.firstName = staff.firstName || '';
+      this.profileForm.lastName = staff.lastName || '';
+      this.profileForm.email = staff.email || '';
+
+      if (staff.storeId) {
+        // Fetch store name
+        const store: any = await firstValueFrom(this.http.get<any>(`https://pos-saas-cl9g.onrender.com/api/stores/${staff.storeId}`));
+        this.user.update(u => ({ ...u, storeName: store?.name }));
+      }
+    } catch (e) {
+      console.error('Failed to load profile details', e);
+      // Fallback to basic info from token
+      this.user.set(currentUser);
       const names = currentUser.name.split(' ');
       this.profileForm.firstName = names[0] || '';
       this.profileForm.lastName = names.slice(1).join(' ') || '';
