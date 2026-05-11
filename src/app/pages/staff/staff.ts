@@ -98,8 +98,8 @@ export class StaffComponent implements OnInit {
   ) {
     const user = this.authService.currentUser();
     this.currentUser.set(user);
-    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
-    this.canDelete.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    this.isOwner.set(user?.role === 'TENANT_ADMIN');
+    this.canDelete.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
     this.assignedStoreId.set(user?.store || null);
   }

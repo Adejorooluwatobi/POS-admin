@@ -5,9 +5,11 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Customers</div>
       <div style="font-size:12px;color:var(--text3);">Manage your loyalty programs and customer relationships</div>
     </div>
-    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      <span style="font-size:18px;margin-right:6px;">+</span> New Customer
-    </button>
+    @if (isOwner()) {
+      <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+        <span style="font-size:18px;margin-right:6px;">+</span> New Customer
+      </button>
+    }
   </div>
 
   @if (isLoading()) {
@@ -26,8 +28,10 @@
               <th>TIER</th>
               <th style="text-align:right;">POINTS</th>
               <th style="text-align:right;">TOTAL SPEND</th>
-              <th>LAST VISIT</th>
-              <th style="text-align:right;">ACTIONS</th>
+              <th style="text-align:right;">LAST VISIT</th>
+              @if (isOwner()) {
+                <th style="text-align:right;">ACTIONS</th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -56,9 +60,11 @@
                 <td class="mono" style="text-align:right;font-weight:700;">{{ (c.pts || 0).toLocaleString() }}</td>
                 <td class="mono" style="text-align:right;font-weight:700;">₦{{ (c.spend || 0).toLocaleString() }}</td>
                 <td style="color:var(--text2);font-size:11px;">{{ c.last }}</td>
-                <td style="text-align:right;">
-                  <button class="btn btn-secondary btn-xs" (click)="openEditModal(c)">Edit</button>
-                </td>
+                @if (isOwner()) {
+                  <td style="text-align:right;">
+                    <button class="btn btn-secondary btn-xs" (click)="openEditModal(c)">Edit</button>
+                  </td>
+                }
               </tr>
             }
           </tbody>

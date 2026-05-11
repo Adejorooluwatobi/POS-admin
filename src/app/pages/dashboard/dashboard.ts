@@ -25,6 +25,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public totalRevenue = signal<number>(0);
   public totalTx = signal<number>(0);
   public activeStoresCount = signal<number>(0);
+  public lowStockCount = signal<number>(0);
   public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
 

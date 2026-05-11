@@ -41,7 +41,7 @@ export class StoresComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     const user = this.authService.currentUser();
-    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+    this.isOwner.set(user?.role === 'TENANT_ADMIN');
     this.isSuperAdmin.set(user?.role === 'SUPER_ADMIN');
   }
 
