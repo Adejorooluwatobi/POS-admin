@@ -40,8 +40,8 @@ export class PromotionsComponent implements OnInit {
     private storeService: StoreService
   ) {
     const user = this.authService.currentUser();
-    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
-    this.isAdmin.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+    this.isAdmin.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
   }
 
   async togglePromotionStatus(promo: Promotion) {

@@ -7,6 +7,7 @@ export interface Account {
   store: string | null;
   initials: string;
   tenantId?: string | null;
+  businessName?: string | null;
 }
 
 export interface Store {

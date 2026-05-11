@@ -80,7 +80,7 @@ export class InventoryComponent implements OnInit {
 
   checkUserRole() {
     const role = this.authService.getSystemRole();
-    this.isGenerals.set(role === 'SuperAdmin' || role === 'TenantAdmin' || role === 'Manager');
+    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager');
   }
 
   async loadAlerts() {

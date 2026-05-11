@@ -12,6 +12,7 @@ interface AuthResponseDto {
   userId: string;
   email: string;
   storeId: string | null;
+  businessName: string | null;
 }
 
 @Injectable({
@@ -53,7 +54,8 @@ export class AuthService {
         name: response.fullName,
         store: response.storeId,
         initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U',
-        tenantId: response.tenantId
+        tenantId: response.tenantId,
+        businessName: response.businessName
       };
 
       this.currentUserSignal.set(acct);
