@@ -59,7 +59,7 @@ export class ProductsComponent implements OnInit {
   ) {
     const user = this.authService.currentUser();
     // Generals are SuperAdmin, TenantAdmin, and Manager (5)
-    this.isGeneral.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    this.isGeneral.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
     // Staff who can access the catalog at all
     this.isOwner.set(!!user);
   }

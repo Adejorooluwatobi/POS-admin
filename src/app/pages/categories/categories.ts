@@ -30,7 +30,7 @@ export class CategoriesComponent implements OnInit {
     private authService: AuthService
   ) {
     const user = this.authService.currentUser();
-    this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
+    this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
   }
 
   async toggleCategoryStatus(cat: Category) {
