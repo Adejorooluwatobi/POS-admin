@@ -21,6 +21,9 @@
         <div class="card premium-card" style="padding:20px;border-radius:16px;position:relative;overflow:hidden;background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);border:1px solid var(--border);">
           <div style="position:absolute;top:0;right:0;padding:15px;opacity:0.05;font-size:60px;">💳</div>
           
+          <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:12px;letter-spacing:-0.01em;">
+            {{ authService.currentUser()?.businessName || 'RETAILOS' }}
+          </div>
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;position:relative;z-index:1;">
             <div>
               <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;">Card Number</div>

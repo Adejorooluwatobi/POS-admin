@@ -31,7 +31,7 @@ export class GiftCardsComponent implements OnInit {
 
   constructor(
     private giftCardService: GiftCardService,
-    private authService: AuthService,
+    public authService: AuthService,
     private storeService: StoreService
   ) {
     const user = this.authService.currentUser();
