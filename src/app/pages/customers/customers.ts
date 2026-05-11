@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CustomerService } from '../../services/customer.service';
+import { AuthService } from '../../services/auth.service';
 import { Customer } from '../../models/pos.models';
 
 @Component({
@@ -13,6 +14,7 @@ import { Customer } from '../../models/pos.models';
 export class CustomersComponent implements OnInit {
   public customers = signal<Customer[]>([]);
   public isLoading = signal<boolean>(false);
+  public isOwner = signal<boolean>(false);
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
@@ -26,7 +28,13 @@ export class CustomersComponent implements OnInit {
     tier: 'BRONZE'
   });
 
-  constructor(private customerService: CustomerService) {}
+  constructor(
+    private customerService: CustomerService,
+    private authService: AuthService
+  ) {
+    const user = this.authService.currentUser();
+    this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'STORE_MANAGER');
+  }
 
   ngOnInit() {
     this.loadCustomers();
