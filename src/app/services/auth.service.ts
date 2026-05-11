@@ -32,9 +32,16 @@ export class AuthService {
   }
 
   async login(email: string, pass: string): Promise<string | null> {
+    // Clear any existing session to avoid interceptor/stale data issues
+    localStorage.removeItem('retail_os_token');
+    localStorage.removeItem('retail_os_user');
+
     try {
       const response = await firstValueFrom(
-        this.http.post<AuthResponseDto>(`${this.apiUrl}/login-admin`, { email, password: pass })
+        this.http.post<AuthResponseDto>(`${this.apiUrl}/login-admin`, { 
+          email: email.trim(), 
+          password: pass 
+        })
       );
 
       const role = response.role;
@@ -63,9 +70,13 @@ export class AuthService {
       localStorage.setItem('retail_os_token', response.token);
       return null;
     } catch (error) {
+      console.error('Login error:', error);
       if (error instanceof HttpErrorResponse) {
         if (error.status === 401) {
           return 'Invalid email or password';
+        }
+        if (error.status === 403) {
+          return 'Access forbidden. You may not have permission to access the admin portal.';
         }
         return error.error?.message || 'Login failed. Please try again later.';
       }
