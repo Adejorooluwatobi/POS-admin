@@ -102,8 +102,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       // Calculate last 7 days real data
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const today = new Date();
-      const labels = [];
-      const data = [];
+      const labels: string[] = [];
+      const data: number[] = [];
       
       // Get last 100 transactions to aggregate
       this.transactionService.getTransactions(1, 100).then(res => {
