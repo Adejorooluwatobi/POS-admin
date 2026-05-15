@@ -14,7 +14,9 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 export class TenantDetailsComponent implements OnInit {
   public tenant = signal<any>(null);
   public isLoading = signal<boolean>(false);
-  
+  public isUpdatingSub = signal<boolean>(false);
+  public showSubModal = signal<boolean>(false);
+
   // Filtering
   public selectedYear = signal<number>(new Date().getFullYear());
   public selectedMonth = signal<number | null>(null);
@@ -25,6 +27,16 @@ export class TenantDetailsComponent implements OnInit {
     { v: 7, n: 'July' }, { v: 8, n: 'August' }, { v: 9, n: 'September' },
     { v: 10, n: 'October' }, { v: 11, n: 'November' }, { v: 12, n: 'December' }
   ];
+
+  public subEdit = {
+    plan: 0,
+    status: 1,
+    maxStores: 0,
+    maxStaff: 0,
+    maxTerminals: 0,
+    monthlyPrice: 0,
+    currentPeriodEnd: ''
+  };
 
   constructor(
     private tenantService: TenantService,
@@ -49,10 +61,36 @@ export class TenantDetailsComponent implements OnInit {
         this.selectedMonth() || undefined
       );
       this.tenant.set(data);
+      
+      if (data.subscription) {
+        this.subEdit = {
+          plan: data.subscription.plan,
+          status: data.subscription.status,
+          maxStores: data.subscription.maxStores,
+          maxStaff: data.subscription.maxStaff,
+          maxTerminals: data.subscription.maxTerminals,
+          monthlyPrice: data.subscription.monthlyPrice,
+          currentPeriodEnd: data.subscription.currentPeriodEnd.split('T')[0]
+        };
+      }
     } catch (error) {
       console.error('Failed to load tenant details', error);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async updateSubscription() {
+    this.isUpdatingSub.set(true);
+    try {
+      await this.tenantService.updateSubscription(this.tenant().id, this.subEdit);
+      this.showSubModal.set(false);
+      this.loadDetails();
+    } catch (error) {
+      console.error('Failed to update subscription', error);
+      alert('Error updating subscription settings.');
+    } finally {
+      this.isUpdatingSub.set(false);
     }
   }
 
