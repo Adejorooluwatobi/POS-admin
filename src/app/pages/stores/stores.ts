@@ -23,7 +23,9 @@ export class StoresComponent implements OnInit {
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
+  public isSaving = signal<boolean>(false);
   public modalMode = signal<'create' | 'edit' | 'view'>('create');
+  public errorMessage = signal<string | null>(null);
   public selectedStore = signal<Partial<Store>>({
     name: '',
     code: '',
@@ -97,6 +99,7 @@ export class StoresComponent implements OnInit {
 
   openCreateModal() {
     this.modalMode.set('create');
+    this.errorMessage.set(null);
     this.selectedStore.set({
       name: '',
       code: '',
@@ -111,6 +114,7 @@ export class StoresComponent implements OnInit {
 
   async openEditModal(store: Store) {
     this.modalMode.set('edit');
+    this.errorMessage.set(null);
     this.selectedStore.set({ ...store });
     this.isModalOpen.set(true);
   }
@@ -131,6 +135,8 @@ export class StoresComponent implements OnInit {
       ...storeData,
       isActive: storeData.active
     };
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
     try {
       if (this.modalMode() === 'create') {
         await this.storeService.createStore(dto);
@@ -139,8 +145,12 @@ export class StoresComponent implements OnInit {
       }
       this.closeModal();
       this.loadStores();
-    } catch (error) {
-      console.error('Failed to save store', error);
+    } catch (error: any) {
+      // Extract the message from the API error response body
+      const msg = error?.error?.message || error?.message || 'An unexpected error occurred. Please try again.';
+      this.errorMessage.set(msg);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 

@@ -90,8 +90,13 @@
 
         <div style="padding:24px;overflow-y:auto;flex:1;">
           @if (saveError()) {
-            <div style="background:var(--danger-light, #ff4d4f20);color:var(--danger, #ff4d4f);padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;border:1px solid var(--danger, #ff4d4f);">
-              {{ saveError() }}
+            <div style="padding:14px 16px;background:rgba(255,60,60,0.08);border:1.5px solid rgba(255,60,60,0.3);border-radius:12px;display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div style="flex:1;">
+                <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Blocked</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ saveError() }}</div>
+              </div>
+              <button (click)="saveError.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;font-size:18px;">&#215;</button>
             </div>
           }
           <div style="display:grid;gap:16px;">
@@ -202,7 +207,7 @@
         <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);flex-shrink:0;">
           <button class="btn btn-secondary" (click)="closeModal()">{{ modalMode() === 'view' ? 'Close' : 'Cancel' }}</button>
           @if (modalMode() !== 'view') {
-            <button class="btn btn-primary" (click)="saveStaff()">
+            <button class="btn btn-primary" (click)="saveStaff()" style="min-width:130px;">
               {{ modalMode() === 'create' ? 'Add Staff Member' : 'Save Changes' }}
             </button>
           }
