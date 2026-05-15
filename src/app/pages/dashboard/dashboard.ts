@@ -99,47 +99,86 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.mixChart) this.mixChart.destroy();
 
     if (this.revChartCanvas?.nativeElement) {
-      this.revChart = new Chart(this.revChartCanvas.nativeElement, {
-        type: 'bar',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            data: [620000, 580000, 710000, 650000, 820000, 980000, this.totalRevenue()],
-            backgroundColor: accentColor + 'cc',
-            borderRadius: 5,
-            borderSkipped: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
-            y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, callback: v => '₦' + (Number(v) / 1000) + 'k' } }
-          }
+      // Calculate last 7 days real data
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const today = new Date();
+      const labels: string[] = [];
+      const data: number[] = [];
+      
+      // Get last 100 transactions to aggregate
+      this.transactionService.getTransactions(1, 100).then(res => {
+        const txs = res.items || res;
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(today.getDate() - i);
+          const label = days[d.getDay()];
+          labels.push(label);
+          
+          const dayTotal = txs
+            .filter((t: any) => new Date(t.createdAt).toDateString() === d.toDateString())
+            .reduce((acc: number, t: any) => acc + (t.grandTotal || 0), 0);
+          data.push(dayTotal || (i === 0 ? this.totalRevenue() : 0));
         }
+
+        this.revChart = new Chart(this.revChartCanvas.nativeElement, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: accentColor + 'cc',
+              borderRadius: 5,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
+              y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, callback: v => '₦' + (Number(v) / 1000) + 'k' } }
+            }
+          }
+        });
       });
     }
 
     if (this.mixChartCanvas?.nativeElement) {
-      this.mixChart = new Chart(this.mixChartCanvas.nativeElement, {
-        type: 'doughnut',
-        data: {
-          labels: ['Cash', 'Card', 'Mobile', 'Gift'],
-          datasets: [{
-            data: [42, 35, 18, 5],
-            backgroundColor: ['#0284c7', '#059669', '#f5a623', '#7c3aed'],
-            borderWidth: 0,
-            hoverOffset: 5
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { position: 'bottom', labels: { color: tickColor, font: { size: 10 }, boxWidth: 9, padding: 10 } } },
-          cutout: '65%'
-        }
+      this.transactionService.getTransactions(1, 100).then(res => {
+        const txs = res.items || res;
+        const payments = txs.flatMap((t: any) => t.payments || []);
+        
+        const cash = payments.filter((p: any) => p.method === 0 || p.method === 'Cash').reduce((acc: number, p: any) => acc + p.amount, 0);
+        const card = payments.filter((p: any) => p.method === 1 || p.method === 'Card').reduce((acc: number, p: any) => acc + p.amount, 0);
+        const mobile = payments.filter((p: any) => p.method === 2 || p.method === 'Mobile').reduce((acc: number, p: any) => acc + p.amount, 0);
+        const gift = payments.filter((p: any) => p.method === 3 || p.method === 'GiftCard').reduce((acc: number, p: any) => acc + p.amount, 0);
+
+        const total = (cash + card + mobile + gift) || 1;
+
+        this.mixChart = new Chart(this.mixChartCanvas.nativeElement, {
+          type: 'doughnut',
+          data: {
+            labels: ['Cash', 'Card', 'Mobile', 'Gift'],
+            datasets: [{
+              data: [
+                Math.round((cash/total)*100), 
+                Math.round((card/total)*100), 
+                Math.round((mobile/total)*100), 
+                Math.round((gift/total)*100)
+              ],
+              backgroundColor: ['#0284c7', '#059669', '#f5a623', '#7c3aed'],
+              borderWidth: 0,
+              hoverOffset: 5
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: tickColor, font: { size: 10 }, boxWidth: 9, padding: 10 } } },
+            cutout: '65%'
+          }
+        });
       });
     }
   }

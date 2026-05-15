@@ -28,4 +28,14 @@ export class TenantService {
     if (month) params = params.set('month', month);
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/details`, { params }));
   }
+
+  async createTenant(dto: any): Promise<any> {
+    return await firstValueFrom(this.http.post<any>(this.apiUrl, dto));
+  }
+
+  async updateSubscription(tenantId: string, dto: any): Promise<any> {
+    // Note: This uses the /api/subscriptions endpoint
+    const subUrl = 'https://pos-saas-cl9g.onrender.com/api/subscriptions';
+    return await firstValueFrom(this.http.put<any>(`${subUrl}/${tenantId}`, dto));
+  }
 }
