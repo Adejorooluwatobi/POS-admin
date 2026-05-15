@@ -13,6 +13,21 @@ import { Router, RouterModule } from '@angular/router';
 export class TenantsComponent implements OnInit {
   public tenants = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
+  public isCreating = signal<boolean>(false);
+  public showCreateModal = signal<boolean>(false);
+
+  public newTenant = {
+    businessName: '',
+    slug: '',
+    contactEmail: '',
+    adminFirstName: '',
+    adminLastName: '',
+    adminEmail: '',
+    adminPassword: '',
+    maxStores: 1,
+    maxStaff: 5,
+    maxTerminals: 2
+  };
 
   constructor(
     private tenantService: TenantService,
@@ -33,6 +48,36 @@ export class TenantsComponent implements OnInit {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  async createTenant() {
+    this.isCreating.set(true);
+    try {
+      await this.tenantService.createTenant(this.newTenant);
+      this.showCreateModal.set(false);
+      this.loadTenants();
+      this.resetNewTenant();
+    } catch (error) {
+      console.error('Failed to create tenant', error);
+      alert('Error creating tenant. Please ensure slug is unique.');
+    } finally {
+      this.isCreating.set(false);
+    }
+  }
+
+  resetNewTenant() {
+    this.newTenant = {
+      businessName: '',
+      slug: '',
+      contactEmail: '',
+      adminFirstName: '',
+      adminLastName: '',
+      adminEmail: '',
+      adminPassword: '',
+      maxStores: 1,
+      maxStaff: 5,
+      maxTerminals: 2
+    };
   }
 
   async toggleStatus(tenant: any) {
