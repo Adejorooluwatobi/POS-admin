@@ -23,6 +23,8 @@ export class TerminalsComponent implements OnInit {
 
   // Modal State
   public isModalOpen = signal<boolean>(false);
+  public isSaving = signal<boolean>(false);
+  public errorMessage = signal<string | null>(null);
   public modalMode = signal<'create' | 'edit' | 'view'>('create');
   public selectedTerminal = signal<Partial<Terminal>>({
     name: '',
@@ -76,6 +78,7 @@ export class TerminalsComponent implements OnInit {
 
   openCreateModal() {
     this.modalMode.set('create');
+    this.errorMessage.set(null);
     this.selectedTerminal.set({
       name: '',
       ipAddress: '',
@@ -94,6 +97,7 @@ export class TerminalsComponent implements OnInit {
 
   openEditModal(terminal: Terminal) {
     this.modalMode.set('edit');
+    this.errorMessage.set(null);
     this.selectedTerminal.set({ ...terminal });
     this.isModalOpen.set(true);
   }
@@ -115,6 +119,8 @@ export class TerminalsComponent implements OnInit {
       storeId: t.storeId
     };
 
+    this.isSaving.set(true);
+    this.errorMessage.set(null);
     try {
       if (this.modalMode() === 'create') {
         const response = await this.terminalService.createTerminal(payload);
@@ -131,8 +137,10 @@ export class TerminalsComponent implements OnInit {
       this.closeModal();
       this.loadTerminals();
     } catch (error: any) {
-      console.error('Failed to save terminal', error);
-      alert(`Error saving terminal: ${error.error?.message || error.message || 'Unknown error'}`);
+      const msg = error?.error?.message || error?.message || 'An unexpected error occurred.';
+      this.errorMessage.set(msg);
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
