@@ -1,5 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../../services/tenant.service';
 import { AuthService } from '../../../services/auth.service';
@@ -8,7 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-tenant-details',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule, RouterModule],
+  imports: [CommonModule, DatePipe, FormsModule, RouterModule],
   templateUrl: './tenant-details.html'
 })
 export class TenantDetailsComponent implements OnInit {
@@ -64,13 +64,26 @@ export class TenantDetailsComponent implements OnInit {
       
       if (data.subscription) {
         this.subEdit = {
-          plan: data.subscription.plan,
-          status: data.subscription.status,
-          maxStores: data.subscription.maxStores,
-          maxStaff: data.subscription.maxStaff,
-          maxTerminals: data.subscription.maxTerminals,
-          monthlyPrice: data.subscription.monthlyPrice,
-          currentPeriodEnd: data.subscription.currentPeriodEnd.split('T')[0]
+          plan: data.subscription.plan ?? 0,
+          status: data.subscription.status ?? 1,
+          maxStores: data.subscription.maxStores ?? 1,
+          maxStaff: data.subscription.maxStaff ?? 5,
+          maxTerminals: data.subscription.maxTerminals ?? 2,
+          monthlyPrice: data.subscription.monthlyPrice ?? 0,
+          currentPeriodEnd: data.subscription.currentPeriodEnd
+            ? data.subscription.currentPeriodEnd.split('T')[0]
+            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        };
+      } else {
+        // No subscription yet — pre-fill with defaults so the modal is ready to create one
+        this.subEdit = {
+          plan: 0,
+          status: 1,
+          maxStores: 1,
+          maxStaff: 5,
+          maxTerminals: 2,
+          monthlyPrice: 0,
+          currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         };
       }
     } catch (error) {
