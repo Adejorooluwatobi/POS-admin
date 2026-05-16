@@ -12,6 +12,7 @@ import { AuthService } from '../../services/auth.service';
 export class AuditComponent implements OnInit {
   public logs = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
+  public selectedLog = signal<any | null>(null);
 
   constructor(
     private auditService: AuditService,
@@ -31,16 +32,35 @@ export class AuditComponent implements OnInit {
       const data = await this.auditService.getAuditLogs(user.tenantId);
       const items = data.items || data;
       this.logs.set(items.map((l: any) => ({
+        id: l.id,
         ts: new Date(l.createdAt).toLocaleString(),
         staff: l.staffName || 'System',
         action: l.action,
         entity: l.entityType,
-        store: l.storeName || 'Global'
+        store: l.storeName || 'Global',
+        ip: l.ipAddress || '—',
+        terminal: l.terminalName || 'Portal',
+        path: l.requestPath || '—',
+        changes: l.changes ? JSON.parse(l.changes) : null
       })));
     } catch (error) {
       console.error('Failed to load audit logs', error);
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  viewDetails(log: any) {
+    this.selectedLog.set(log);
+  }
+
+  closeModal() {
+    this.selectedLog.set(null);
+  }
+
+  formatValue(val: any): string {
+    if (val === null || val === undefined) return '—';
+    if (typeof val === 'object') return JSON.stringify(val);
+    return val.toString();
   }
 }
