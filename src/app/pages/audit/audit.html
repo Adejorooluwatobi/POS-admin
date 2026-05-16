@@ -8,14 +8,16 @@
   <div class="card" style="margin-bottom:20px;padding:12px;">
     <div style="display:flex;gap:12px;">
       <div style="flex:1;position:relative;">
-        <input type="text" class="inp" placeholder="Search by staff, action or entity..." style="padding-left:36px;">
+        <input type="text" class="inp" 
+               [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+               placeholder="Search by staff, action or entity..." style="padding-left:36px;">
         <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);">🔍</span>
       </div>
-      <select class="inp" style="width:180px;">
+      <select class="inp" style="width:180px;" [ngModel]="filterAction()" (ngModelChange)="filterAction.set($event)">
         <option value="">All Actions</option>
-        <option value="CREATE">Create</option>
-        <option value="UPDATE">Update</option>
-        <option value="DELETE">Delete</option>
+        <option value="Insert">Create</option>
+        <option value="Update">Update</option>
+        <option value="Delete">Delete</option>
       </select>
     </div>
   </div>
@@ -42,7 +44,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (l of logs(); track l.id) {
+            @for (l of filteredLogs(); track l.id) {
               <tr class="row-hover" (click)="viewDetails(l)">
                 <td class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</td>
                 <td style="font-weight:600;font-size:13px;">{{ l.staff }}</td>

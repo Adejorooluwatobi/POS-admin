@@ -1,18 +1,40 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [CommonModule, NgClass],
+  imports: [CommonModule, NgClass, FormsModule],
   templateUrl: './audit.html'
 })
 export class AuditComponent implements OnInit {
   public logs = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
   public selectedLog = signal<any | null>(null);
+  public searchTerm = signal<string>('');
+  public filterAction = signal<string>('');
+
+  public filteredLogs = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    const action = this.filterAction();
+    const allLogs = this.logs();
+
+    return allLogs.filter(l => {
+      const matchesSearch = !term || 
+        l.staff.toLowerCase().includes(term) || 
+        l.entity.toLowerCase().includes(term) || 
+        l.action.toLowerCase().includes(term) ||
+        l.terminal.toLowerCase().includes(term) ||
+        l.ip.toLowerCase().includes(term);
+      
+      const matchesAction = !action || l.action.toUpperCase().includes(action.toUpperCase());
+
+      return matchesSearch && matchesAction;
+    });
+  });
 
   constructor(
     private auditService: AuditService,
