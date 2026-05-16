@@ -35,7 +35,13 @@ export class GiftCardsComponent implements OnInit {
     private storeService: StoreService
   ) {
     const user = this.authService.currentUser();
-    this.isAdmin.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+    this.isAdmin.set(
+      user?.role === 'TENANT_ADMIN' || 
+      user?.role === 'MANAGER' || 
+      user?.role === 'STORE_MANAGER' || 
+      user?.role === 'SUPERVISOR' || 
+      user?.role === 'CASHIER'
+    );
   }
 
   ngOnInit() {
