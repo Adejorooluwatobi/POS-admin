@@ -85,7 +85,33 @@ export class GiftCardsComponent implements OnInit {
   }
 
   generateCardNumber(): string {
-    return 'GC-' + Math.floor(10000000 + Math.random() * 90000000).toString();
+    const businessName = this.authService.currentUser()?.businessName || '';
+    const prefix = this.getTenantPrefix(businessName);
+    const digitsCount = 16 - prefix.length;
+    let digits = '';
+    for (let i = 0; i < digitsCount; i++) {
+      digits += Math.floor(Math.random() * 10).toString();
+    }
+    return prefix + digits;
+  }
+
+  private getTenantPrefix(businessName: string): string {
+    const name = (businessName || '').trim().toLowerCase();
+    if (name.includes('nevermind')) return 'NVMD';
+    if (name.includes('shoprite')) return 'SPR';
+
+    const consonants = name.split('').filter(c => /[a-z]/i.test(c) && !'aeiou'.includes(c));
+    if (consonants.length >= 3) {
+      const candidate = consonants.join('').toUpperCase();
+      return candidate.length > 4 ? candidate.substring(0, 4) : candidate;
+    }
+
+    const cleanName = name.split('').filter(c => /[a-z]/i.test(c)).join('').toUpperCase();
+    if (cleanName.length >= 3) {
+      return cleanName.length > 4 ? cleanName.substring(0, 4) : cleanName;
+    }
+
+    return 'GFT';
   }
 
   closeModal() {
