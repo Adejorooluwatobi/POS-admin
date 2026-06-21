@@ -42,3 +42,13 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Build outputs
+/android/
+/dist-desktop/
+/dist/
+
+# Electron & Capacitor
+main.js
+preload.js
+capacitor.config.ts
