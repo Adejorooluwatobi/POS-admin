@@ -1,0 +1,10 @@
+{
+  "name": "POS Admin",
+  "description": "RetailOS Point of Sale administrative portal for inventory, stores, orders, staff, till sessions, and transaction management.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

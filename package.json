@@ -4,10 +4,12 @@
   "main": "main.js",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "dev": "ng serve --host 0.0.0.0 --port 3000",
+    "start": "ng serve --host 0.0.0.0 --port 3000",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "lint": "ng build --configuration development",
     "electron": "electron .",
     "build:electron": "ng build && electron .",
     "cap:sync": "cap sync",
@@ -15,7 +17,6 @@
     "package:desktop": "ng build && electron-packager . \"POS Portal\" --platform=win32 --arch=x64 --out=dist-desktop --overwrite"
   },
   "private": true,
-  "packageManager": "npm@10.9.2",
   "build": {
     "appId": "com.adejorooluwatobi.posportal",
     "directories": {
