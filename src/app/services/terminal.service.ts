@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Terminal } from '../models/pos.models';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TerminalService {
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/terminals';
+  private apiUrl = `${environment.apiUrl}/terminals`;
 
   constructor(private http: HttpClient) {}
 

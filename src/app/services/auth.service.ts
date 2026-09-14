@@ -3,6 +3,7 @@ import { Account } from '../models/pos.models';
 import { Router } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 interface AuthResponseDto {
   token: string;
@@ -21,7 +22,7 @@ interface AuthResponseDto {
 export class AuthService {
   private currentUserSignal = signal<Account | null>(null);
   public currentUser = this.currentUserSignal.asReadonly();
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient, private router: Router) {
     // Attempt to hydrate from localStorage

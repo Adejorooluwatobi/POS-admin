@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Promotion } from '../models/pos.models';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PromotionService {
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/promotions';
+  private apiUrl = `${environment.apiUrl}/promotions`;
 
   constructor(private http: HttpClient) {}
 

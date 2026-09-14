@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Store } from '../models/pos.models';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/stores';
+  private apiUrl = `${environment.apiUrl}/stores`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StockMovementService {
-  private ordersUrl = 'https://pos-saas-cl9g.onrender.com/api/inventory-orders';
-  private requisitionsUrl = 'https://pos-saas-cl9g.onrender.com/api/stock-requisitions';
-  private inventoryUrl = 'https://pos-saas-cl9g.onrender.com/api/inventory';
+  private ordersUrl = `${environment.apiUrl}/inventory-orders`;
+  private requisitionsUrl = `${environment.apiUrl}/stock-requisitions`;
+  private inventoryUrl = `${environment.apiUrl}/inventory`;
 
   constructor(private http: HttpClient) {}
 

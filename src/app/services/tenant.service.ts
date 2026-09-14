@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TenantService {
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/tenants';
+  private apiUrl = `${environment.apiUrl}/tenants`;
 
   constructor(private http: HttpClient) {}
 
@@ -35,7 +36,7 @@ export class TenantService {
 
   async updateSubscription(tenantId: string, dto: any): Promise<any> {
     // Note: This uses the /api/subscriptions endpoint
-    const subUrl = 'https://pos-saas-cl9g.onrender.com/api/subscriptions';
+    const subUrl = `${environment.apiUrl}/subscriptions`;
     return await firstValueFrom(this.http.put<any>(`${subUrl}/${tenantId}`, dto));
   }
 }
