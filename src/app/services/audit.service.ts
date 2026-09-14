@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuditService {
-  private apiUrl = 'https://pos-saas-cl9g.onrender.com/api/audit-logs';
+  private apiUrl = `${environment.apiUrl}/audit-logs`;
 
   constructor(private http: HttpClient) {}
 
