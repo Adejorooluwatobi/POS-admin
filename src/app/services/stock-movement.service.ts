@@ -77,6 +77,10 @@ export class StockMovementService {
     await firstValueFrom(this.http.post<void>(`${this.requisitionsUrl}/${id}/reject?reason=${reason}`, {}));
   }
 
+  async cancelRequisition(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.requisitionsUrl}/${id}/cancel`, {}));
+  }
+
   // ── Inventory Insights ────────────────────────────────────────────
   async getLowStockAlerts(storeId: string): Promise<any[]> {
     return await firstValueFrom(this.http.get<any[]>(`${this.inventoryUrl}/low-stock/${storeId}`));

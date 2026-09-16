@@ -112,6 +112,7 @@ export interface InventoryItem {
   singlesPerRoll?: number;
   rollsPerPack?: number;
   formatted?: string;
+  storeName?: string;
 }
 
 export interface Customer {

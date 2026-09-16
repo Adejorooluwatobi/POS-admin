@@ -5,9 +5,11 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Gift Cards</div>
       <div style="font-size:12px;color:var(--text3);margin-top:2px;">Issue and manage store credit and gift cards</div>
     </div>
-    <button class="btn btn-primary" (click)="openIssueModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      <span style="font-size:18px;margin-right:6px;">+</span> Issue New Card
-    </button>
+    @if (isAdmin()) {
+      <button class="btn btn-primary" (click)="openIssueModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+        <span style="font-size:18px;margin-right:6px;">+</span> Issue New Card
+      </button>
+    }
   </div>
 
   @if (isLoading()) {

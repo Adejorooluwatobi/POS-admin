@@ -1,10 +1,11 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { StockMovementService } from '../../../services/stock-movement.service';
 import { AuthService } from '../../../services/auth.service';
 import { ProductService } from '../../../services/product.service';
+import { StoreService } from '../../../services/store.service';
 
 @Component({
   selector: 'app-requisitions',
@@ -14,13 +15,22 @@ import { ProductService } from '../../../services/product.service';
 })
 export class RequisitionsComponent implements OnInit {
   public requisitions = signal<any[]>([]);
+  
+  public pendingCount = computed(() => this.requisitions().filter(r => r.status === 'Pending').length);
+  public reviewCount = computed(() => this.requisitions().filter(r => r.status === 'UnderReview').length);
+  public fulfilledCount = computed(() => this.requisitions().filter(r => r.status === 'FullyFulfilled' || r.status === 'PartiallyFulfilled').length);
+
   public products = signal<any[]>([]);
+  public stores = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
   public isModalOpen = signal<boolean>(false);
   public isGenerals = signal<boolean>(false);
+  public isSuperAdmin = signal<boolean>(false);
+  public userStoreId = signal<string | null>(null);
 
   // Requisition Form
   public newReq = {
+    requestingStoreId: '' as string,
     notes: '',
     items: [{ variantId: '', quantityRequested: 1, sku: '' }]
   };
@@ -32,11 +42,13 @@ export class RequisitionsComponent implements OnInit {
   constructor(
     private stockService: StockMovementService,
     private authService: AuthService,
-    private productService: ProductService
+    private productService: ProductService,
+    private storeService: StoreService
   ) {}
 
   ngOnInit() {
     this.checkUserRole();
+    this.loadStores();
     this.loadRequisitions();
     this.loadProducts();
   }
@@ -70,16 +82,42 @@ export class RequisitionsComponent implements OnInit {
     }
   }
 
+  async loadStores() {
+    try {
+      const data = await this.storeService.getStores(1, 100);
+      this.stores.set(data.items || data || []);
+    } catch (e) {
+      console.error('Failed to load stores', e);
+    }
+  }
+
   checkUserRole() {
+    this.userStoreId.set(this.authService.getStoreId());
     const role = this.authService.getSystemRole();
-    this.isGenerals.set(role === 'SuperAdmin' || role === 'TenantAdmin' || role === 'Manager');
+    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager');
+    this.isSuperAdmin.set(role === 'SuperAdmin');
+  }
+
+  canCreate(): boolean {
+    return !this.isSuperAdmin();
+  }
+
+  canCancel(req: any): boolean {
+    if (this.isSuperAdmin()) return false;
+    if (!req || req.status !== 'Pending') return false;
+    return this.isGenerals() || req.requestingStoreId === this.userStoreId();
+  }
+
+  canApprove(req: any): boolean {
+    if (this.isSuperAdmin()) return false;
+    return this.isGenerals() && (req?.status === 'Pending' || req?.status === 'UnderReview');
   }
 
   async loadRequisitions() {
     this.isLoading.set(true);
     try {
       const data = await this.stockService.getRequisitions();
-      this.requisitions.set(data.items || data);
+      this.requisitions.set(data.items || data || []);
     } catch (error) {
       console.error('Failed to load requisitions', error);
     } finally {
@@ -88,7 +126,12 @@ export class RequisitionsComponent implements OnInit {
   }
 
   openCreateModal() {
-    this.newReq = { notes: '', items: [{ variantId: '', quantityRequested: 1, sku: '' }] };
+    const defaultStore = this.userStoreId() || (this.stores().length > 0 ? this.stores()[0].id : '');
+    this.newReq = {
+      requestingStoreId: defaultStore,
+      notes: '',
+      items: [{ variantId: '', quantityRequested: 1, sku: '' }]
+    };
     this.isModalOpen.set(true);
   }
 
@@ -97,26 +140,45 @@ export class RequisitionsComponent implements OnInit {
   }
 
   async submitRequisition() {
+    if (!this.newReq.requestingStoreId) {
+      alert('Please select a requesting store.');
+      return;
+    }
+
+    if (this.newReq.items.length === 0 || this.newReq.items.some(i => !i.variantId || i.quantityRequested <= 0)) {
+      alert('Please ensure all items have a selected product and quantity greater than 0.');
+      return;
+    }
+
     try {
       await this.stockService.createRequisition(this.newReq);
       this.isModalOpen.set(false);
       this.loadRequisitions();
-    } catch (error) {
-      alert('Failed to create requisition');
+    } catch (error: any) {
+      alert(`Failed to create requisition: ${error.error?.message || error.message || 'Unknown error'}`);
+    }
+  }
+
+  async cancelRequisition(id: string) {
+    if (!confirm('Are you sure you want to cancel this requisition?')) return;
+    try {
+      await this.stockService.cancelRequisition(id);
+      this.loadRequisitions();
+    } catch (error: any) {
+      alert(`Cancellation failed: ${error.error?.message || error.message || 'Unknown error'}`);
     }
   }
 
   async review(req: any) {
     if (!confirm('Start review for this requisition?')) return;
     try {
-      // await this.stockService.reviewRequisition(req.id); // TODO: Add to service
+      // await this.stockService.reviewRequisition(req.id);
       this.loadRequisitions();
     } catch (error) {}
   }
 
   async openApproveModal(req: any) {
     this.selectedReq.set(req);
-    // Initialize plans
     this.fulfillmentPlans.set([{
       sourceStoreId: null, // HQ
       items: req.items.map((i: any) => ({ variantId: i.variantId, quantity: i.quantityRequested, sku: i.sku }))
@@ -130,8 +192,8 @@ export class RequisitionsComponent implements OnInit {
       });
       this.selectedReq.set(null);
       this.loadRequisitions();
-    } catch (error) {
-      alert('Approval failed');
+    } catch (error: any) {
+      alert(`Approval failed: ${error.error?.message || error.message || 'Unknown error'}`);
     }
   }
 }

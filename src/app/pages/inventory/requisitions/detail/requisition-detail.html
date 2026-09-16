@@ -26,10 +26,35 @@
         </div>
       </div>
 
-      <div *ngIf="isGeneral() && (requisition().status === 'Pending' || requisition().status === 'UnderReview')">
-        <button (click)="showPlanner.set(true)" class="btn btn-primary" style="padding:12px 24px;border-radius:12px;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button *ngIf="canCancel()" (click)="cancelRequisition()" class="btn btn-secondary" style="padding:10px 18px;border-radius:10px;">
+          Cancel Request
+        </button>
+        <button *ngIf="canApproveOrReject()" (click)="openRejectModal()" class="btn btn-danger" style="padding:10px 18px;border-radius:10px;">
+          Reject
+        </button>
+        <button *ngIf="canApproveOrReject()" (click)="showPlanner.set(true)" class="btn btn-primary" style="padding:10px 22px;border-radius:10px;">
           🛠️ Fulfillment Planner
         </button>
+      </div>
+    </div>
+
+    <!-- Rejection Notice Banner -->
+    <div *ngIf="requisition().status === 'Rejected'" class="card" style="padding:20px 24px;margin-bottom:24px;background:rgba(239,68,68,0.08);border:1px solid var(--red);display:flex;align-items:center;gap:16px;">
+      <span style="font-size:28px;">❌</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--red);">Requisition Rejected</div>
+        <div style="font-size:13px;color:var(--text1);margin-top:2px;">Reason: {{ requisition().rejectionReason || 'No reason provided.' }}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Reviewed on {{ requisition().reviewedAt | date:'medium' }}</div>
+      </div>
+    </div>
+
+    <!-- Cancelled Notice Banner -->
+    <div *ngIf="requisition().status === 'Cancelled'" class="card" style="padding:16px 24px;margin-bottom:24px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⚪</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text2);">Request Cancelled</div>
+        <div style="font-size:11px;color:var(--text3);">This stock requisition was cancelled by the store manager.</div>
       </div>
     </div>
 
@@ -177,7 +202,9 @@
               <label class="label" style="font-size:9px;">Source Store</label>
               <select [(ngModel)]="plan.sourceStoreId" class="inp">
                 <option [ngValue]="null">Headquarters (Default)</option>
-                <option *ngFor="let s of getCrossStockForItem(requisition().items[0].variantId)" [value]="s.storeId">{{ s.storeName }}</option>
+                <option *ngFor="let s of stores()" [value]="s.id" [disabled]="s.id === requisition()?.requestingStoreId">
+                  {{ s.name }} ({{ s.code }})
+                </option>
               </select>
             </div>
 
@@ -196,6 +223,33 @@
     <div style="padding:24px;border-top:1px solid var(--border);background:var(--surface2);display:flex;justify-content:flex-end;gap:12px;">
       <button (click)="showPlanner.set(false)" class="btn btn-secondary">Cancel</button>
       <button (click)="submitFulfillment()" class="btn btn-primary" style="padding:12px 32px;">Finalize & Create Orders</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Modal -->
+<div *ngIf="isRejectModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width: 500px;">
+    <div style="padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <div style="font-size: 18px; font-weight: 800; color: var(--red);">Reject Requisition</div>
+        <div style="font-size: 12px; color: var(--text3);">Provide a reason for denying this stock request</div>
+      </div>
+      <button (click)="closeRejectModal()" style="background: none; border: none; color: var(--text3); font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label class="label">Rejection Reason <span style="color: var(--red);">*</span></label>
+        <textarea [(ngModel)]="rejectionReason" class="inp" rows="4" placeholder="Explain why this requisition is being rejected (e.g., Insufficient stock at HQ, duplicate request)..."></textarea>
+      </div>
+    </div>
+
+    <div style="padding: 20px 24px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; justify-content: flex-end; gap: 12px;">
+      <button (click)="closeRejectModal()" class="btn btn-secondary" [disabled]="isRejecting()">Cancel</button>
+      <button (click)="submitReject()" class="btn btn-danger" [disabled]="isRejecting() || !rejectionReason.trim()">
+        {{ isRejecting() ? 'Rejecting...' : 'Confirm Rejection' }}
+      </button>
     </div>
   </div>
 </div>

@@ -67,7 +67,9 @@
                 <td style="text-align:right;">
                   <div style="display:flex;justify-content:flex-end;gap:6px;">
                     <button [routerLink]="['/app/stores', s.id]" class="btn btn-secondary btn-xs">Stats</button>
-                    <button class="btn btn-primary btn-xs" (click)="openEditModal(s)">Edit</button>
+                    @if (!isSuperAdmin()) {
+                      <button class="btn btn-primary btn-xs" (click)="openEditModal(s)">Edit</button>
+                    }
                     @if (isOwner()) {
                       <button class="btn btn-danger btn-xs" (click)="deleteStore(s.id)" style="background:var(--red);border-color:var(--red);">Delete</button>
                     }

@@ -111,6 +111,7 @@ export class InventoryComponent implements OnInit {
         n: i.variantName || 'Unknown Product',
         sku: i.sku || i.SKU,
         e: '📦',
+        storeName: i.storeName,
         oh: i.quantityOnHand,
         res: i.quantityReserved,
         ro: i.reorderPoint,

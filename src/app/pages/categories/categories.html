@@ -5,9 +5,11 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Categories</div>
       <div style="font-size:12px;color:var(--text3);">Organize your product catalog into logical groups</div>
     </div>
-    <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      <span style="font-size:18px;margin-right:6px;">+</span> New Category
-    </button>
+    @if (isOwner()) {
+      <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+        <span style="font-size:18px;margin-right:6px;">+</span> New Category
+      </button>
+    }
   </div>
 
   @if (isLoading()) {
@@ -48,7 +50,9 @@
                 <td style="text-align:right;">
                   <div style="display:flex;justify-content:flex-end;gap:6px;">
                     <button class="btn btn-secondary btn-xs" (click)="openViewModal(c)">View</button>
-                    <button class="btn btn-primary btn-xs" (click)="openEditModal(c)">Edit</button>
+                    @if (isOwner()) {
+                      <button class="btn btn-primary btn-xs" (click)="openEditModal(c)">Edit</button>
+                    }
                   </div>
                 </td>
               </tr>
