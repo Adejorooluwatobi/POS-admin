@@ -59,18 +59,18 @@
     </div>
 
     <!-- Resolved Notice Banner -->
-    <div *ngIf="order().status === 'Resolved'" class="card" style="padding:16px 24px;margin-bottom:30px;background:rgba(16,185,129,0.08);border:1px solid var(--green);display:flex;align-items:center;gap:12px;">
-      <span style="font-size:24px;">✅</span>
+    <div *ngIf="order().status === 'Resolved'" class="card" style="padding:16px 24px;margin-bottom:30px;background:rgba(245,158,11,0.08);border:1px solid var(--amber);display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⚠️</span>
       <div>
-        <div style="font-size:14px;font-weight:700;color:var(--green);">Dispute Resolved & Stock Reconciled</div>
-        <div style="font-size:11px;color:var(--text3);">Inventory records have been updated to reflect final agreed quantities.</div>
+        <div style="font-size:14px;font-weight:700;color:var(--amber);">Dispute Resolved (Pending Your Approval)</div>
+        <div style="font-size:11px;color:var(--text3);">HQ/Source has proposed a resolution. Please review the updated quantities below and click "Finalize & Approve" to update your stock.</div>
       </div>
     </div>
 
     <!-- Status Stepper -->
     <div class="card" style="padding:16px;margin-bottom:30px;">
       <app-status-stepper 
-        [steps]="order().status === 'Disputed' || order().status === 'Resolved' ? ['Draft', 'Dispatched', 'Received', 'Disputed', 'Resolved'] : ['Draft', 'Dispatched', 'Received', 'Approved']" 
+        [steps]="order().disputeNotes ? ['Draft', 'Dispatched', 'Received', 'Disputed', 'Resolved', 'Approved'] : ['Draft', 'Dispatched', 'Received', 'Approved']" 
         [currentStatus]="order().status">
       </app-status-stepper>
     </div>
@@ -119,8 +119,23 @@
                   <div style="font-weight:700;color:var(--text1);">{{ item.variantName }}</div>
                   <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
                 </td>
-                <td style="text-align:center;font-weight:700;">{{ item.quantityOrdered }}</td>
-                <td style="text-align:center;font-weight:800;color:var(--accent);">{{ item.quantityReceived || '-' }}</td>
+                <td style="text-align:center;font-weight:700;">
+                  <ng-container *ngIf="item.conversionFactor > 1; else orderQty">
+                    {{ getPacks(item.quantityOrdered, item.conversionFactor) }} Packs 
+                    <span *ngIf="(item.quantityOrdered % item.conversionFactor) > 0" style="font-size:10px; color:var(--text3);">+ {{ item.quantityOrdered % item.conversionFactor }}</span>
+                  </ng-container>
+                  <ng-template #orderQty>{{ item.quantityOrdered }}</ng-template>
+                </td>
+                <td style="text-align:center;font-weight:800;color:var(--accent);">
+                  <ng-container *ngIf="item.quantityReceived !== null">
+                    <ng-container *ngIf="item.conversionFactor > 1; else rcvQty">
+                      {{ getPacks(item.quantityReceived, item.conversionFactor) }} Packs 
+                      <span *ngIf="(item.quantityReceived % item.conversionFactor) > 0" style="font-size:10px; color:var(--accent-d);">+ {{ item.quantityReceived % item.conversionFactor }}</span>
+                    </ng-container>
+                    <ng-template #rcvQty>{{ item.quantityReceived }}</ng-template>
+                  </ng-container>
+                  <span *ngIf="item.quantityReceived === null">-</span>
+                </td>
                 <td style="text-align:right;">
                   <span *ngIf="item.quantityReceived === item.quantityOrdered" style="color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase;">Verified</span>
                   <span *ngIf="item.quantityReceived < item.quantityOrdered" style="color:var(--red);font-size:10px;font-weight:800;text-transform:uppercase;">Shortage</span>
@@ -192,8 +207,14 @@
           <div style="font-size:9px;font-weight:800;color:var(--text3);margin-top:4px;text-transform:uppercase;">Ordered: {{ item.quantityOrdered }}</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
-          <label class="label" style="margin:0;font-size:9px;">Received:</label>
-          <input type="number" [(ngModel)]="item.quantityReceived" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+          <div>
+            <label class="label" style="margin:0;font-size:9px;">Received ({{ item.conversionFactor > 1 ? 'Packs/Units' : 'Qty' }}):</label>
+            <input type="number" [(ngModel)]="item.quantityReceived" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+          </div>
+          <div *ngIf="item.conversionFactor > 1">
+            <label class="label" style="margin:0;font-size:9px;">Extra (Pieces):</label>
+            <input type="number" [(ngModel)]="item.additionalSingles" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--amber);background:var(--surface);">
+          </div>
         </div>
       </div>
     </div>
@@ -261,22 +282,57 @@
       <div>
         <label class="label">Reconcile Items</label>
         <div style="display:grid;gap:12px;">
-          <div *ngFor="let item of resolveItems()" class="card" style="padding:16px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-weight:800;font-size:14px;color:var(--text1);">{{ item.variantName }}</div>
-              <div class="mono" style="font-size:11px;color:var(--text3);">SKU: {{ item.sku }}</div>
-              <div style="font-size:11px;color:var(--text2);margin-top:4px;">
-                Ordered: <span style="font-weight:700;">{{ item.quantityOrdered }}</span> | 
-                Counted: <span style="font-weight:700;color:var(--accent);">{{ item.quantityReceived }}</span>
-              </div>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:12px;">
+          <div *ngFor="let item of resolveItems()" class="card" style="padding:16px;background:var(--surface2);display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
               <div>
-                <label class="label" style="font-size:9px;margin-bottom:2px;">Agreed Qty</label>
-                <input type="number" [(ngModel)]="item.finalAgreedQuantity" min="0" class="inp" style="width:90px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                <div style="font-weight:800;font-size:14px;color:var(--text1);">{{ item.variantName }}</div>
+                <div class="mono" style="font-size:11px;color:var(--text3);">SKU: {{ item.sku }}</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:4px;">
+                  Ordered: <span style="font-weight:700;">
+                    <ng-container *ngIf="item.conversionFactor > 1; else rsoQty">
+                      {{ getPacks(item.quantityOrdered, item.conversionFactor) }} Pks <span *ngIf="(item.quantityOrdered % item.conversionFactor) > 0">+ {{ item.quantityOrdered % item.conversionFactor }}</span>
+                    </ng-container>
+                    <ng-template #rsoQty>{{ item.quantityOrdered }}</ng-template>
+                  </span> | 
+                  Counted: <span style="font-weight:700;color:var(--accent);">
+                    <ng-container *ngIf="item.conversionFactor > 1; else rscQty">
+                      {{ getPacks(item.quantityReceived, item.conversionFactor) }} Pks <span *ngIf="(item.quantityReceived % item.conversionFactor) > 0">+ {{ item.quantityReceived % item.conversionFactor }}</span>
+                    </ng-container>
+                    <ng-template #rscQty>{{ item.quantityReceived }}</ng-template>
+                  </span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div *ngIf="item.conversionFactor <= 1">
+                  <label class="label" style="font-size:9px;margin-bottom:2px;">Agreed Qty</label>
+                  <input type="number" [(ngModel)]="item.finalAgreedQuantity" min="0" class="inp" style="width:90px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                </div>
+                <div *ngIf="item.conversionFactor > 1" style="display:flex;gap:8px;">
+                  <div>
+                    <label class="label" style="font-size:9px;margin-bottom:2px;">Packs</label>
+                    <input type="number" [(ngModel)]="item.agreedPacks" min="0" class="inp" style="width:70px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                  </div>
+                  <div>
+                    <label class="label" style="font-size:9px;margin-bottom:2px;">Extras</label>
+                    <input type="number" [(ngModel)]="item.agreedSingles" min="0" class="inp" style="width:70px;text-align:center;font-weight:800;color:var(--amber);background:var(--surface);">
+                  </div>
+                </div>
               </div>
             </div>
+            
+            <!-- Shrinkage Reason (shown only if there is a shortage) -->
+            <div *ngIf="item.finalAgreedQuantity < item.quantityOrdered" style="width:100%;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border2);">
+              <label class="label" style="font-size:10px;">Shortage Reason (Write-off)</label>
+              <select [(ngModel)]="item.resolutionReason" class="inp" style="font-size:12px;padding:6px 12px;height:auto;">
+                <option value="Damaged in Transit">Damaged in Transit</option>
+                <option value="Missing / Not Found">Missing / Not Found</option>
+                <option value="Expired">Expired</option>
+                <option value="Picking Error">Picking Error (Sender fault)</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
           </div>
         </div>
       </div>

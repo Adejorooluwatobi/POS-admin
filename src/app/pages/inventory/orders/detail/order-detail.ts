@@ -42,6 +42,10 @@ export class OrderDetailComponent implements OnInit {
     private authService: AuthService
   ) {}
 
+  getPacks(qty: number, cf: number): number {
+    return Math.floor((qty || 0) / (cf || 1));
+  }
+
   ngOnInit() {
     this.userStoreId.set(this.authService.getStoreId());
     const role = this.authService.getSystemRole();
@@ -84,7 +88,7 @@ export class OrderDetailComponent implements OnInit {
   canApprove(): boolean {
     if (this.isSuperAdmin()) return false;
     const ord = this.order();
-    if (!ord || ord.status !== 'Received') return false;
+    if (!ord || (ord.status !== 'Received' && ord.status !== 'Resolved')) return false;
     return ord.destinationStoreId === this.userStoreId();
   }
 
@@ -117,8 +121,10 @@ export class OrderDetailComponent implements OnInit {
       itemId: i.id,
       variantName: i.variantName || i.variant?.sku || 'Item',
       sku: i.sku || i.variant?.sku || '',
+      conversionFactor: i.conversionFactor || 1,
       quantityOrdered: i.quantityOrdered,
-      quantityReceived: i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered
+      quantityReceived: i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered,
+      additionalSingles: 0
     })));
     this.isReceiveModalOpen.set(true);
   }
@@ -127,10 +133,18 @@ export class OrderDetailComponent implements OnInit {
     this.isReceiving.set(true);
     try {
       await this.stockService.receiveOrder(this.order().id, {
-        items: this.receivedItems().map(i => ({ 
-          itemId: i.itemId, 
-          quantityReceived: Number(i.quantityReceived) 
-        }))
+        items: this.receivedItems().map(i => {
+          const mainQty = Number(i.quantityReceived || 0);
+          const extraQty = Number(i.additionalSingles || 0);
+          const conv = Number(i.conversionFactor || 1);
+          const baseUnits = (mainQty * conv) + extraQty;
+
+          return { 
+            itemId: i.itemId, 
+            quantityReceived: mainQty,
+            quantityReceivedBaseUnits: baseUnits
+          };
+        })
       });
       this.isReceiveModalOpen.set(false);
       this.loadOrder(this.order().id);
@@ -181,14 +195,24 @@ export class OrderDetailComponent implements OnInit {
   }
 
   openResolveModal() {
-    this.resolveItems.set(this.order().items.map((i: any) => ({
-      itemId: i.id,
-      variantName: i.variantName || i.variant?.sku || 'Item',
-      sku: i.sku || i.variant?.sku || '',
-      quantityOrdered: i.quantityOrdered,
-      quantityReceived: i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered,
-      finalAgreedQuantity: i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered
-    })));
+    this.resolveItems.set(this.order().items.map((i: any) => {
+      const qtyRec = i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered;
+      const cf = i.conversionFactor || 1;
+      const packs = Math.floor(qtyRec / cf);
+      const singles = qtyRec % cf;
+      return {
+        itemId: i.id,
+        variantName: i.variantName || i.variant?.sku || 'Item',
+        sku: i.sku || i.variant?.sku || '',
+        quantityOrdered: i.quantityOrdered,
+        quantityReceived: qtyRec,
+        conversionFactor: cf,
+        finalAgreedQuantity: qtyRec,
+        agreedPacks: packs,
+        agreedSingles: singles,
+        resolutionReason: ''
+      };
+    }));
     this.isResolveModalOpen.set(true);
   }
 
@@ -196,10 +220,17 @@ export class OrderDetailComponent implements OnInit {
     this.isResolving.set(true);
     try {
       const payload = {
-        items: this.resolveItems().map(i => ({
-          itemId: i.itemId,
-          finalAgreedQuantity: Number(i.finalAgreedQuantity)
-        }))
+        items: this.resolveItems().map(i => {
+          let agreed = Number(i.finalAgreedQuantity || 0);
+          if (i.conversionFactor > 1) {
+            agreed = (Number(i.agreedPacks || 0) * i.conversionFactor) + Number(i.agreedSingles || 0);
+          }
+          return {
+            itemId: i.itemId,
+            finalAgreedQuantity: agreed,
+            resolutionReason: i.resolutionReason
+          };
+        })
       };
 
       await this.stockService.resolveDispute(this.order().id, payload);

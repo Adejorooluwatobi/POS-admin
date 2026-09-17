@@ -109,15 +109,22 @@
         <div *ngFor="let item of newReq.items; let i = index" style="display:flex;gap:12px;align-items:flex-end;background:var(--surface2);padding:12px;border-radius:12px;border:1px solid var(--border);">
           <div style="flex:1;">
             <label class="label" style="font-size:9px;">Select Product / Variant</label>
-            <select [(ngModel)]="item.variantId" class="inp">
+            <select [(ngModel)]="item.variantId" (change)="onVariantChange(item)" class="inp">
               <option value="" disabled>Choose a product...</option>
               <option *ngFor="let p of products()" [value]="p.id">{{ p.name }} ({{ p.sku }})</option>
             </select>
           </div>
+          
           <div style="width:80px;">
-            <label class="label" style="font-size:9px;">Qty</label>
-            <input type="number" [(ngModel)]="item.quantityRequested" class="inp" style="text-align:center;">
+            <label class="label" style="font-size:9px;">{{ item.conversionFactor > 1 ? 'Packs' : 'Qty' }}</label>
+            <input type="number" [(ngModel)]="item.packs" class="inp" style="text-align:center;">
           </div>
+          
+          <div *ngIf="item.conversionFactor > 1" style="width:80px;">
+            <label class="label" style="font-size:9px;">Extra Singles</label>
+            <input type="number" [(ngModel)]="item.singles" class="inp" style="text-align:center; color:var(--amber);">
+          </div>
+          
           <button (click)="newReq.items.splice(i, 1)" class="btn btn-danger btn-xs" style="height:32px;">&times;</button>
         </div>
       </div>
@@ -152,9 +159,15 @@
         </div>
       </div>
       <div>
-        <div class="label" style="margin-bottom:12px;">Fulfillment Plan</div>
-        <div *ngFor="let plan of fulfillmentPlans()" style="padding:16px;background:var(--accent-d);border:1px solid var(--accent);border-radius:12px;margin-bottom:16px;">
-          <label class="label" style="color:var(--accent);">Source Store</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="label" style="margin:0;">Fulfillment Plan</div>
+          <button (click)="addFulfillmentPlan()" class="btn btn-secondary btn-xs" style="padding:4px 8px;">+ Split Source</button>
+        </div>
+        <div *ngFor="let plan of fulfillmentPlans(); let i = index" style="padding:16px;background:var(--accent-d);border:1px solid var(--accent);border-radius:12px;margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <label class="label" style="color:var(--accent);margin:0;">Source Store {{ i + 1 }}</label>
+            <button *ngIf="fulfillmentPlans().length > 1" (click)="removeFulfillmentPlan(i)" style="background:none;border:none;color:var(--red);cursor:pointer;font-weight:bold;">&times;</button>
+          </div>
           <select [(ngModel)]="plan.sourceStoreId" class="inp" style="background:var(--surface);margin-bottom:12px;">
             <option [ngValue]="null">Headquarters (Default)</option>
             <option *ngFor="let s of stores()" [value]="s.id" [disabled]="s.id === selectedReq()?.requestingStoreId">

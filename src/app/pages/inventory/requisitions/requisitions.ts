@@ -32,7 +32,7 @@ export class RequisitionsComponent implements OnInit {
   public newReq = {
     requestingStoreId: '' as string,
     notes: '',
-    items: [{ variantId: '', quantityRequested: 1, sku: '' }]
+    items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 }]
   };
 
   // Approval Modal
@@ -65,10 +65,16 @@ export class RequisitionsComponent implements OnInit {
         const productVariants = p.variants || p.Variants;
         if (productVariants && productVariants.length > 0) {
           productVariants.forEach((v: any) => {
+            let cf = v.conversionFactor || v.ConversionFactor;
+            if (!cf || cf === 1) {
+              cf = p.singlesPerPack || p.SinglesPerPack || 1;
+            }
+            
             variants.push({
               id: v.id || v.Id,
               name: productVariants.length > 1 ? `${p.name || p.Name} - ${v.sku || v.SKU || v.Sku}` : (p.name || p.Name),
-              sku: v.sku || v.SKU || v.Sku
+              sku: v.sku || v.SKU || v.Sku,
+              conversionFactor: cf
             });
           });
         } else {
@@ -79,6 +85,14 @@ export class RequisitionsComponent implements OnInit {
       this.products.set(variants);
     } catch (error) {
       console.error('Failed to load products for dropdown', error);
+    }
+  }
+
+  onVariantChange(item: any) {
+    const product = this.products().find(p => p.id === item.variantId);
+    if (product) {
+      item.sku = product.sku;
+      item.conversionFactor = product.conversionFactor;
     }
   }
 
@@ -130,13 +144,13 @@ export class RequisitionsComponent implements OnInit {
     this.newReq = {
       requestingStoreId: defaultStore,
       notes: '',
-      items: [{ variantId: '', quantityRequested: 1, sku: '' }]
+      items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 }]
     };
     this.isModalOpen.set(true);
   }
 
   addItem() {
-    this.newReq.items.push({ variantId: '', quantityRequested: 1, sku: '' });
+    this.newReq.items.push({ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 });
   }
 
   async submitRequisition() {
@@ -145,13 +159,29 @@ export class RequisitionsComponent implements OnInit {
       return;
     }
 
-    if (this.newReq.items.length === 0 || this.newReq.items.some(i => !i.variantId || i.quantityRequested <= 0)) {
+    // Calculate actual requested quantity based on packs and singles
+    const payload = {
+      ...this.newReq,
+      items: this.newReq.items.map(i => {
+        const p = Number(i.packs || 0);
+        const s = Number(i.singles || 0);
+        const cf = Number(i.conversionFactor || 1);
+        const totalBaseUnits = (p * cf) + s;
+        return {
+          variantId: i.variantId,
+          sku: i.sku,
+          quantityRequested: totalBaseUnits
+        };
+      })
+    };
+
+    if (payload.items.length === 0 || payload.items.some(i => !i.variantId || i.quantityRequested <= 0)) {
       alert('Please ensure all items have a selected product and quantity greater than 0.');
       return;
     }
 
     try {
-      await this.stockService.createRequisition(this.newReq);
+      await this.stockService.createRequisition(payload);
       this.isModalOpen.set(false);
       this.loadRequisitions();
     } catch (error: any) {
@@ -183,6 +213,20 @@ export class RequisitionsComponent implements OnInit {
       sourceStoreId: null, // HQ
       items: req.items.map((i: any) => ({ variantId: i.variantId, quantity: i.quantityRequested, sku: i.sku }))
     }]);
+  }
+
+  addFulfillmentPlan() {
+    this.fulfillmentPlans.update(plans => [
+      ...plans,
+      {
+        sourceStoreId: null,
+        items: this.selectedReq().items.map((i: any) => ({ variantId: i.variantId, quantity: 0, sku: i.sku }))
+      }
+    ]);
+  }
+  
+  removeFulfillmentPlan(index: number) {
+    this.fulfillmentPlans.update(plans => plans.filter((_, i) => i !== index));
   }
 
   async approve() {

@@ -183,4 +183,8 @@ export class RequisitionDetailComponent implements OnInit {
   getCrossStockForItem(variantId: string) {
     return this.crossStoreData().get(variantId) || [];
   }
+
+  getPacks(qty: number, cf: number): number {
+    return Math.floor((qty || 0) / (cf || 1));
+  }
 }
