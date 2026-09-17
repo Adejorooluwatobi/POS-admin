@@ -42,8 +42,26 @@ export class OrderDetailComponent implements OnInit {
     private authService: AuthService
   ) {}
 
-  getPacks(qty: number, cf: number): number {
-    return Math.floor((qty || 0) / (cf || 1));
+  formatQuantity(total: number, item: any): string {
+    if (total === null || total === undefined) return '-';
+    
+    const sr = item.singlesPerRoll && item.singlesPerRoll > 0 ? item.singlesPerRoll : 1;
+    const rp = item.rollsPerPack && item.rollsPerPack > 0 ? item.rollsPerPack : 1;
+    const sp = item.singlesPerPack && item.singlesPerPack > 0 ? item.singlesPerPack : (item.conversionFactor > 1 ? item.conversionFactor : (sr * rp));
+
+    if (sp <= 1 && sr <= 1) return `${total}`;
+
+    const packs = Math.floor(total / sp);
+    const remPacks = total % sp;
+    const rolls = Math.floor(remPacks / sr);
+    const singles = remPacks % sr;
+
+    const parts = [];
+    if (packs > 0) parts.push(`${packs} Pks`);
+    if (rolls > 0) parts.push(`${rolls} Rls`);
+    if (singles > 0 || (packs === 0 && rolls === 0)) parts.push(`${singles} Sgl`);
+
+    return parts.join(', ');
   }
 
   ngOnInit() {
@@ -117,15 +135,31 @@ export class OrderDetailComponent implements OnInit {
   }
 
   openReceiveModal() {
-    this.receivedItems.set(this.order().items.map((i: any) => ({
-      itemId: i.id,
-      variantName: i.variantName || i.variant?.sku || 'Item',
-      sku: i.sku || i.variant?.sku || '',
-      conversionFactor: i.conversionFactor || 1,
-      quantityOrdered: i.quantityOrdered,
-      quantityReceived: i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered,
-      additionalSingles: 0
-    })));
+    this.receivedItems.set(this.order().items.map((i: any) => {
+      const totalBase = (i.quantityReceivedBaseUnits !== null && i.quantityReceivedBaseUnits !== undefined)
+        ? i.quantityReceivedBaseUnits
+        : (i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered);
+      const sr = i.singlesPerRoll || 1;
+      const sp = (i.singlesPerPack && i.singlesPerPack > 1) ? i.singlesPerPack : (i.conversionFactor > 1 ? i.conversionFactor : 1);
+      
+      const packs = Math.floor(totalBase / sp);
+      const remPacks = totalBase % sp;
+      const rolls = Math.floor(remPacks / sr);
+      const singles = remPacks % sr;
+
+      return {
+        itemId: i.id,
+        variantName: i.variantName || i.variant?.sku || 'Item',
+        sku: i.sku || i.variant?.sku || '',
+        conversionFactor: sp,
+        singlesPerRoll: sr,
+        quantityOrdered: i.quantityOrdered,
+        quantityReceived: totalBase,
+        packs: packs,
+        rolls: rolls,
+        singles: singles
+      };
+    }));
     this.isReceiveModalOpen.set(true);
   }
 
@@ -134,14 +168,22 @@ export class OrderDetailComponent implements OnInit {
     try {
       await this.stockService.receiveOrder(this.order().id, {
         items: this.receivedItems().map(i => {
-          const mainQty = Number(i.quantityReceived || 0);
-          const extraQty = Number(i.additionalSingles || 0);
-          const conv = Number(i.conversionFactor || 1);
-          const baseUnits = (mainQty * conv) + extraQty;
+          const p = Number(i.packs || 0);
+          const r = Number(i.rolls || 0);
+          const s = Number(i.singles || 0);
+          const cf = Number(i.conversionFactor || 1);
+          const sr = Number(i.singlesPerRoll || 1);
 
-          return { 
-            itemId: i.itemId, 
-            quantityReceived: mainQty,
+          let baseUnits = s;
+          if (cf > 1 || sr > 1) {
+            baseUnits = (p * (cf > 1 ? cf : 1)) + (r * (sr > 1 ? sr : 1)) + s;
+          } else {
+            baseUnits = Number(i.quantityReceived || 1);
+          }
+
+          return {
+            itemId: i.itemId,
+            quantityReceived: p > 0 ? p : baseUnits, // sending packs mostly for UI reference, backend mostly cares about QuantityReceivedBaseUnits
             quantityReceivedBaseUnits: baseUnits
           };
         })
@@ -196,19 +238,29 @@ export class OrderDetailComponent implements OnInit {
 
   openResolveModal() {
     this.resolveItems.set(this.order().items.map((i: any) => {
-      const qtyRec = i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered;
-      const cf = i.conversionFactor || 1;
-      const packs = Math.floor(qtyRec / cf);
-      const singles = qtyRec % cf;
+      const qtyRec = (i.quantityReceivedBaseUnits !== null && i.quantityReceivedBaseUnits !== undefined) 
+        ? i.quantityReceivedBaseUnits 
+        : (i.quantityReceived !== null && i.quantityReceived !== undefined ? i.quantityReceived : i.quantityOrdered);
+      
+      const sr = i.singlesPerRoll || 1;
+      const sp = (i.singlesPerPack && i.singlesPerPack > 1) ? i.singlesPerPack : (i.conversionFactor > 1 ? i.conversionFactor : 1);
+      
+      const packs = Math.floor(qtyRec / sp);
+      const remPacks = qtyRec % sp;
+      const rolls = Math.floor(remPacks / sr);
+      const singles = remPacks % sr;
+
       return {
         itemId: i.id,
         variantName: i.variantName || i.variant?.sku || 'Item',
         sku: i.sku || i.variant?.sku || '',
+        conversionFactor: sp,
+        singlesPerRoll: sr,
         quantityOrdered: i.quantityOrdered,
         quantityReceived: qtyRec,
-        conversionFactor: cf,
         finalAgreedQuantity: qtyRec,
         agreedPacks: packs,
+        agreedRolls: rolls,
         agreedSingles: singles,
         resolutionReason: ''
       };
@@ -222,9 +274,17 @@ export class OrderDetailComponent implements OnInit {
       const payload = {
         items: this.resolveItems().map(i => {
           let agreed = Number(i.finalAgreedQuantity || 0);
-          if (i.conversionFactor > 1) {
-            agreed = (Number(i.agreedPacks || 0) * i.conversionFactor) + Number(i.agreedSingles || 0);
+          
+          const p = Number(i.agreedPacks || 0);
+          const r = Number(i.agreedRolls || 0);
+          const s = Number(i.agreedSingles || 0);
+          const cf = Number(i.conversionFactor || 1);
+          const sr = Number(i.singlesPerRoll || 1);
+
+          if (cf > 1 || sr > 1) {
+            agreed = (p * (cf > 1 ? cf : 1)) + (r * (sr > 1 ? sr : 1)) + s;
           }
+
           return {
             itemId: i.itemId,
             finalAgreedQuantity: agreed,

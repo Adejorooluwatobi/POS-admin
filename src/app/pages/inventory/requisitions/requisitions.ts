@@ -32,7 +32,7 @@ export class RequisitionsComponent implements OnInit {
   public newReq = {
     requestingStoreId: '' as string,
     notes: '',
-    items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 }]
+    items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 }]
   };
 
   // Approval Modal
@@ -74,7 +74,9 @@ export class RequisitionsComponent implements OnInit {
               id: v.id || v.Id,
               name: productVariants.length > 1 ? `${p.name || p.Name} - ${v.sku || v.SKU || v.Sku}` : (p.name || p.Name),
               sku: v.sku || v.SKU || v.Sku,
-              conversionFactor: cf
+              conversionFactor: cf,
+              singlesPerRoll: p.singlesPerRoll || p.SinglesPerRoll || 1,
+              rollsPerPack: p.rollsPerPack || p.RollsPerPack || 1
             });
           });
         } else {
@@ -93,6 +95,8 @@ export class RequisitionsComponent implements OnInit {
     if (product) {
       item.sku = product.sku;
       item.conversionFactor = product.conversionFactor;
+      item.singlesPerRoll = product.singlesPerRoll || 1;
+      item.rollsPerPack = product.rollsPerPack || 1;
     }
   }
 
@@ -144,13 +148,13 @@ export class RequisitionsComponent implements OnInit {
     this.newReq = {
       requestingStoreId: defaultStore,
       notes: '',
-      items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 }]
+      items: [{ variantId: '', quantityRequested: 1, sku: '', packs: 1, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 }]
     };
     this.isModalOpen.set(true);
   }
 
   addItem() {
-    this.newReq.items.push({ variantId: '', quantityRequested: 1, sku: '', packs: 1, singles: 0, conversionFactor: 1 });
+    this.newReq.items.push({ variantId: '', quantityRequested: 1, sku: '', packs: 1, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 });
   }
 
   async submitRequisition() {
@@ -164,9 +168,18 @@ export class RequisitionsComponent implements OnInit {
       ...this.newReq,
       items: this.newReq.items.map(i => {
         const p = Number(i.packs || 0);
+        const r = Number(i.rolls || 0);
         const s = Number(i.singles || 0);
         const cf = Number(i.conversionFactor || 1);
-        const totalBaseUnits = (p * cf) + s;
+        const sr = Number(i.singlesPerRoll || 1);
+        
+        let totalBaseUnits = s;
+        if (cf > 1 || sr > 1) {
+            totalBaseUnits = (p * (cf > 1 ? cf : 1)) + (r * (sr > 1 ? sr : 1)) + s;
+        } else {
+            totalBaseUnits = Number(i.quantityRequested || 1);
+        }
+
         return {
           variantId: i.variantId,
           sku: i.sku,

@@ -91,20 +91,12 @@
                 </td>
                 <td style="text-align:center;">
                   <div style="font-weight:700; font-size:14px; color:var(--text2);">
-                    <ng-container *ngIf="item.conversionFactor > 1; else qtyReqOnly">
-                      {{ getPacks(item.quantityRequested, item.conversionFactor) }} Packs 
-                      <span *ngIf="(item.quantityRequested % item.conversionFactor) > 0" style="font-size:11px; color:var(--text3);">+ {{ item.quantityRequested % item.conversionFactor }} Singles</span>
-                    </ng-container>
-                    <ng-template #qtyReqOnly>{{ item.quantityRequested }}</ng-template>
+                    {{ formatQuantity(item.quantityRequested, item) }}
                   </div>
                 </td>
                 <td style="text-align:center;">
                   <div style="font-weight:800; font-size:14px; color:var(--accent);">
-                    <ng-container *ngIf="item.conversionFactor > 1; else qtyFulfOnly">
-                      {{ getPacks(item.quantityFulfilled, item.conversionFactor) }} Packs 
-                      <span *ngIf="(item.quantityFulfilled % item.conversionFactor) > 0" style="font-size:11px; color:var(--accent-d);">+ {{ item.quantityFulfilled % item.conversionFactor }} Singles</span>
-                    </ng-container>
-                    <ng-template #qtyFulfOnly>{{ item.quantityFulfilled }}</ng-template>
+                    {{ formatQuantity(item.quantityFulfilled, item) }}
                   </div>
                 </td>
                 <td style="text-align:right; padding-right:24px;">
@@ -190,7 +182,7 @@
             </div>
             <div style="text-align:right;">
               <div class="label" style="font-size:9px;">Requested</div>
-              <div style="font-size:18px;font-weight:900;color:var(--accent);">{{ item.quantityRequested }}</div>
+              <div style="font-size:18px;font-weight:900;color:var(--accent);">{{ formatQuantity(item.quantityRequested, item) }}</div>
             </div>
           </div>
 

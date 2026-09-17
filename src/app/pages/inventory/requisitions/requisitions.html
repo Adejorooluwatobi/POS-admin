@@ -115,15 +115,29 @@
             </select>
           </div>
           
-          <div style="width:80px;">
-            <label class="label" style="font-size:9px;">{{ item.conversionFactor > 1 ? 'Packs' : 'Qty' }}</label>
-            <input type="number" [(ngModel)]="item.packs" class="inp" style="text-align:center;">
-          </div>
-          
-          <div *ngIf="item.conversionFactor > 1" style="width:80px;">
-            <label class="label" style="font-size:9px;">Extra Singles</label>
-            <input type="number" [(ngModel)]="item.singles" class="inp" style="text-align:center; color:var(--amber);">
-          </div>
+          <ng-container *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1; else singleUnit">
+            <div style="width:60px;" *ngIf="item.conversionFactor > 1">
+              <label class="label" style="font-size:9px;">Packs</label>
+              <input type="number" [(ngModel)]="item.packs" min="0" class="inp" style="text-align:center;font-weight:700;padding: 0 4px;">
+            </div>
+            
+            <div style="width:60px;" *ngIf="item.singlesPerRoll > 1">
+              <label class="label" style="font-size:9px;">Rolls</label>
+              <input type="number" [(ngModel)]="item.rolls" min="0" class="inp" style="text-align:center;font-weight:700;padding: 0 4px;">
+            </div>
+            
+            <div style="width:60px;">
+              <label class="label" style="font-size:9px;">Extras</label>
+              <input type="number" [(ngModel)]="item.singles" min="0" class="inp" style="text-align:center;color:var(--amber);padding: 0 4px;">
+            </div>
+          </ng-container>
+
+          <ng-template #singleUnit>
+            <div style="width:80px;">
+              <label class="label" style="font-size:9px;">Qty</label>
+              <input type="number" [(ngModel)]="item.quantityRequested" min="1" class="inp" style="text-align:center;">
+            </div>
+          </ng-template>
           
           <button (click)="newReq.items.splice(i, 1)" class="btn btn-danger btn-xs" style="height:32px;">&times;</button>
         </div>

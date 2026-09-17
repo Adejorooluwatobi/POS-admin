@@ -30,7 +30,7 @@ export class OrdersComponent implements OnInit {
     sourceStoreId: null as string | null,
     destinationStoreId: '',
     notes: '',
-    items: [{ variantId: '', quantityOrdered: 1 }]
+    items: [{ variantId: '', quantityOrdered: 1, packs: 0, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 }]
   };
 
   constructor(
@@ -67,14 +67,20 @@ export class OrdersComponent implements OnInit {
             vList.push({
               id: v.id || v.Id,
               name: productVariants.length > 1 ? `${p.name || p.Name} - ${v.sku || v.SKU || v.Sku}` : (p.name || p.Name),
-              sku: v.sku || v.SKU || v.Sku
+              sku: v.sku || v.SKU || v.Sku,
+              singlesPerPack: p.singlesPerPack || p.SinglesPerPack || 1,
+              rollsPerPack: p.rollsPerPack || p.RollsPerPack || 1,
+              singlesPerRoll: p.singlesPerRoll || p.SinglesPerRoll || 1
             });
           });
         } else if (p.variantId || p.id) {
           vList.push({
             id: p.variantId || p.id,
             name: p.name || p.Name,
-            sku: p.sku || p.Sku || ''
+            sku: p.sku || p.Sku || '',
+            singlesPerPack: p.singlesPerPack || p.SinglesPerPack || 1,
+            rollsPerPack: p.rollsPerPack || p.RollsPerPack || 1,
+            singlesPerRoll: p.singlesPerRoll || p.SinglesPerRoll || 1
           });
         }
       });
@@ -85,13 +91,13 @@ export class OrdersComponent implements OnInit {
   }
 
   openCreateModal() {
-    const userStore = this.userStoreId();
+    const userStore = this.authService.getStoreId();
     this.newOrder = {
       type: userStore ? 1 : 0,
       sourceStoreId: userStore || null,
       destinationStoreId: '',
       notes: '',
-      items: [{ variantId: '', quantityOrdered: 1 }]
+      items: [{ variantId: '', quantityOrdered: 1, packs: 0, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 }]
     };
     this.isCreateModalOpen.set(true);
   }
@@ -100,8 +106,20 @@ export class OrdersComponent implements OnInit {
     this.isCreateModalOpen.set(false);
   }
 
+  onProductSelect(item: any, variantId: string) {
+    const variant = this.variants().find(v => v.id === variantId);
+    if (variant) {
+      item.conversionFactor = variant.singlesPerPack || variant.conversionFactor || 1;
+      item.singlesPerRoll = variant.singlesPerRoll || 1;
+      item.rollsPerPack = variant.rollsPerPack || 1;
+      item.packs = 0;
+      item.rolls = 0;
+      item.singles = 1;
+    }
+  }
+
   addItem() {
-    this.newOrder.items.push({ variantId: '', quantityOrdered: 1 });
+    this.newOrder.items.push({ variantId: '', quantityOrdered: 1, packs: 0, rolls: 0, singles: 0, conversionFactor: 1, singlesPerRoll: 1, rollsPerPack: 1 });
   }
 
   removeItem(index: number) {
@@ -126,8 +144,20 @@ export class OrdersComponent implements OnInit {
       return;
     }
 
-    const validItems = this.newOrder.items.filter(i => i.variantId && i.quantityOrdered > 0);
-    if (validItems.length === 0) {
+    const itemsPayload = this.newOrder.items
+      .filter(i => i.variantId)
+      .map(i => {
+        let qty = Number(i.quantityOrdered || 1);
+        if (i.conversionFactor > 1 || (i.singlesPerRoll && i.singlesPerRoll > 1)) {
+           qty = (Number(i.packs || 0) * (i.conversionFactor > 1 ? i.conversionFactor : 1)) + 
+                 (Number(i.rolls || 0) * (i.singlesPerRoll > 1 ? i.singlesPerRoll : 1)) + 
+                 Number(i.singles || 0);
+        }
+        return { variantId: i.variantId, quantityOrdered: qty };
+      })
+      .filter(i => i.quantityOrdered > 0);
+
+    if (itemsPayload.length === 0) {
       alert('Please add at least one product with a valid quantity.');
       return;
     }
@@ -139,10 +169,7 @@ export class OrdersComponent implements OnInit {
         sourceStoreId: this.newOrder.type === 0 ? null : this.newOrder.sourceStoreId,
         destinationStoreId: this.newOrder.destinationStoreId,
         notes: this.newOrder.notes || null,
-        items: validItems.map(i => ({
-          variantId: i.variantId,
-          quantityOrdered: Number(i.quantityOrdered)
-        }))
+        items: itemsPayload
       };
 
       await this.stockService.createOrder(payload);

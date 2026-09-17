@@ -184,7 +184,25 @@ export class RequisitionDetailComponent implements OnInit {
     return this.crossStoreData().get(variantId) || [];
   }
 
-  getPacks(qty: number, cf: number): number {
-    return Math.floor((qty || 0) / (cf || 1));
+  formatQuantity(total: number, item: any): string {
+    if (total === null || total === undefined) return '-';
+    
+    const sr = item.singlesPerRoll && item.singlesPerRoll > 0 ? item.singlesPerRoll : 1;
+    const rp = item.rollsPerPack && item.rollsPerPack > 0 ? item.rollsPerPack : 1;
+    const sp = item.singlesPerPack && item.singlesPerPack > 0 ? item.singlesPerPack : (item.conversionFactor > 1 ? item.conversionFactor : (sr * rp));
+
+    if (sp <= 1 && sr <= 1) return `${total}`;
+
+    const packs = Math.floor(total / sp);
+    const remPacks = total % sp;
+    const rolls = Math.floor(remPacks / sr);
+    const singles = remPacks % sr;
+
+    const parts = [];
+    if (packs > 0) parts.push(`${packs} Pks`);
+    if (rolls > 0) parts.push(`${rolls} Rls`);
+    if (singles > 0 || (packs === 0 && rolls === 0)) parts.push(`${singles} Sgl`);
+
+    return parts.join(', ');
   }
 }
