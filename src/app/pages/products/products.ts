@@ -1,18 +1,18 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
 import { Product, Category, Store } from '../../models/pos.models';
-
 import { BarcodeScannerComponent } from '../../components/barcode-scanner/barcode-scanner';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, BarcodeScannerComponent],
+  imports: [CommonModule, FormsModule, RouterModule, BarcodeScannerComponent],
   templateUrl: './products.html'
 })
 export class ProductsComponent implements OnInit {
@@ -23,30 +23,6 @@ export class ProductsComponent implements OnInit {
   public isGeneral = signal<boolean>(false);
   public isLoading = signal<boolean>(false);
 
-  // Modal State
-  public isModalOpen = signal<boolean>(false);
-  public modalMode = signal<'create' | 'edit' | 'view'>('create');
-  public selectedProduct = signal<Partial<Product>>({
-    n: '',
-    e: '📦',
-    sku: '',
-    cat: '',
-    categoryId: '',
-    cost: 0,
-    price: 0,
-    tax: 'STANDARD',
-    taxRate: 7.5,
-    status: 'ACTIVE',
-    barcode: '',
-    barcodes: [],
-    targetStoreIds: [],
-    storeOverrides: [],
-    singlesPerRoll: 1,
-    rollsPerPack: 1,
-    singlesPerPack: 1,
-    rollPrice: 0,
-    packPrice: 0
-  });
   public allProducts = signal<Product[]>([]);
   public isScannerOpen = signal<boolean>(false);
   public scannerTarget = signal<'search' | 'create'>('search');
@@ -55,10 +31,10 @@ export class ProductsComponent implements OnInit {
     private productService: ProductService,
     private categoryService: CategoryService,
     private storeService: StoreService,
-    public authService: AuthService
+    public authService: AuthService,
+    private router: Router
   ) {
     const user = this.authService.currentUser();
-    // Generals are SuperAdmin, TenantAdmin, Manager, StoreManager, Supervisor, and Cashier
     this.isGeneral.set(
       user?.role === 'TENANT_ADMIN' || 
       user?.role === 'MANAGER' || 
@@ -66,7 +42,6 @@ export class ProductsComponent implements OnInit {
       user?.role === 'SUPERVISOR' || 
       user?.role === 'CASHIER'
     );
-    // Staff who can access the catalog at all
     this.isOwner.set(!!user);
   }
 
@@ -166,129 +141,6 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  openCreateModal() {
-    this.modalMode.set('create');
-    this.selectedProduct.set({
-      n: '',
-      e: '📦',
-      sku: '',
-      cat: '',
-      categoryId: '',
-      cost: 0,
-      price: 0,
-      tax: 'STANDARD',
-      taxRate: 7.5,
-      status: 'ACTIVE',
-      barcode: '',
-      barcodes: [],
-      targetStoreIds: [],
-      singlesPerRoll: 1,
-      rollsPerPack: 1,
-      singlesPerPack: 1,
-      rollPrice: 0,
-      packPrice: 0
-    });
-    this.isModalOpen.set(true);
-  }
-
-  openEditModal(product: Product) {
-    this.modalMode.set('edit');
-    this.selectedProduct.set({ 
-      ...product,
-      barcodes: product.barcodes || (product.barcode ? [product.barcode] : []),
-      targetStoreIds: [] 
-    });
-    this.isModalOpen.set(true);
-  }
-
-  openViewModal(product: Product) {
-    this.modalMode.set('view');
-    this.selectedProduct.set({ ...product });
-    this.isModalOpen.set(true);
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-  }
-
-  async saveProduct() {
-    const p = this.selectedProduct();
-    const user = this.authService.currentUser();
-    const dto = {
-      name: p.n,
-      masterSku: p.sku,
-      brand: p.brand || 'RetailOS',
-      description: p.description,
-      costPrice: p.cost,
-      sellingPrice: p.price,
-      weightGrams: p.weight,
-      unitOfMeasure: p.uom || 'Each',
-      taxCategory: p.tax === 'STANDARD' ? 0 : p.tax === 'ZERO' ? 1 : p.tax === 'EXEMPT' ? 2 : 3,
-      taxRate: p.taxRate,
-      isActive: p.status === 'ACTIVE',
-      tenantId: user?.tenantId,
-      categoryId: p.categoryId,
-      targetStoreIds: p.targetStoreIds,
-      barcodes: p.barcodes,
-      singlesPerRoll: p.singlesPerRoll,
-      rollsPerPack: p.rollsPerPack,
-      singlesPerPack: p.singlesPerPack,
-      rollPrice: p.rollPrice,
-      packPrice: p.packPrice
-    };
-
-    try {
-      if (this.modalMode() === 'create') {
-        await this.productService.createProduct(dto);
-      } else if (this.modalMode() === 'edit' && p.id) {
-        await this.productService.updateProduct(p.id, { ...dto, id: p.id });
-      }
-      this.closeModal();
-      await this.loadProducts();
-    } catch (error: any) {
-      console.error('Failed to save product', error);
-      alert(`Error saving product: ${error.error?.message || error.message || 'Unknown error'}`);
-    }
-  }
-
-  addBarcode(bc: string) {
-    if (!bc) return;
-    const current = this.selectedProduct();
-    const barcodes = [...(current.barcodes || [])];
-    if (!barcodes.includes(bc)) {
-      barcodes.push(bc);
-      this.selectedProduct.update(p => ({ ...p, barcodes, barcode: bc }));
-    }
-  }
-
-  removeBarcode(bc: string) {
-    const current = this.selectedProduct();
-    const barcodes = (current.barcodes || []).filter(b => b !== bc);
-    this.selectedProduct.update(p => ({ ...p, barcodes }));
-  }
-
-  toggleStoreTarget(storeId: string | undefined) {
-    if (!storeId) return;
-    const current = this.selectedProduct();
-    let targets = [...(current.targetStoreIds || [])];
-    if (targets.includes(storeId)) {
-      targets = targets.filter(id => id !== storeId);
-    } else {
-      targets.push(storeId);
-    }
-    this.selectedProduct.update(p => ({ ...p, targetStoreIds: targets }));
-  }
-
-  toggleAllStores() {
-    const current = this.selectedProduct();
-    if (current.targetStoreIds?.length === this.stores().length) {
-      this.selectedProduct.update(p => ({ ...p, targetStoreIds: [] }));
-    } else {
-      const allIds = this.stores().map(s => s.id!).filter(id => !!id);
-      this.selectedProduct.update(p => ({ ...p, targetStoreIds: allIds }));
-    }
-  }
-
   filterProducts(query: string) {
     if (!query) {
       this.products.set(this.allProducts());
@@ -298,47 +150,23 @@ export class ProductsComponent implements OnInit {
     this.products.set(this.allProducts().filter(p => 
       p.n.toLowerCase().includes(q) || 
       p.sku.toLowerCase().includes(q) || 
-      p.barcode?.toLowerCase().includes(q)
+      (p.brand && p.brand.toLowerCase().includes(q)) ||
+      (p.cat && p.cat.toLowerCase().includes(q)) ||
+      (p.barcodes && p.barcodes.some((b: string) => b.toLowerCase().includes(q)))
     ));
   }
 
   async onBarcodeScanned(barcode: string) {
     if (!barcode) return;
-    
-    // First check local list
-    const foundLocal = this.allProducts().find(p => p.barcode === barcode);
-    if (foundLocal) {
-      this.openViewModal(foundLocal);
-      return;
-    }
-
-    // If not in local list, search API
     try {
       const product = await this.productService.getProductByBarcode(barcode);
-      if (product) {
-        // Map backend product to frontend model
-        const mapped = {
-          ...product,
-          n: product.name,
-          sku: product.masterSku,
-          e: '📦',
-          price: product.basePrice || 0,
-          cost: product.costPrice || 0,
-          weight: product.weightGrams,
-          uom: product.unitOfMeasure,
-          status: product.isActive ? 'ACTIVE' : 'INACTIVE',
-          tax: product.taxCategory === 0 ? 'STANDARD' : product.taxCategory === 1 ? 'ZERO' : product.taxCategory === 2 ? 'EXEMPT' : 'REDUCED',
-          taxRate: product.taxRate || 0,
-          barcode: product.barcode
-        };
-        this.openViewModal(mapped);
+      if (product && product.id) {
+        this.router.navigate(['/app/products', product.id]);
       }
     } catch (error) {
       console.warn('Product not found by barcode', barcode);
-      // Optional: open create modal with barcode pre-filled
-      if (confirm('Product not found. Would you like to create a new product with this barcode?')) {
-        this.openCreateModal();
-        this.selectedProduct.update(p => ({ ...p, barcode }));
+      if (confirm('Product not found. Would you like to create a new product?')) {
+        this.router.navigate(['/app/products/new']);
       }
     }
   }
@@ -354,10 +182,6 @@ export class ProductsComponent implements OnInit {
 
   handleScan(barcode: string) {
     this.closeScanner();
-    if (this.scannerTarget() === 'search') {
-      this.onBarcodeScanned(barcode);
-    } else {
-      this.addBarcode(barcode);
-    }
+    this.onBarcodeScanned(barcode);
   }
 }

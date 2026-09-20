@@ -1,0 +1,179 @@
+<div class="page-container" style="padding: 24px; max-width: 1100px; margin: 0 auto;">
+  <!-- Breadcrumbs & Header -->
+  <div style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/products" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+        ← Back to Products Catalog
+      </a>
+      <span>/</span>
+      <span>Product Details</span>
+    </div>
+
+    @if (product()) {
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <h1 style="font-size: 26px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+              {{ product().name }}
+            </h1>
+            <span class="badge" [class.badge-green]="product().isActive" [class.badge-red]="!product().isActive">
+              {{ product().isActive ? 'ACTIVE' : 'INACTIVE' }}
+            </span>
+          </div>
+          <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+            Brand: <strong style="color:var(--text2);">{{ product().brand || 'RetailOS' }}</strong> · SKU: <code class="mono" style="color:var(--accent); font-weight:700;">{{ product().masterSku }}</code>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <a [routerLink]="['/app/products', product().id, 'edit']" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+            ✏️ Edit Product
+          </a>
+          <a routerLink="/app/inventory/seed" class="btn btn-secondary" style="text-decoration:none;">
+            🌱 Seed Stock
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div style="text-align:center; padding: 60px 0;">
+      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+      <div style="color: var(--text3); font-size: 14px;">Loading product profile...</div>
+    </div>
+  } @else if (product()) {
+    <div style="display:grid; gap: 24px;">
+      <!-- Stats / Pricing Grid -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Selling Price</div>
+          <div style="font-size: 24px; font-weight: 900; color: var(--accent); margin-top: 4px;" class="mono">
+            {{ formatCurrency(product().sellingPrice || product().basePrice) }}
+          </div>
+          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Unit: {{ product().unitOfMeasure || 'Each' }}</div>
+        </div>
+
+        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Cost Price</div>
+          <div style="font-size: 24px; font-weight: 900; color: var(--text1); margin-top: 4px;" class="mono">
+            {{ formatCurrency(product().costPrice) }}
+          </div>
+          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Purchase acquisition cost</div>
+        </div>
+
+        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Profit Margin</div>
+          <div style="font-size: 24px; font-weight: 900; color: var(--green); margin-top: 4px;" class="mono">
+            {{ formatCurrency(calculateMargin().profit) }}
+          </div>
+          <div style="font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px;">
+            +{{ calculateMargin().percent | number:'1.1-1' }}% markup
+          </div>
+        </div>
+
+        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Tax Profile</div>
+          <div style="font-size: 18px; font-weight: 800; color: var(--text1); margin-top: 6px;">
+            {{ getTaxLabel(product().taxCategory) }}
+          </div>
+          <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">
+            VAT Rate: {{ product().taxRate || 0 }}%
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column info sections -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Card: Classification & Specs -->
+        <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+            📋 Product Specifications
+          </div>
+
+          <div style="display:grid; gap: 14px;">
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Category</span>
+              <span style="font-weight: 700; font-size: 13px;" class="badge badge-dim">{{ categoryName() }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Master SKU</span>
+              <span class="mono" style="font-weight: 700; font-size: 13px;">{{ product().masterSku }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Weight</span>
+              <span style="font-weight: 600; font-size: 13px;">{{ product().weightGrams ? product().weightGrams + ' g' : '—' }}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Unit of Measure</span>
+              <span style="font-weight: 600; font-size: 13px;">{{ product().unitOfMeasure || 'Each' }}</span>
+            </div>
+
+            <div>
+              <span style="font-size: 12px; color: var(--text3); display:block; margin-bottom: 4px;">Description</span>
+              <div style="font-size: 13px; color: var(--text2); line-height: 1.5; background: var(--surface2); padding: 10px; border-radius: 8px;">
+                {{ product().description || 'No description entered for this product.' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Barcodes -->
+        <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+            ║▌ Registered Barcodes
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap: 10px;">
+            @for (bc of product().barcodes; track bc) {
+              <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;">
+                <div style="display:flex; align-items:center; gap: 10px;">
+                  <span style="font-size: 18px;">🛒</span>
+                  <span class="mono" style="font-size: 13px; font-weight: 700;">{{ bc.barcode || bc }}</span>
+                </div>
+                <span class="badge badge-dim" style="font-size: 10px;">SCANNER READY</span>
+              </div>
+            }
+            @if (!product().barcodes || product().barcodes.length === 0) {
+              <div style="text-align:center; padding: 30px; color: var(--text3);">
+                No barcodes assigned. Edit this product to attach barcodes.
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Bulk Packaging & Hierarchy -->
+      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+          📦 Bulk Ratios & Packaging Hierarchy
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Singles per Roll</div>
+            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">{{ product().singlesPerRoll || '—' }}</div>
+            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Roll Price: {{ formatCurrency(product().rollPrice) }}</div>
+          </div>
+
+          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Rolls per Pack</div>
+            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">{{ product().rollsPerPack || '—' }}</div>
+            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Pack Price: {{ formatCurrency(product().packPrice) }}</div>
+          </div>
+
+          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Total Singles in Pack</div>
+            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">
+              {{ product().singlesPerPack || (product().singlesPerRoll && product().rollsPerPack ? product().singlesPerRoll * product().rollsPerPack : '—') }}
+            </div>
+            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Full Case / Carton count</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

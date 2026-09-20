@@ -21,21 +21,6 @@ export class StoresComponent implements OnInit {
   public tenants = signal<any[]>([]);
   public selectedTenantId = signal<string | null>(null);
 
-  // Modal State
-  public isModalOpen = signal<boolean>(false);
-  public isSaving = signal<boolean>(false);
-  public modalMode = signal<'create' | 'edit' | 'view'>('create');
-  public errorMessage = signal<string | null>(null);
-  public selectedStore = signal<Partial<Store>>({
-    name: '',
-    code: '',
-    address: '',
-    city: '',
-    active: true,
-    country: 'Nigeria',
-    timezone: 'Africa/Lagos'
-  });
-
   constructor(
     private storeService: StoreService, 
     private authService: AuthService,
@@ -60,7 +45,7 @@ export class StoresComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.route.queryParams.subscribe(params => {
       if (params['tenantId']) {
         this.selectedTenantId.set(params['tenantId']);
@@ -76,7 +61,7 @@ export class StoresComponent implements OnInit {
   async loadTenants() {
     try {
       const data = await this.tenantService.getTenants();
-      this.tenants.set(data.items || data);
+      this.tenants.set(data);
     } catch (error) {
       console.error('Failed to load tenants', error);
     }
@@ -94,63 +79,6 @@ export class StoresComponent implements OnInit {
       console.error('Failed to load stores', error);
     } finally {
       this.isLoading.set(false);
-    }
-  }
-
-  openCreateModal() {
-    this.modalMode.set('create');
-    this.errorMessage.set(null);
-    this.selectedStore.set({
-      name: '',
-      code: '',
-      address: '',
-      city: '',
-      active: true,
-      country: 'Nigeria',
-      timezone: 'Africa/Lagos'
-    });
-    this.isModalOpen.set(true);
-  }
-
-  async openEditModal(store: Store) {
-    this.modalMode.set('edit');
-    this.errorMessage.set(null);
-    this.selectedStore.set({ ...store });
-    this.isModalOpen.set(true);
-  }
-
-  openViewModal(store: Store) {
-    this.modalMode.set('view');
-    this.selectedStore.set({ ...store });
-    this.isModalOpen.set(true);
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-  }
-
-  async saveStore() {
-    const storeData = this.selectedStore();
-    const dto = {
-      ...storeData,
-      isActive: storeData.active
-    };
-    this.isSaving.set(true);
-    this.errorMessage.set(null);
-    try {
-      if (this.modalMode() === 'create') {
-        await this.storeService.createStore(dto);
-      } else if (this.modalMode() === 'edit' && storeData.id) {
-        await this.storeService.updateStore(storeData.id, dto);
-      }
-      this.closeModal();
-      this.loadStores();
-    } catch (error: any) {
-      // Extract the message from the API error response body
-      const msg = error?.error?.message || error?.message || 'An unexpected error occurred. Please try again.';
-      this.errorMessage.set(msg);
-    } finally {
-      this.isSaving.set(false);
     }
   }
 

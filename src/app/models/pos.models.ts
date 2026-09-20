@@ -235,6 +235,37 @@ export interface GiftCard {
   isActive: boolean;
   issuedAt: string;
   issuingStoreId?: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  customerLoyaltyCardNo?: string | null;
+  customerPointsBalance?: number | null;
+}
+
+export interface GiftCardTransaction {
+  id: string;
+  giftCardId: string;
+  cardNumber: string;
+  type: 'Issuance' | 'TopUp' | 'Redemption' | 'TransferOut' | 'TransferIn';
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  paymentMethod?: string;
+  reference?: string;
+  storeId?: string;
+  storeName?: string;
+  staffId?: string;
+  staffName?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface LoyaltySettings {
+  loyaltyProgramEnabled: boolean;
+  loyaltyPointsEarnRate: number;
+  loyaltyPointRedeemRate: number;
+  loyaltyMinRedemptionPoints: number;
 }
 
 export interface LoyaltyLedgerEntry {

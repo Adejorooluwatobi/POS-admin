@@ -1,5 +1,6 @@
 import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
@@ -7,13 +8,12 @@ import { AuthService } from '../../services/auth.service';
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterModule],
   templateUrl: './audit.html'
 })
 export class AuditComponent implements OnInit {
   public logs = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
-  public selectedLog = signal<any | null>(null);
   public searchTerm = signal<string>('');
   public filterAction = signal<string>('');
 
@@ -62,27 +62,12 @@ export class AuditComponent implements OnInit {
         store: l.storeName || 'Global',
         ip: l.ipAddress || '—',
         terminal: l.terminalName || 'Portal',
-        path: l.requestPath || '—',
-        changes: l.changes ? JSON.parse(l.changes) : null
+        path: l.requestPath || '—'
       })));
     } catch (error) {
       console.error('Failed to load audit logs', error);
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  viewDetails(log: any) {
-    this.selectedLog.set(log);
-  }
-
-  closeModal() {
-    this.selectedLog.set(null);
-  }
-
-  formatValue(val: any): string {
-    if (val === null || val === undefined) return '—';
-    if (typeof val === 'object') return JSON.stringify(val);
-    return val.toString();
   }
 }

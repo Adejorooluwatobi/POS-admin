@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { GiftCard } from '../models/pos.models';
+import { GiftCard, GiftCardTransaction } from '../models/pos.models';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -17,12 +17,49 @@ export class GiftCardService {
     return await firstValueFrom(this.http.get<any>(this.apiUrl, { params }));
   }
 
-  async getGiftCardById(id: string): Promise<any> {
-    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
+  async getGiftCardById(id: string): Promise<GiftCard> {
+    return await firstValueFrom(this.http.get<GiftCard>(`${this.apiUrl}/${id}`));
   }
 
-  async issueGiftCard(dto: any): Promise<any> {
-    return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/issue`, dto));
+  async getGiftCardByNumber(cardNumber: string): Promise<GiftCard> {
+    return await firstValueFrom(this.http.get<GiftCard>(`${this.apiUrl}/by-number/${cardNumber}`));
+  }
+
+  async issueGiftCard(dto: any): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/issue`, dto));
+  }
+
+  async rechargeGiftCard(dto: {
+    cardNumber: string;
+    amount: number;
+    paymentMethod: string;
+    reference?: string;
+    storeId?: string;
+    notes?: string;
+  }): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/recharge`, dto));
+  }
+
+  async transferBalance(dto: {
+    sourceCardNumber: string;
+    sourcePin?: string;
+    destinationCardNumber: string;
+    amount: number;
+    notes?: string;
+  }): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/transfer`, dto));
+  }
+
+  async linkCustomer(cardId: string, customerId: string): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/${cardId}/link-customer`, { customerId }));
+  }
+
+  async unlinkCustomer(cardId: string): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/${cardId}/unlink-customer`, {}));
+  }
+
+  async getCardTransactions(cardId: string): Promise<GiftCardTransaction[]> {
+    return await firstValueFrom(this.http.get<GiftCardTransaction[]>(`${this.apiUrl}/${cardId}/transactions`));
   }
 
   async redeemGiftCard(dto: any): Promise<any> {

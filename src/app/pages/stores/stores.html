@@ -15,9 +15,9 @@
         </select>
       }
       @if (isOwner()) {
-        <button class="btn btn-primary" (click)="openCreateModal()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
+        <a routerLink="/app/stores/new" class="btn btn-primary" style="padding:10px 16px;font-size:13px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;">
           <span style="font-size:18px;margin-right:6px;">+</span> New Store
-        </button>
+        </a>
       }
     </div>
   </div>
@@ -66,9 +66,9 @@
                 </td>
                 <td style="text-align:right;">
                   <div style="display:flex;justify-content:flex-end;gap:6px;">
-                    <button [routerLink]="['/app/stores', s.id]" class="btn btn-secondary btn-xs">Stats</button>
+                    <a [routerLink]="['/app/stores', s.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View</a>
                     @if (!isSuperAdmin()) {
-                      <button class="btn btn-primary btn-xs" (click)="openEditModal(s)">Edit</button>
+                      <a [routerLink]="['/app/stores', s.id, 'edit']" class="btn btn-primary btn-xs" style="text-decoration:none;">Edit</a>
                     }
                     @if (isOwner()) {
                       <button class="btn btn-danger btn-xs" (click)="deleteStore(s.id)" style="background:var(--red);border-color:var(--red);">Delete</button>
@@ -86,114 +86,6 @@
             }
           </tbody>
         </table>
-      </div>
-    </div>
-  }
-
-  <!-- STORE MODAL -->
-  @if (isModalOpen()) {
-    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
-      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
-        <!-- Modal Header -->
-        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
-          <div>
-            <div style="font-size:18px;font-weight:800;">
-              {{ modalMode() === 'create' ? 'New Store' : modalMode() === 'edit' ? 'Edit Store' : 'Store Details' }}
-            </div>
-            <div style="font-size:11px;color:var(--text3);">{{ modalMode() === 'view' ? 'Reviewing store performance and info' : 'Fill in the details below' }}</div>
-          </div>
-          <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-        </div>
-
-        <!-- Modal Body -->
-        <div style="padding:24px;max-height:70vh;overflow-y:auto;">
-          <div style="display:grid;gap:20px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <div>
-                <label class="label">Store Name</label>
-                <input class="inp" [(ngModel)]="selectedStore().name" [readonly]="modalMode() === 'view'" placeholder="e.g. Ikeja Branch">
-              </div>
-              <div>
-                <label class="label">Store Code</label>
-                <input class="inp" [(ngModel)]="selectedStore().code" [readonly]="modalMode() === 'view' || modalMode() === 'edit'" placeholder="e.g. IKJ-01">
-              </div>
-            </div>
-
-            <div>
-              <label class="label">Address</label>
-              <input class="inp" [(ngModel)]="selectedStore().address" [readonly]="modalMode() === 'view'" placeholder="Street address">
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <div>
-                <label class="label">City</label>
-                <input class="inp" [(ngModel)]="selectedStore().city" [readonly]="modalMode() === 'view'" placeholder="Lagos">
-              </div>
-              <div>
-                <label class="label">Phone</label>
-                <input class="inp" [(ngModel)]="selectedStore().phone" [readonly]="modalMode() === 'view'" placeholder="+234...">
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-              <div>
-                <label class="label">Timezone</label>
-                <select class="inp" [(ngModel)]="selectedStore().timezone" [disabled]="modalMode() === 'view'">
-                  <option value="Africa/Lagos">Africa/Lagos</option>
-                  <option value="UTC">UTC</option>
-                </select>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;padding-top:25px;">
-                <input type="checkbox" [(ngModel)]="selectedStore().active" [disabled]="modalMode() === 'view'">
-                <label style="font-size:13px;font-weight:600;">Store Active</label>
-              </div>
-            </div>
-          </div>
-
-          @if (modalMode() === 'view') {
-            <div style="margin-top:24px;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
-              <div style="font-size:12px;font-weight:700;margin-bottom:12px;color:var(--text2);">Quick Stats</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                <div>
-                  <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">Terminals</div>
-                  <div style="font-size:18px;font-weight:700;">{{ selectedStore().terminals || 0 }}</div>
-                </div>
-                <div>
-                  <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">Lifetime Revenue</div>
-                  <div style="font-size:18px;font-weight:700;">₦0.00</div>
-                </div>
-              </div>
-            </div>
-          }
-
-          <!-- Error Banner -->
-          @if (errorMessage()) {
-            <div style="margin-top:20px;padding:14px 16px;background:rgba(255,60,60,0.08);border:1.5px solid rgba(255,60,60,0.3);border-radius:12px;display:flex;align-items:flex-start;gap:12px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <div style="flex:1;">
-                <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Blocked</div>
-                <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
-              </div>
-              <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:0;line-height:1;">×</button>
-            </div>
-          }
-        </div>
-
-        <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
-          <button class="btn btn-secondary" (click)="closeModal()">{{ modalMode() === 'view' ? 'Close' : 'Cancel' }}</button>
-          @if (modalMode() !== 'view') {
-            <button class="btn btn-primary" (click)="saveStore()" [disabled]="isSaving()" style="min-width:120px;">
-              @if (isSaving()) {
-                <span style="display:flex;align-items:center;gap:8px;justify-content:center;">
-                  <span style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;"></span>
-                  Saving...
-                </span>
-              } @else {
-                {{ modalMode() === 'create' ? 'Create Store' : 'Save Changes' }}
-              }
-            </button>
-          }
-        </div>
       </div>
     </div>
   }

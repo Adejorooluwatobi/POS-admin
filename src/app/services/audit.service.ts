@@ -15,4 +15,8 @@ export class AuditService {
     const params = new HttpParams().set('page', page).set('size', size);
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${tenantId}`, { params }));
   }
+
+  async getAuditLogById(id: string): Promise<any> {
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/entry/${id}`));
+  }
 }

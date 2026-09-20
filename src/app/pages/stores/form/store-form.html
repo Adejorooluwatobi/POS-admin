@@ -1,0 +1,180 @@
+<div class="page-container" style="padding: 24px; max-width: 900px; margin: 0 auto;">
+  <!-- Breadcrumb & Header Bar -->
+  <div style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/stores" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+        ← Back to Stores
+      </a>
+      <span>/</span>
+      <span>{{ isEditMode() ? 'Edit Store' : 'New Store' }}</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+          {{ isEditMode() ? 'Edit Store Location' : 'Add New Store Location' }}
+        </h1>
+        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+          {{ isEditMode() ? 'Update store branch details, address, contact and operational status.' : 'Register a new retail branch or outlet in your organization.' }}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">
+          Cancel
+        </button>
+        <button (click)="saveStore()" class="btn btn-primary" [disabled]="isSaving()" style="min-width: 140px;">
+          @if (isSaving()) {
+            <span style="display:flex; align-items:center; gap:8px; justify-content:center;">
+              <span class="spinner-sm"></span>
+              Saving...
+            </span>
+          } @else {
+            {{ isEditMode() ? 'Save Changes' : 'Create Store' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div style="text-align:center; padding: 60px 0;">
+      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+      <div style="color: var(--text3); font-size: 14px;">Loading store details...</div>
+    </div>
+  } @else {
+    <!-- Error Banner -->
+    @if (errorMessage()) {
+      <div style="margin-bottom:20px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1.5px solid rgba(255,60,60,0.3); border-radius:12px; display:flex; align-items:flex-start; gap:12px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Required</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
+        </div>
+        <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
+      </div>
+    }
+
+    <div style="display:grid; gap: 24px;">
+      <!-- Card 1: Store Identification -->
+      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+          🏢 Store Identification
+        </div>
+
+        @if (authService.isSuperAdmin() && !isEditMode()) {
+          <div style="margin-bottom: 16px;">
+            <label class="label">Assign to Business / Tenant</label>
+            <select class="inp" [(ngModel)]="selectedTenantId">
+              <option [ngValue]="null">Select a Business...</option>
+              @for (t of tenants(); track t.id) {
+                <option [value]="t.id">{{ t.businessName }}</option>
+              }
+            </select>
+          </div>
+        }
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <label class="label">Store Name <span style="color:var(--red);">*</span></label>
+            <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Ikeja Branch">
+          </div>
+          <div>
+            <label class="label">Store Code <span style="color:var(--red);">*</span></label>
+            <input class="inp mono" [(ngModel)]="store().code" [disabled]="isEditMode()" placeholder="e.g. IKJ-01">
+            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
+              {{ isEditMode() ? 'Store code cannot be changed once created.' : 'Unique identifier for terminals and inventory routing.' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Contact & Location -->
+      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+          📍 Location & Contact Details
+        </div>
+
+        <div style="display:grid; gap: 16px;">
+          <div>
+            <label class="label">Physical Address</label>
+            <input class="inp" [(ngModel)]="store().address" placeholder="e.g. 14 Allen Avenue, Ikeja">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="label">City</label>
+              <input class="inp" [(ngModel)]="store().city" placeholder="Lagos">
+            </div>
+            <div>
+              <label class="label">State / Province</label>
+              <input class="inp" [(ngModel)]="store().state" placeholder="Lagos State">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <label class="label">Phone Contact</label>
+              <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 123 4567">
+            </div>
+            <div>
+              <label class="label">Country</label>
+              <input class="inp" [(ngModel)]="store().country" placeholder="Nigeria">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Regional & Operational Settings -->
+      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
+          ⚙️ Operational Settings
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items:center;">
+          <div>
+            <label class="label">Timezone</label>
+            <select class="inp" [(ngModel)]="store().timezone">
+              <option value="Africa/Lagos">Africa/Lagos (GMT+1)</option>
+              <option value="UTC">UTC</option>
+              <option value="Africa/Accra">Africa/Accra (GMT)</option>
+              <option value="Africa/Johannesburg">Africa/Johannesburg (GMT+2)</option>
+            </select>
+          </div>
+
+          <div style="display:flex; align-items:center; gap: 12px; padding-top: 14px;">
+            <input type="checkbox" id="storeActive" [(ngModel)]="store().active" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
+            <label for="storeActive" style="font-size: 13px; font-weight: 700; cursor:pointer; user-select:none;">
+              Active & Open for Trading
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .spinner-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
