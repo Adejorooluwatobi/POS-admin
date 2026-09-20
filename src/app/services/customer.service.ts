@@ -21,6 +21,14 @@ export class CustomerService {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
   }
 
+  async generateLoyaltyNumber(storeId?: string): Promise<{ loyaltyCardNo: string }> {
+    let params = new HttpParams();
+    if (storeId) {
+      params = params.set('storeId', storeId);
+    }
+    return await firstValueFrom(this.http.get<{ loyaltyCardNo: string }>(`${this.apiUrl}/generate-loyalty-no`, { params }));
+  }
+
   async createCustomer(customer: any): Promise<any> {
     return await firstValueFrom(this.http.post<any>(this.apiUrl, customer));
   }
@@ -31,5 +39,10 @@ export class CustomerService {
 
   async deleteCustomer(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
+
+  async getCustomerTransactions(id: string, page: number = 1, size: number = 20): Promise<any> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}/transactions`, { params }));
   }
 }

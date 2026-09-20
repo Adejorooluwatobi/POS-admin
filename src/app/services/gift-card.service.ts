@@ -70,6 +70,23 @@ export class GiftCardService {
     await firstValueFrom(this.http.put<void>(`${this.apiUrl}/${id}`, dto));
   }
 
+  async setStatus(cardId: string, isActive: boolean, reason?: string): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/${cardId}/set-status`, { isActive, reason }));
+  }
+
+  async replaceLostCard(dto: {
+    lostCardNumber: string;
+    newCardNumber?: string;
+    newCardPin?: string;
+    activateNewCard?: boolean;
+    reason?: string;
+    verificationPin?: string;
+    bypassVerification?: boolean;
+    bypassReason?: string;
+  }): Promise<GiftCard> {
+    return await firstValueFrom(this.http.post<GiftCard>(`${this.apiUrl}/replace-lost`, dto));
+  }
+
   async deleteGiftCard(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
   }

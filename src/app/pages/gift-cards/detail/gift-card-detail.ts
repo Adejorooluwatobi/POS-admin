@@ -50,6 +50,7 @@ export class GiftCardDetailComponent implements OnInit {
 
   // Link form
   public selectedCustomerId = signal<string | null>(null);
+  public customerSearchQuery = signal<string>('');
   public isSubmittingLink = signal<boolean>(false);
 
   constructor(
@@ -218,7 +219,38 @@ export class GiftCardDetailComponent implements OnInit {
   // --- Link / Unlink Customer ---
   openLinkModal() {
     this.selectedCustomerId.set(this.card()?.customerId || null);
+    this.customerSearchQuery.set('');
     this.showLinkModal.set(true);
+  }
+
+  get filteredCustomers(): any[] {
+    const q = this.customerSearchQuery().toLowerCase().trim();
+    const list = this.customers();
+    if (!q) return list;
+    return list.filter((c: any) => {
+      const fullName = `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase();
+      const phone = (c.phone || '').toLowerCase();
+      const email = (c.email || '').toLowerCase();
+      const cardNo = (c.loyaltyCardNo || '').toLowerCase();
+      return fullName.includes(q) || phone.includes(q) || email.includes(q) || cardNo.includes(q);
+    });
+  }
+
+  getCustomerLabel(cust: any): string {
+    if (!cust) return '';
+    const name = `${cust.firstName || ''} ${cust.lastName || ''}`.trim() || 'Unnamed Customer';
+    const contact = cust.phone || cust.email || (cust.loyaltyCardNo ? `Loyalty: ${cust.loyaltyCardNo}` : null);
+    return contact ? `${name} (${contact})` : name;
+  }
+
+  selectCustomerForLink(customerId: string) {
+    this.selectedCustomerId.set(customerId);
+  }
+
+  getSelectedCustomer(): any {
+    const id = this.selectedCustomerId();
+    if (!id) return null;
+    return this.customers().find((c: any) => c.id === id) || null;
   }
 
   async submitLink() {
@@ -267,6 +299,104 @@ export class GiftCardDetailComponent implements OnInit {
   showToast(msg: string) {
     this.successMessage.set(msg);
     setTimeout(() => this.successMessage.set(null), 4000);
+  }
+
+  isCardExpired(): boolean {
+    const exp = this.card()?.expiresAt;
+    if (!exp) return false;
+    const expDate = new Date(exp);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return expDate < today;
+  }
+
+  async setStatus(isActive: boolean) {
+    const c = this.card();
+    if (!c?.id) return;
+
+    if (isActive && this.isCardExpired()) {
+      alert('Expired cards can NEVER be reactivated. Balance can only be transferred to a replacement card.');
+      return;
+    }
+
+    const reason = prompt(
+      isActive ? 'Enter optional reason for activation:' : 'Enter reason for deactivating this card:',
+      isActive ? 'Re-activated by administrator' : 'Temporarily suspended by administrator'
+    );
+    if (reason === null) return; // cancelled
+
+    this.isUpdating.set(true);
+    try {
+      const updated = await this.giftCardService.setStatus(c.id, isActive, reason);
+      this.card.set(updated);
+      this.showToast(`Card status updated to ${isActive ? 'ACTIVE' : 'DEACTIVATED'}.`);
+    } catch (err: any) {
+      console.error('Failed to set card status', err);
+      alert(err?.error?.message || 'Failed to update card status.');
+    } finally {
+      this.isUpdating.set(false);
+    }
+  }
+
+  // Replace Lost Card Modal
+  public showReplaceModal = signal<boolean>(false);
+  public isSubmittingReplace = signal<boolean>(false);
+  public replaceForm = signal({
+    newCardNumber: '',
+    newCardPin: '',
+    activateNewCard: true,
+    reason: 'Reported lost/misplaced',
+    bypassVerification: true,
+    bypassReason: 'Portal administrator override'
+  });
+
+  openReplaceModal() {
+    const c = this.card();
+    if (!c) return;
+
+    if (this.isCardExpired() && !c.customerId) {
+      alert('This expired card is not linked to any customer. You must link or register a customer first before migrating the balance.');
+      this.openLinkModal();
+      return;
+    }
+
+    this.replaceForm.set({
+      newCardNumber: '',
+      newCardPin: Math.floor(1000 + Math.random() * 9000).toString(),
+      activateNewCard: true,
+      reason: 'Reported lost/misplaced by customer',
+      bypassVerification: true,
+      bypassReason: 'Portal administrator override'
+    });
+    this.showReplaceModal.set(true);
+  }
+
+  async submitReplace() {
+    const c = this.card();
+    if (!c?.cardNumber) return;
+
+    const f = this.replaceForm();
+    this.isSubmittingReplace.set(true);
+    try {
+      const replacement = await this.giftCardService.replaceLostCard({
+        lostCardNumber: c.cardNumber,
+        newCardNumber: f.newCardNumber.trim() || undefined,
+        newCardPin: f.newCardPin.trim() || undefined,
+        activateNewCard: f.activateNewCard,
+        reason: f.reason,
+        bypassVerification: f.bypassVerification,
+        bypassReason: f.bypassReason
+      });
+
+      this.showReplaceModal.set(false);
+      alert(`Replacement card ${replacement.cardNumber} created successfully with transferred balance of ₦${replacement.balance.toLocaleString()}!`);
+      this.router.navigate(['/app/gift-cards', replacement.id]);
+    } catch (err: any) {
+      console.error('Failed to replace lost card', err);
+      alert(err?.error?.message || 'Failed to replace lost card.');
+    } finally {
+      this.isSubmittingReplace.set(false);
+    }
   }
 
   formatCurrency(val: number): string {

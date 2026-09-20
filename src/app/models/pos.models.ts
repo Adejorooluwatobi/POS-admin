@@ -128,6 +128,20 @@ export interface Customer {
   spend: number;
   last: string;
   active?: boolean;
+  identityType?: string;
+  identityNumber?: string;
+  maskedIdentityNumber?: string;
+  photoUrl?: string;
+  isIdentityVerified?: boolean;
+  livenessVerifiedAt?: string;
+  isSelfRegistered?: boolean;
+  storeName?: string;
+  registeredStoreId?: string;
+  registeredStoreName?: string;
+  registeredByStaffId?: string;
+  registeredByStaffName?: string;
+  totalSpend?: number;
+  totalVisits?: number;
 }
 
 export interface Staff {
@@ -233,6 +247,7 @@ export interface GiftCard {
   initialValue: number;
   expiresAt?: string;
   isActive: boolean;
+  notes?: string;
   issuedAt: string;
   issuingStoreId?: string | null;
   customerId?: string | null;

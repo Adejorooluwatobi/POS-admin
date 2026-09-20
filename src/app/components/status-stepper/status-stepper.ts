@@ -19,8 +19,8 @@ import { CommonModule } from '@angular/common';
                [style.box-shadow]="step === failedStep ? '0 10px 15px -3px rgba(239, 68, 68, 0.2)' : (i <= currentStepIndex ? '0 10px 15px -3px rgba(79, 70, 229, 0.2)' : 'none')"
                style="width:36px; height:36px; border-radius:50%; border:2px solid; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; transition:all 0.3s ease; z-index:10;">
             <span *ngIf="step === failedStep">✗</span>
-            <span *ngIf="step !== failedStep && i < currentStepIndex">✓</span>
-            <span *ngIf="step !== failedStep && i >= currentStepIndex">{{ i + 1 }}</span>
+            <span *ngIf="step !== failedStep && (i < currentStepIndex || (i === currentStepIndex && i === steps.length - 1))">✓</span>
+            <span *ngIf="step !== failedStep && !(i < currentStepIndex || (i === currentStepIndex && i === steps.length - 1))">{{ i + 1 }}</span>
           </div>
           
           <!-- Label -->

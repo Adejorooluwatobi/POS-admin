@@ -37,11 +37,43 @@ export class GiftCardCreateComponent implements OnInit {
     initialValue: 5000,
     expiresAt: '',
     pin: '',
+    activateNow: false,
     issuingStoreId: null as string | null,
     customerId: null as string | null,
     paymentMethod: 'Cash',
     reference: ''
   });
+  public customerSearchQuery = signal<string>('');
+
+  get filteredCustomers(): any[] {
+    const q = this.customerSearchQuery().toLowerCase().trim();
+    const list = this.customers();
+    if (!q) return list;
+    return list.filter((c: any) => {
+      const fullName = `${c.firstName || ''} ${c.lastName || ''}`.toLowerCase();
+      const phone = (c.phone || '').toLowerCase();
+      const email = (c.email || '').toLowerCase();
+      const cardNo = (c.loyaltyCardNo || '').toLowerCase();
+      return fullName.includes(q) || phone.includes(q) || email.includes(q) || cardNo.includes(q);
+    });
+  }
+
+  getCustomerLabel(cust: any): string {
+    if (!cust) return '';
+    const name = `${cust.firstName || ''} ${cust.lastName || ''}`.trim() || 'Unnamed Customer';
+    const contact = cust.phone || cust.email || (cust.loyaltyCardNo ? `Loyalty: ${cust.loyaltyCardNo}` : null);
+    return contact ? `${name} (${contact})` : name;
+  }
+
+  selectCustomer(customerId: string | null) {
+    this.newCard.update(c => ({ ...c, customerId }));
+  }
+
+  getSelectedCustomer(): any {
+    const id = this.newCard().customerId;
+    if (!id) return null;
+    return this.customers().find((c: any) => c.id === id) || null;
+  }
 
   constructor(
     private router: Router,
@@ -157,6 +189,7 @@ export class GiftCardCreateComponent implements OnInit {
         initialValue: c.initialValue,
         expiresAt: c.expiresAt || null,
         pin: c.pin,
+        activateNow: c.activateNow,
         issuingStoreId: c.issuingStoreId,
         customerId: this.cardMode() === 'linked' ? targetCustomerId : null,
         paymentMethod: c.paymentMethod,

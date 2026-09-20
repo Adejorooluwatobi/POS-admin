@@ -1,4 +1,11 @@
 <div class="page-container" style="padding: 24px; max-width: 1000px; margin: 0 auto;">
+  <!-- Toast Notification -->
+  @if (toastMessage()) {
+    <div style="position:fixed; top:24px; right:24px; z-index:9999; background:#10b981; color:white; padding:12px 20px; border-radius:10px; font-weight:700; font-size:13px; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+      ✓ {{ toastMessage() }}
+    </div>
+  }
+
   <!-- Breadcrumbs & Header -->
   <div style="margin-bottom: 24px;">
     <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
@@ -34,6 +41,11 @@
           <a [routerLink]="['/app/customers', customer().id, 'edit']" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
             ✏️ Edit Profile
           </a>
+          @if (isOwner()) {
+            <button (click)="deleteCustomer()" class="btn btn-secondary" style="color:#ff5555;border-color:rgba(255,85,85,0.3); display:inline-flex; align-items:center; gap:6px;">
+              🗑️ Delete
+            </button>
+          }
         </div>
       </div>
     }
@@ -71,6 +83,127 @@
           </div>
           <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Registration date</div>
         </div>
+
+        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Registration Origin</div>
+          <div style="font-size: 15px; font-weight: 800; color: var(--text1); margin-top: 6px; display:flex; align-items:center; gap:6px;">
+            @if (customer().isSelfRegistered) {
+              <span class="badge badge-purple" style="font-size:11px; padding:3px 8px;">🌐 Self-Registered</span>
+            } @else {
+              <span class="badge badge-green" style="font-size:11px; padding:3px 8px;">🏪 In-Store Staff</span>
+            }
+          </div>
+          <div style="font-size: 11px; color: var(--text2); margin-top: 6px;">
+            @if (customer().registeredStoreName) {
+              <span>Store: <strong>{{ customer().registeredStoreName }}</strong></span>
+            } @else if (customer().isSelfRegistered) {
+              <span>Customer Portal / Online</span>
+            } @else {
+              <span>Store not assigned</span>
+            }
+            @if (customer().registeredByStaffName) {
+              <div style="color:var(--text3); font-size:10px; margin-top:2px;">Staff: {{ customer().registeredByStaffName }}</div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Spending Analytics & Payment Methods Summary Card -->
+      <div class="card" style="border-radius: 16px; background: var(--surface); border: 1px solid var(--border); padding: 20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; flex-wrap:wrap; gap:10px;">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:8px;">
+            <span>💳</span> Spending & Payment Habits
+          </div>
+          <div style="font-size: 12px; color: var(--text3);">
+            {{ (transactionHistory()?.totalVisits || customer().totalVisits || 0) }} total orders placed
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+          <div style="background:var(--surface2); padding:14px 16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase;">Lifetime Spend</div>
+            <div style="font-size:22px; font-weight:900; color:var(--text1); margin-top:4px;" class="mono">
+              {{ formatCurrency(transactionHistory()?.lifetimeSpend || customer().totalSpend || 0) }}
+            </div>
+          </div>
+          <div style="background:var(--surface2); padding:14px 16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase;">Total Visits</div>
+            <div style="font-size:22px; font-weight:900; color:var(--text1); margin-top:4px;" class="mono">
+              {{ (transactionHistory()?.totalVisits || customer().totalVisits || 0) }}
+            </div>
+          </div>
+          <div style="background:var(--surface2); padding:14px 16px; border-radius:12px; border:1px solid var(--border);">
+            <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase;">Avg. Order Value</div>
+            <div style="font-size:22px; font-weight:900; color:var(--text1); margin-top:4px;" class="mono">
+              {{ formatCurrency(transactionHistory()?.averageOrderValue || 0) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method Breakdown -->
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; margin-bottom: 10px;">
+            Payment Method Spend Distribution
+          </div>
+          @if (getPaymentKeys(transactionHistory()?.spendByPaymentMethod).length > 0) {
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+              @for (method of getPaymentKeys(transactionHistory()?.spendByPaymentMethod); track method) {
+                <div style="background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:8px 14px; display:flex; align-items:center; gap:10px;">
+                  <span class="badge" [ngClass]="getPaymentBadgeClass(method)">{{ method }}</span>
+                  <span class="mono" style="font-weight:800; font-size:13px; color:var(--text1);">
+                    {{ formatCurrency(transactionHistory().spendByPaymentMethod[method]) }}
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <div style="font-size: 12px; color: var(--text3); font-style: italic;">
+              No completed payments recorded yet for this customer.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Identity & Face Verification Profile -->
+      <div class="card" style="border-radius: 16px; background: var(--surface); border: 1px solid var(--border); padding: 20px 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:8px;">
+            <span>🛡️</span> Identity & Fraud Verification
+          </div>
+          <span *ngIf="customer().isIdentityVerified" class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:11px; padding:3px 10px; border-radius:12px; font-weight:700;">
+            ✅ Verified Account
+          </span>
+          <span *ngIf="!customer().isIdentityVerified" class="badge" style="background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); font-size:11px; padding:3px 10px; border-radius:12px; font-weight:700;">
+            ⚠️ Unverified
+          </span>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <div style="width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,0.05); border:2px solid var(--border); overflow:hidden; display:flex; align-items:center; justify-content:center;">
+            <img *ngIf="customer().photoUrl" [src]="customer().photoUrl" style="width:100%; height:100%; object-fit:cover;">
+            <span *ngIf="!customer().photoUrl" style="font-size:28px; color:var(--text3);">👤</span>
+          </div>
+
+          <div style="flex:1; min-width:240px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+              <div>
+                <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase;">Identity Document</div>
+                <div style="font-size:14px; font-weight:700; color:var(--text1); margin-top:2px;">
+                  {{ customer().identityType || 'Not Provided' }}
+                </div>
+              </div>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase;">Encrypted ID Number</div>
+                <div class="mono" style="font-size:14px; font-weight:800; color:#38bdf8; margin-top:2px;">
+                  {{ customer().maskedIdentityNumber || '••••••••••••' }}
+                </div>
+              </div>
+            </div>
+            <div *ngIf="customer().livenessVerifiedAt" style="font-size:11px; color:#10b981; margin-top:8px;">
+              ✓ Face liveness confirmed on {{ customer().livenessVerifiedAt | date:'medium' }}
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Linked Cards Section -->
@@ -79,9 +212,14 @@
           <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:8px;">
             <span>💳</span> Linked Cards & Store Value ({{ (customer().giftCards || []).length }})
           </div>
-          <a [routerLink]="['/app/gift-cards/new']" class="btn btn-primary btn-xs" style="text-decoration:none;">
-            + Issue Card for Customer
-          </a>
+          <div style="display:flex; gap:8px;">
+            <button type="button" (click)="openLinkCardModal()" class="btn btn-secondary btn-xs">
+              + Link Existing Card
+            </button>
+            <a [routerLink]="['/app/gift-cards/new']" class="btn btn-primary btn-xs" style="text-decoration:none;">
+              + Issue Card for Customer
+            </a>
+          </div>
         </div>
 
         @if (customer().giftCards && customer().giftCards.length > 0) {
@@ -92,13 +230,21 @@
                   <span class="mono" style="font-size:13px; font-weight:800; color:var(--text1);">{{ card.cardNumber }}</span>
                   <span class="badge" [class.badge-green]="card.isActive" [class.badge-red]="!card.isActive">{{ card.isActive ? 'ACTIVE' : 'DISABLED' }}</span>
                 </div>
+                @if (card.issuingStoreName) {
+                  <div style="font-size:11px; color:var(--text3); margin-bottom:6px;">
+                    🏪 Issued at: <strong>{{ card.issuingStoreName }}</strong>
+                  </div>
+                }
                 <div style="margin-top:8px;">
                   <div style="font-size:10px; text-transform:uppercase; color:var(--text3); font-weight:700;">Card Balance</div>
                   <div class="mono" style="font-size:20px; font-weight:900; color:var(--green); margin-top:2px;">
                     {{ formatCurrency(card.balance) }}
                   </div>
                 </div>
-                <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+                <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
+                  <button type="button" (click)="unlinkCard(card.id)" class="btn btn-secondary btn-xs" style="color:var(--red); font-size:10px;">
+                    Unlink Card
+                  </button>
                   <a [routerLink]="['/app/gift-cards', card.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">
                     Inspect & Recharge →
                   </a>
@@ -107,8 +253,101 @@
             }
           </div>
         } @else {
-          <div style="text-align:center; padding:20px; color:var(--text3); font-size:13px; background:var(--surface2); border-radius:12px; border:1px dashed var(--border);">
+          <div style="text-align:center; padding:24px; color:var(--text3); font-size:13px; background:var(--surface2); border-radius:12px; border:1px dashed var(--border);">
+            <div style="font-size:24px; margin-bottom:6px;">💳</div>
             No store cards currently linked to this customer account.
+            <div style="margin-top:10px; display:flex; justify-content:center; gap:8px;">
+              <button (click)="openLinkCardModal()" class="btn btn-secondary btn-xs">+ Link Existing Card</button>
+              <a [routerLink]="['/app/gift-cards/new']" class="btn btn-primary btn-xs" style="text-decoration:none;">+ Issue Card for Customer</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Purchase & Transaction History Card -->
+      <div class="card" style="border-radius: 16px; background: var(--surface); border: 1px solid var(--border); overflow:hidden;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; display:flex; align-items:center; gap:8px;">
+            <span>🧾</span> Purchase & Transaction History
+          </div>
+          <span style="font-size: 12px; color: var(--text3);">
+            {{ transactionHistory()?.transactions?.totalCount || 0 }} transactions
+          </span>
+        </div>
+
+        @if (isTransactionsLoading()) {
+          <div style="text-align:center; padding: 40px; color: var(--text3);">
+            <div class="spinner" style="width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 8px;"></div>
+            Loading purchase history...
+          </div>
+        } @else {
+          <div style="overflow-x:auto;">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>DATE</th>
+                  <th>RECEIPT #</th>
+                  <th>STORE & CASHIER</th>
+                  <th>ITEMS</th>
+                  <th style="text-align:right;">TOTAL</th>
+                  <th>PAYMENT METHODS</th>
+                  <th style="text-align:right;">POINTS</th>
+                  <th>STATUS</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tx of transactionHistory()?.transactions?.items || []; track tx.id) {
+                  <tr>
+                    <td style="font-size:11px; color:var(--text3);">{{ tx.createdAt | date:'medium' }}</td>
+                    <td class="mono" style="font-weight:700; font-size:12px; color:var(--accent);">
+                      {{ tx.receiptNumber }}
+                    </td>
+                    <td>
+                      <div style="font-size:12px; font-weight:600;">{{ tx.storeName }}</div>
+                      <div style="font-size:10px; color:var(--text3);">Cashier: {{ tx.cashierName }}</div>
+                    </td>
+                    <td>
+                      <div style="font-size:12px; font-weight:600;">{{ tx.items?.length || 0 }} item(s)</div>
+                      <div style="font-size:10px; color:var(--text3); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        @for (it of tx.items; track it.id; let last = $last) {
+                          {{ it.quantity }}x {{ it.variantName }}{{ !last ? ', ' : '' }}
+                        }
+                      </div>
+                    </td>
+                    <td class="mono" style="text-align:right; font-weight:800; font-size:13px;">
+                      {{ formatCurrency(tx.grandTotal) }}
+                    </td>
+                    <td>
+                      <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                        @for (p of tx.payments; track p.id) {
+                          <span class="badge" [ngClass]="getPaymentBadgeClass(p.method)" style="font-size:10px; padding:2px 6px;">
+                            {{ p.method }}: {{ formatCurrency(p.amount) }}
+                          </span>
+                        }
+                        @if (!tx.payments || tx.payments.length === 0) {
+                          <span style="font-size:11px; color:var(--text3);">—</span>
+                        }
+                      </div>
+                    </td>
+                    <td style="text-align:right;">
+                      <span class="badge badge-green" style="font-size:10px;">+{{ tx.pointsEarned || 0 }} pts</span>
+                    </td>
+                    <td>
+                      <span class="badge" [class.badge-green]="tx.status === 1 || tx.status === 'Completed'" [class.badge-red]="tx.status === 2 || tx.status === 'Voided'">
+                        {{ tx.status === 1 || tx.status === 'Completed' ? 'Completed' : (tx.status === 2 || tx.status === 'Voided' ? 'Voided' : tx.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+                @if (!transactionHistory()?.transactions?.items || transactionHistory()?.transactions?.items?.length === 0) {
+                  <tr>
+                    <td colspan="8" style="text-align:center; padding: 40px; color: var(--text3);">
+                      No purchases recorded for this customer yet.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         }
       </div>
@@ -166,6 +405,113 @@
               }
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Link Existing Card Modal -->
+  @if (showLinkCardModal()) {
+    <div class="modal-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;">
+      <div class="modal-card" style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:500px; width:100%; padding:24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text);">Link Existing Card to Customer</h3>
+          <button (click)="showLinkCardModal.set(false)" style="background:none; border:none; color:var(--text3); font-size:20px; cursor:pointer;">×</button>
+        </div>
+
+        <div style="font-size:12px; color:var(--text3); margin-bottom:16px;">
+          Select an issued card to bind to <strong>{{ customer()?.firstName }} {{ customer()?.lastName }}</strong>.
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom:12px; position:relative;">
+          <label class="label">Search Card Number</label>
+          <input 
+            type="text" 
+            class="inp mono" 
+            [ngModel]="cardSearchQuery()" 
+            (ngModelChange)="cardSearchQuery.set($event)"
+            placeholder="Search by card number or cardholder..."
+            style="padding-left:36px;"
+          />
+          <span style="position:absolute; left:12px; bottom:11px; color:var(--text3); font-size:14px;">💳</span>
+          @if (cardSearchQuery()) {
+            <button 
+              type="button" 
+              (click)="cardSearchQuery.set('')" 
+              style="position:absolute; right:10px; bottom:8px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:14px;">
+              ✕
+            </button>
+          }
+        </div>
+
+        <!-- Selected Card Indicator -->
+        @if (getSelectedCard()) {
+          <div style="margin-bottom:12px; padding:10px 14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px; color:var(--green);">✓</span>
+              <div>
+                <div class="mono" style="font-size:13px; font-weight:800; color:var(--green);">
+                  {{ getSelectedCard().cardNumber }}
+                </div>
+                <div style="font-size:11px; color:var(--text3);">
+                  Balance: {{ formatCurrency(getSelectedCard().balance) }}
+                  @if (getSelectedCard().issuingStoreName) {
+                    · Store: {{ getSelectedCard().issuingStoreName }}
+                  }
+                </div>
+              </div>
+            </div>
+            <button type="button" (click)="selectedCardId.set(null)" class="btn btn-secondary btn-xs" style="font-size:10px;">Change</button>
+          </div>
+        }
+
+        <!-- Cards List -->
+        <label class="label" style="font-size:11px; margin-bottom:6px;">Available Gift Cards ({{ filteredCards.length }})</label>
+        <div style="max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:var(--surface2);">
+          @if (filteredCards.length === 0) {
+            <div style="padding:20px; text-align:center; color:var(--text3); font-size:12px;">
+              No gift cards found matching "{{ cardSearchQuery() }}".
+            </div>
+          } @else {
+            @for (c of filteredCards; track c.id) {
+              <div 
+                (click)="selectCardForLink(c.id)"
+                style="padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;"
+                [style.background]="selectedCardId() === c.id ? 'var(--accent-d)' : 'transparent'">
+                <div>
+                  <div class="mono" style="font-size:13px; font-weight:700;" [style.color]="selectedCardId() === c.id ? 'var(--accent)' : 'inherit'">
+                    {{ c.cardNumber }}
+                  </div>
+                  <div style="font-size:10px; color:var(--text3);">
+                    @if (c.customerName) {
+                      Currently held by: {{ c.customerName }}
+                    } @else {
+                      Unassigned card
+                    }
+                    @if (c.issuingStoreName) {
+                      · {{ c.issuingStoreName }}
+                    }
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="mono" style="font-size:12px; font-weight:800; color:var(--green);">
+                    {{ formatCurrency(c.balance) }}
+                  </div>
+                  @if (selectedCardId() === c.id) {
+                    <span style="font-size:10px; color:var(--accent); font-weight:700;">● Selected</span>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <button (click)="showLinkCardModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button (click)="submitLinkCard()" [disabled]="isSubmittingCardLink() || !selectedCardId()" class="btn btn-primary">
+            {{ isSubmittingCardLink() ? 'Linking...' : 'Link Card to Customer' }}
+          </button>
         </div>
       </div>
     </div>

@@ -1,0 +1,191 @@
+<div class="liveness-overlay" *ngIf="isOpen" (click)="dismiss()">
+  <div class="liveness-card" (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="liveness-header">
+      <div class="header-left">
+        <span class="icon">🛡️</span>
+        <div>
+          <div class="title">Live Biometric Face Verification</div>
+          <div class="subtitle" *ngIf="customerName">Customer: {{ customerName }}</div>
+        </div>
+      </div>
+      <button class="btn-close" (click)="dismiss()" [disabled]="isVerifying()">&times;</button>
+    </div>
+
+    <!-- Stepper Navigation Pills -->
+    <div class="challenge-stepper">
+      @for (stepKey of challengeSequence(); track stepKey; let idx = $index) {
+        <div 
+          class="step-pill" 
+          [class.active]="isVerifying() && currentStepIndex() === idx"
+          [class.passed]="isStepDone(stepKey)"
+          [class.pending]="!isStepDone(stepKey) && (!isVerifying() || currentStepIndex() < idx)">
+          <span class="pill-dot">
+            @if (isStepDone(stepKey)) {
+              ✓
+            } @else {
+              {{ idx + 1 }}
+            }
+          </span>
+          <span class="pill-label">{{ definitions[stepKey]?.badge || stepKey }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="liveness-body">
+      <!-- Camera Preview with Oval Frame -->
+      <div class="camera-viewport">
+        <video #videoElement autoplay playsinline muted [class.hidden]="isCompleted() || cameraError()"></video>
+        <canvas #canvasElement style="display:none;"></canvas>
+
+        <!-- Verified Snapshot Preview -->
+        @if (isCompleted() && capturedPhoto()) {
+          <div class="snapshot-preview">
+            <img [src]="capturedPhoto()" alt="Verified Face Snapshot">
+            <div class="verified-stamp">
+              <span class="stamp-icon">✅</span>
+              <span>Biometrics Verified (100% Match)</span>
+            </div>
+            <div class="auto-save-notice">Auto-attaching face and saving...</div>
+          </div>
+        }
+
+        <!-- Camera Error / Fallback State -->
+        @if (cameraError() && !isCompleted()) {
+          <div class="camera-error-box">
+            <div class="error-icon">📷</div>
+            <div class="error-msg">{{ cameraErrorMessage() }}</div>
+            <label class="btn btn-secondary upload-btn">
+              📁 Select Photo File
+              <input type="file" accept="image/*" (change)="handleManualPhotoUpload($event)" style="display:none;">
+            </label>
+          </div>
+        }
+
+        <!-- Live Dynamic Oval Overlay with Direction Clues -->
+        @if (!isCompleted() && !cameraError()) {
+          <div 
+            class="oval-guide" 
+            [class.active]="isVerifying() && !isWrongDirection()"
+            [class.wrong]="isWrongDirection()"
+            [class.passed]="stepPassed()"
+            [class.turn-right]="isVerifying() && getCurrentChallenge().key === 'TurnRight'"
+            [class.turn-left]="isVerifying() && getCurrentChallenge().key === 'TurnLeft'"
+            [class.blink]="isVerifying() && getCurrentChallenge().key === 'Blink'"
+            [class.smile]="isVerifying() && getCurrentChallenge().key === 'Smile'">
+            
+            @if (isVerifying()) {
+              <div class="scan-line" *ngIf="!isWrongDirection()"></div>
+
+              <!-- Directional Motion Hints -->
+              @if (getCurrentChallenge().key === 'TurnRight') {
+                <div class="arrow-hint right">➔</div>
+              }
+              @if (getCurrentChallenge().key === 'TurnLeft') {
+                <div class="arrow-hint left">⬅</div>
+              }
+              @if (getCurrentChallenge().key === 'Blink') {
+                <div class="blink-hint">👁️ 👁️</div>
+              }
+              @if (getCurrentChallenge().key === 'Smile') {
+                <div class="smile-hint">😊</div>
+              }
+            }
+
+            @if (stepPassed()) {
+              <div class="step-passed-badge">✓ Verified</div>
+            }
+          </div>
+        }
+
+        <!-- Telemetry HUD Pill (Live Head Yaw Angle & Direction) -->
+        @if (isVerifying()) {
+          <div class="hud-pill" [class.hud-warn]="isWrongDirection()">
+            <span>📐 Angle: {{ currentYaw() > 0 ? '+' : '' }}{{ currentYaw() }}°</span>
+            <span>•</span>
+            <span>Head: {{ detectedDirection() }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Real-Time Instruction Display -->
+      <div class="instruction-box" [class.box-warn]="isWrongDirection()">
+        @if (isVerifying()) {
+          <div class="step-indicator">
+            <span class="step-icon">{{ isWrongDirection() ? '⚠️' : getCurrentChallenge().icon }}</span>
+            <div class="step-text">
+              <div class="step-title" [class.text-warn]="isWrongDirection()">
+                @if (isWrongDirection()) {
+                  Direction Error
+                } @else {
+                  Step {{ currentStepIndex() + 1 }} of {{ challengeSequence().length }}: {{ getCurrentChallenge().title }}
+                }
+              </div>
+              <div class="step-desc" [class.desc-warn]="isWrongDirection()">
+                {{ visionFeedback() }}
+              </div>
+              <div class="motion-status">
+                <span class="pulsing-dot" [class.dot-warn]="isWrongDirection()"></span>
+                <span>{{ isWrongDirection() ? 'Action blocked: please follow arrow' : getCurrentChallenge().motionPrompt }}</span>
+              </div>
+            </div>
+          </div>
+        } @else if (isCompleted()) {
+          <div class="completed-box">
+            <div class="success-title">🎉 Live Biometric Verification Successful!</div>
+            <div class="success-sub">All 5 computer vision challenges verified and confirmed.</div>
+            <div class="check-chips">
+              <span class="chip">✓ Center Face</span>
+              <span class="chip">✓ Head Right</span>
+              <span class="chip">✓ Head Left</span>
+              <span class="chip">✓ Blink Eyes</span>
+              <span class="chip">✓ Smile</span>
+            </div>
+          </div>
+        } @else if (!cameraError()) {
+          <div class="pre-start">
+            <div class="info-badge">Real-Time Computer Vision Liveness</div>
+            <p class="guide-note">
+              Click <strong>Start Verification</strong>. The AI vision system will evaluate your head orientation, eye blinks, and facial expression in real time.
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Step Hold Progress Bar (Fills up as correct gesture is maintained) -->
+      @if (isVerifying()) {
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" [style.width.%]="stepHoldProgress()"></div>
+        </div>
+      }
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="liveness-footer">
+      <button class="btn btn-secondary" (click)="dismiss()" [disabled]="isVerifying()">
+        Cancel
+      </button>
+
+      @if (!isVerifying() && !isCompleted() && !cameraError()) {
+        <button class="btn btn-primary" (click)="startLivenessCheck()">
+          ▶ Start Verification
+        </button>
+      }
+
+      @if (isVerifying()) {
+        <button class="btn btn-primary" disabled>
+          <span class="spinner-sm"></span>
+          Scanning Step {{ currentStepIndex() + 1 }}/{{ challengeSequence().length }}...
+        </button>
+      }
+
+      @if (isCompleted()) {
+        <button class="btn btn-success" (click)="confirmVerification()">
+          ✓ Done (Auto-Closing...)
+        </button>
+      }
+    </div>
+
+  </div>
+</div>

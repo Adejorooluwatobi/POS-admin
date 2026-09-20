@@ -41,8 +41,18 @@
                       {{ c.n[0] }}
                     </div>
                     <div>
-                      <div style="font-weight:600;font-size:13px;">{{ c.n }}</div>
-                      <div style="font-size:10px;color:var(--text3);">{{ c.e }}</div>
+                      <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;">
+                        {{ c.n }}
+                        @if (c.isSelfRegistered) {
+                          <span class="badge badge-purple" style="font-size:9px;padding:1px 5px;">Online</span>
+                        }
+                      </div>
+                      <div style="font-size:10px;color:var(--text3);">
+                        {{ c.e || c.ph || 'No contact' }}
+                        @if (c.storeName || c.registeredStoreName) {
+                          · {{ c.storeName || c.registeredStoreName }}
+                        }
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -63,6 +73,7 @@
                     <a [routerLink]="['/app/customers', c.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View</a>
                     @if (isOwner()) {
                       <a [routerLink]="['/app/customers', c.id, 'edit']" class="btn btn-primary btn-xs" style="text-decoration:none;">Edit</a>
+                      <button (click)="deleteCustomer(c.id)" class="btn btn-secondary btn-xs" style="color:#ff5555;border-color:rgba(255,85,85,0.3);" title="Delete Customer">Delete</button>
                     }
                   </div>
                 </td>

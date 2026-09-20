@@ -123,14 +123,81 @@
           @if (!isQuickRegistering()) {
             <div>
               <label class="label">Select Existing Customer</label>
-              <select class="inp" [(ngModel)]="newCard().customerId">
-                <option [ngValue]="null">-- Select Customer --</option>
-                @for (cust of customers(); track cust.id) {
-                  <option [value]="cust.id">
-                    {{ cust.firstName }} {{ cust.lastName }} ({{ cust.phone }}) - Balance: {{ cust.pointsBalance || 0 }} pts
-                  </option>
+
+              <!-- Selected Customer Banner -->
+              @if (getSelectedCustomer()) {
+                <div style="margin-bottom:10px; padding:10px 14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:16px; color:var(--green);">✓</span>
+                    <div>
+                      <div style="font-size:13px; font-weight:700; color:var(--green);">
+                        {{ getSelectedCustomer().firstName }} {{ getSelectedCustomer().lastName }}
+                      </div>
+                      <div style="font-size:11px; color:var(--text3);">
+                        {{ getSelectedCustomer().phone || getSelectedCustomer().email || 'No phone/email' }}
+                        @if (getSelectedCustomer().loyaltyCardNo) {
+                          · <span class="mono">{{ getSelectedCustomer().loyaltyCardNo }}</span>
+                        }
+                        · Balance: {{ getSelectedCustomer().pointsBalance || 0 }} pts
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" (click)="selectCustomer(null)" class="btn btn-secondary btn-xs" style="font-size:10px;">Change</button>
+                </div>
+              }
+
+              <!-- Search Bar -->
+              <div style="position:relative; margin-bottom:8px;">
+                <input 
+                  type="text" 
+                  class="inp" 
+                  [ngModel]="customerSearchQuery()" 
+                  (ngModelChange)="customerSearchQuery.set($event)"
+                  placeholder="Search customer by name, phone, email, or loyalty #..."
+                  style="padding-left:36px;"
+                />
+                <span style="position:absolute; left:12px; bottom:11px; color:var(--text3); font-size:14px;">🔍</span>
+                @if (customerSearchQuery()) {
+                  <button 
+                    type="button" 
+                    (click)="customerSearchQuery.set('')" 
+                    style="position:absolute; right:10px; bottom:8px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:14px;">
+                    ✕
+                  </button>
                 }
-              </select>
+              </div>
+
+              <!-- Filtered Customer List -->
+              <div style="max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:var(--surface);">
+                @if (filteredCustomers.length === 0) {
+                  <div style="padding:16px; text-align:center; color:var(--text3); font-size:12px;">
+                    No customers found matching "{{ customerSearchQuery() }}".
+                  </div>
+                } @else {
+                  @for (cust of filteredCustomers; track cust.id) {
+                    <div 
+                      (click)="selectCustomer(cust.id)"
+                      style="padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;"
+                      [style.background]="newCard().customerId === cust.id ? 'var(--accent-d)' : 'transparent'">
+                      <div>
+                        <div style="font-size:12px; font-weight:600;" [style.color]="newCard().customerId === cust.id ? 'var(--accent)' : 'inherit'">
+                          {{ cust.firstName }} {{ cust.lastName }}
+                        </div>
+                        <div style="font-size:10px; color:var(--text3);">
+                          {{ cust.phone || cust.email || 'No phone/email' }}
+                        </div>
+                      </div>
+                      <div style="text-align:right;">
+                        <span class="mono" style="font-size:11px; font-weight:700; color:var(--text2);">{{ cust.pointsBalance || 0 }} pts</span>
+                        @if (newCard().customerId === cust.id) {
+                          <span style="font-size:10px; color:var(--accent); font-weight:700; margin-left:6px;">● Selected</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+
               <div style="font-size:11px; color:var(--text3); margin-top:6px;">
                 💡 Card transactions will automatically award points and post to this customer's Loyalty Ledger.
               </div>
@@ -208,6 +275,17 @@
               <option [value]="s.id">{{ s.name }}</option>
             }
           </select>
+        </div>
+      </div>
+
+      <!-- Activation Status Toggle -->
+      <div style="margin-top: 16px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:13px; color:var(--text1);">
+          <input type="checkbox" [(ngModel)]="newCard().activateNow" style="width:18px; height:18px; accent-color:#10b981;">
+          Activate Card Immediately
+        </label>
+        <div style="font-size:11px; color:var(--text3); margin-top:4px; margin-left:28px;">
+          By default, cards are issued in <strong>Deactivated</strong> status until manually activated by staff or cashier.
         </div>
       </div>
     </div>

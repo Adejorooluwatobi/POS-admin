@@ -63,7 +63,7 @@
       <app-status-stepper 
         [steps]="['Pending', 'UnderReview', 'Approved', 'PartiallyFulfilled', 'FullyFulfilled']" 
         [currentStatus]="requisition().status"
-        [failedStep]="requisition().status === 'PartiallyFulfilled' ? 'FullyFulfilled' : ''">
+        [failedStep]="requisition().status === 'Rejected' ? 'Rejected' : (requisition().status === 'Cancelled' ? 'Cancelled' : '')">
       </app-status-stepper>
     </div>
 
@@ -100,11 +100,13 @@
                   </div>
                 </td>
                 <td style="text-align:right; padding-right:24px;">
-                  <span *ngIf="item.quantityFulfilled >= item.quantityRequested" 
+                  <span *ngIf="item.quantityFulfilled >= item.quantityRequested || requisition().status === 'FullyFulfilled'" 
                         class="badge badge-green" style="font-size:9px; padding:3px 8px;">COMPLETED</span>
-                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && (requisition().status === 'PartiallyFulfilled' || requisition().status === 'FullyFulfilled' || requisition().status === 'Cancelled')" 
-                        class="badge" style="font-size:9px; padding:3px 8px; background:var(--surface2); color:var(--text3); border:1px solid var(--border);">COMPLETED</span>
-                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status !== 'PartiallyFulfilled' && requisition().status !== 'FullyFulfilled' && requisition().status !== 'Cancelled'" 
+                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status === 'PartiallyFulfilled'" 
+                        class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PARTIAL</span>
+                  <span *ngIf="(requisition().status === 'Cancelled' || requisition().status === 'Rejected') && item.quantityFulfilled < item.quantityRequested" 
+                        class="badge" style="font-size:9px; padding:3px 8px; background:var(--surface2); color:var(--text3); border:1px solid var(--border);">CANCELLED</span>
+                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status !== 'PartiallyFulfilled' && requisition().status !== 'FullyFulfilled' && requisition().status !== 'Cancelled' && requisition().status !== 'Rejected'" 
                         class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PENDING</span>
                 </td>
               </tr>

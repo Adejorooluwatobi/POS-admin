@@ -41,8 +41,10 @@ export class CustomersComponent implements OnInit {
         ph: c.phone,
         loy: c.loyaltyCardNo || 'N/A',
         tier: 'BRONZE',
-        pts: c.loyaltyPoints || 0,
-        spend: 0,
+        pts: c.pointsBalance !== undefined ? c.pointsBalance : (c.loyaltyPoints || 0),
+        spend: c.totalSpend || 0,
+        storeName: c.registeredStoreName || (c.isSelfRegistered ? 'Online' : 'In-Store'),
+        isSelfRegistered: c.isSelfRegistered,
         last: 'Recent'
       })));
     } catch (error) {

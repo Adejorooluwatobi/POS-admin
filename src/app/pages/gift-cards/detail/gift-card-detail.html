@@ -16,9 +16,15 @@
             <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
               Gift Card Specification
             </h1>
-            <span class="badge" [class.badge-green]="card()!.isActive" [class.badge-red]="!card()!.isActive">
-              {{ card()!.isActive ? 'ACTIVE' : 'DEACTIVATED' }}
-            </span>
+            @if (isCardExpired()) {
+              <span class="badge" style="background:rgba(100,116,139,0.25); color:#cbd5e1; border:1px solid #64748b; font-size:11px; padding:4px 10px; border-radius:12px; font-weight:700;">
+                ⚫ EXPIRED
+              </span>
+            } @else {
+              <span class="badge" [class.badge-green]="card()!.isActive" [class.badge-red]="!card()!.isActive">
+                {{ card()!.isActive ? 'ACTIVE' : 'DEACTIVATED' }}
+              </span>
+            }
           </div>
           <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
             Issued on {{ card()!.issuedAt | date:'mediumDate' }}
@@ -26,14 +32,23 @@
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button (click)="openRechargeModal()" class="btn btn-primary" style="display:flex; align-items:center; gap:6px;">
+          <button (click)="openRechargeModal()" class="btn btn-primary" [disabled]="!card()!.isActive || isCardExpired()" style="display:flex; align-items:center; gap:6px;">
             <span>💳</span> Top-up / Recharge
           </button>
           <button (click)="openTransferModal()" class="btn btn-secondary" style="display:flex; align-items:center; gap:6px;">
             <span>🔄</span> Transfer Balance
           </button>
-          <button (click)="toggleStatus()" class="btn btn-secondary" [disabled]="isUpdating()">
-            {{ card()!.isActive ? '🔒 Deactivate' : '🔓 Reactivate' }}
+          @if (!isCardExpired()) {
+            <button (click)="setStatus(!card()!.isActive)" class="btn btn-secondary" [disabled]="isUpdating()">
+              {{ card()!.isActive ? '🔒 Deactivate' : '🔓 Activate' }}
+            </button>
+          } @else {
+            <button class="btn btn-secondary" disabled title="Expired cards cannot be reactivated">
+              🔒 Locked (Expired)
+            </button>
+          }
+          <button (click)="openReplaceModal()" class="btn btn-secondary" style="display:flex; align-items:center; gap:6px; border-color:#f59e0b; color:#f59e0b;">
+            <span>🛡️</span> Replace Lost Card
           </button>
         </div>
       </div>
@@ -360,32 +375,164 @@
   <!-- Link Customer Modal -->
   @if (showLinkModal()) {
     <div class="modal-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;">
-      <div class="modal-card" style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:480px; width:100%; padding:24px;">
+      <div class="modal-card" style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:500px; width:100%; padding:24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
           <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text);">Link Customer Account</h3>
           <button (click)="showLinkModal.set(false)" style="background:none; border:none; color:var(--text3); font-size:20px; cursor:pointer;">×</button>
         </div>
 
-        <div style="font-size:12px; color:var(--text3); margin-bottom:14px;">
-          Select a customer to bind to Card <strong class="mono" style="color:var(--text);">{{ card()!.cardNumber }}</strong>.
+        <div style="font-size:12px; color:var(--text3); margin-bottom:16px;">
+          Select a customer to bind to Card <strong class="mono" style="color:var(--text);">{{ card()!.cardNumber }}</strong>. Card spend will automatically award points to this customer.
         </div>
 
-        <div>
-          <label class="label">Select Customer</label>
-          <select class="inp" [(ngModel)]="selectedCustomerId">
-            <option [ngValue]="null">-- Select Customer --</option>
-            @for (cust of customers(); track cust.id) {
-              <option [value]="cust.id">
-                {{ cust.firstName }} {{ cust.lastName }} ({{ cust.phone }})
-              </option>
+        <!-- Search Input -->
+        <div style="margin-bottom:12px; position:relative;">
+          <label class="label">Search Customer</label>
+          <input 
+            type="text" 
+            class="inp" 
+            [ngModel]="customerSearchQuery()" 
+            (ngModelChange)="customerSearchQuery.set($event)"
+            placeholder="Search by name, phone, email, or loyalty #..."
+            style="padding-left:36px;"
+          />
+          <span style="position:absolute; left:12px; bottom:11px; color:var(--text3); font-size:14px;">🔍</span>
+          @if (customerSearchQuery()) {
+            <button 
+              type="button" 
+              (click)="customerSearchQuery.set('')" 
+              style="position:absolute; right:10px; bottom:8px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:14px;">
+              ✕
+            </button>
+          }
+        </div>
+
+        <!-- Selected Customer Card -->
+        @if (getSelectedCustomer()) {
+          <div style="margin-bottom:12px; padding:10px 14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:16px; color:var(--green);">✓</span>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:var(--green);">
+                  {{ getSelectedCustomer().firstName }} {{ getSelectedCustomer().lastName }}
+                </div>
+                <div style="font-size:11px; color:var(--text3);">
+                  {{ getSelectedCustomer().phone || getSelectedCustomer().email || 'No phone/email' }}
+                  @if (getSelectedCustomer().loyaltyCardNo) {
+                    · <span class="mono">{{ getSelectedCustomer().loyaltyCardNo }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+            <button type="button" (click)="selectedCustomerId.set(null)" class="btn btn-secondary btn-xs" style="font-size:10px;">Change</button>
+          </div>
+        }
+
+        <!-- Customer Selection Results -->
+        <label class="label" style="font-size:11px; margin-bottom:6px;">Customers List ({{ filteredCustomers.length }})</label>
+        <div style="max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:var(--surface2);">
+          @if (filteredCustomers.length === 0) {
+            <div style="padding:20px; text-align:center; color:var(--text3); font-size:12px;">
+              No customers found matching "{{ customerSearchQuery() }}".
+            </div>
+          } @else {
+            @for (cust of filteredCustomers; track cust.id) {
+              <div 
+                (click)="selectCustomerForLink(cust.id)"
+                style="padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;"
+                [style.background]="selectedCustomerId() === cust.id ? 'var(--accent-d)' : 'transparent'">
+                <div>
+                  <div style="font-size:13px; font-weight:600;" [style.color]="selectedCustomerId() === cust.id ? 'var(--accent)' : 'inherit'">
+                    {{ cust.firstName }} {{ cust.lastName }}
+                    @if (cust.tier) {
+                      <span class="badge badge-dim" style="font-size:9px; padding:1px 5px; margin-left:4px;">{{ cust.tier }}</span>
+                    }
+                  </div>
+                  <div style="font-size:11px; color:var(--text3);">
+                    {{ cust.phone || cust.email || 'No phone/email' }}
+                    @if (cust.loyaltyCardNo) {
+                      · <span class="mono">{{ cust.loyaltyCardNo }}</span>
+                    }
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="mono" style="font-size:11px; font-weight:700; color:var(--text2);">
+                    {{ cust.pointsBalance || 0 }} pts
+                  </div>
+                  @if (selectedCustomerId() === cust.id) {
+                    <span style="font-size:11px; color:var(--accent); font-weight:700;">● Selected</span>
+                  }
+                </div>
+              </div>
             }
-          </select>
+          }
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
           <button (click)="showLinkModal.set(false)" class="btn btn-secondary">Cancel</button>
-          <button (click)="submitLink()" [disabled]="isSubmittingLink()" class="btn btn-primary">
+          <button (click)="submitLink()" [disabled]="isSubmittingLink() || !selectedCustomerId()" class="btn btn-primary">
             {{ isSubmittingLink() ? 'Linking...' : 'Link Customer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Replace Lost Card Modal -->
+  @if (showReplaceModal()) {
+    <div class="modal-backdrop" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;">
+      <div class="modal-card" style="background:var(--surface); border:1px solid var(--border); border-radius:16px; max-width:520px; width:100%; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <h3 style="margin:0; font-size:18px; font-weight:800; color:var(--text);">🛡️ Replace Lost / Misplaced Card</h3>
+          <button (click)="showReplaceModal.set(false)" style="background:none; border:none; color:var(--text3); font-size:20px; cursor:pointer;">×</button>
+        </div>
+
+        <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:10px; padding:12px; margin-bottom:16px;">
+          <div style="font-size:12px; color:#fca5a5; font-weight:700;">Deactivating Lost Card: {{ card()!.cardNumber }}</div>
+          <div style="font-size:12px; color:var(--text2); margin-top:2px;">
+            Remaining balance of <strong>₦{{ (card()!.balance || 0).toLocaleString() }}</strong> will migrate to the new replacement card.
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px; margin-bottom:14px;">
+          <div>
+            <label class="label">Replacement Card Number (Auto-Generated if blank)</label>
+            <input type="text" class="inp mono" [(ngModel)]="replaceForm().newCardNumber" placeholder="Leave blank to auto-generate">
+          </div>
+          <div>
+            <label class="label">New Card PIN</label>
+            <input type="text" class="inp mono" [(ngModel)]="replaceForm().newCardPin" maxlength="4">
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label class="label">Reason for Replacement</label>
+          <input type="text" class="inp" [(ngModel)]="replaceForm().reason" placeholder="e.g. Reported lost by customer">
+        </div>
+
+        <!-- Admin Bypass Verification Toggle -->
+        <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:12px; margin-bottom:16px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#f59e0b; cursor:pointer;">
+            <input type="checkbox" [(ngModel)]="replaceForm().bypassVerification" style="accent-color:#f59e0b; width:16px; height:16px;">
+            Bypass Customer PIN / Face Verification (Portal Admin Override)
+          </label>
+          <div *ngIf="replaceForm().bypassVerification" style="margin-top:8px;">
+            <label class="label" style="color:#d97706;">Audit Log Override Reason</label>
+            <input type="text" class="inp" [(ngModel)]="replaceForm().bypassReason" placeholder="Reason for admin bypass...">
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text1); cursor:pointer;">
+            <input type="checkbox" [(ngModel)]="replaceForm().activateNewCard" style="accent-color:#10b981; width:16px; height:16px;">
+            Activate replacement card immediately
+          </label>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button (click)="showReplaceModal.set(false)" class="btn btn-secondary">Cancel</button>
+          <button (click)="submitReplace()" [disabled]="isSubmittingReplace()" class="btn btn-primary" style="background:#10b981;">
+            {{ isSubmittingReplace() ? 'Migrating Balance...' : 'Confirm Replacement & Transfer Balance' }}
           </button>
         </div>
       </div>
