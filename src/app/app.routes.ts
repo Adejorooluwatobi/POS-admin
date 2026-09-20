@@ -6,9 +6,13 @@ import { TransactionsComponent } from './pages/transactions/transactions';
 import { ProductsComponent } from './pages/products/products';
 import { InventoryComponent } from './pages/inventory/inventory';
 import { RequisitionsComponent } from './pages/inventory/requisitions/requisitions';
+import { RequisitionCreateComponent } from './pages/inventory/requisitions/create/requisition-create';
 import { RequisitionDetailComponent } from './pages/inventory/requisitions/detail/requisition-detail';
 import { OrdersComponent } from './pages/inventory/orders/orders';
+import { OrderCreateComponent } from './pages/inventory/orders/create/order-create';
 import { OrderDetailComponent } from './pages/inventory/orders/detail/order-detail';
+import { InventoryDetailComponent } from './pages/inventory/detail/inventory-detail';
+import { SeedInventoryComponent } from './pages/inventory/seed/seed-inventory';
 import { CustomersComponent } from './pages/customers/customers';
 import { StaffComponent } from './pages/staff/staff';
 import { SettingsComponent } from './pages/settings/settings';
@@ -44,9 +48,13 @@ export const routes: Routes = [
       { path: 'products', title: 'Products — RetailOS', component: ProductsComponent },
       { path: 'inventory', title: 'Inventory — RetailOS', component: InventoryComponent },
       { path: 'inventory/requisitions', title: 'Requisitions — RetailOS', component: RequisitionsComponent },
+      { path: 'inventory/requisitions/new', title: 'New Requisition — RetailOS', component: RequisitionCreateComponent },
       { path: 'inventory/requisitions/:id', title: 'Requisition Details — RetailOS', component: RequisitionDetailComponent },
       { path: 'inventory/orders', title: 'Movement Orders — RetailOS', component: OrdersComponent },
+      { path: 'inventory/orders/new', title: 'New Movement Order — RetailOS', component: OrderCreateComponent },
       { path: 'inventory/orders/:id', title: 'Order Details — RetailOS', component: OrderDetailComponent },
+      { path: 'inventory/seed', title: 'Seed Inventory — RetailOS', component: SeedInventoryComponent },
+      { path: 'inventory/:id', title: 'Stock Details — RetailOS', component: InventoryDetailComponent },
       { path: 'customers', title: 'Customers — RetailOS', component: CustomersComponent },
       { path: 'staff', title: 'Staff — RetailOS', component: StaffComponent },
       { path: 'settings', title: 'Settings — RetailOS', component: SettingsComponent },

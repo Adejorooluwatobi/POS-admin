@@ -1,6 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { StockMovementService } from '../../services/stock-movement.service';
 import { ProductService } from '../../services/product.service';
@@ -11,7 +12,7 @@ import { InventoryItem, Product, Store } from '../../models/pos.models';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterLink],
   templateUrl: './inventory.html'
 })
 export class InventoryComponent implements OnInit {
@@ -47,12 +48,20 @@ export class InventoryComponent implements OnInit {
   public isCrossStoreModalOpen = signal<boolean>(false);
 
   constructor(
+    private router: Router,
     private inventoryService: InventoryService,
     private stockService: StockMovementService,
     private productService: ProductService,
     private storeService: StoreService,
     private authService: AuthService
   ) {}
+
+  viewDetails(item: any) {
+    const id = item.variantId || item.id;
+    if (id) {
+      this.router.navigate(['/app/inventory', id]);
+    }
+  }
 
   ngOnInit() {
     this.checkUserRole();

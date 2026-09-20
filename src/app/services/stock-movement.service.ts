@@ -27,8 +27,8 @@ export class StockMovementService {
     return await firstValueFrom(this.http.post<any>(this.ordersUrl, order));
   }
 
-  async dispatchOrder(id: string): Promise<void> {
-    await firstValueFrom(this.http.post<void>(`${this.ordersUrl}/${id}/dispatch`, {}));
+  async dispatchOrder(id: string, data?: any): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.ordersUrl}/${id}/dispatch`, data || {}));
   }
 
   async receiveOrder(id: string, data: any): Promise<void> {

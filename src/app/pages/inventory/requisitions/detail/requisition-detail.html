@@ -220,9 +220,33 @@
             </div>
 
             <div style="display:grid;gap:10px;">
-              <div *ngFor="let pItem of plan.items" style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--surface2);border-radius:10px;">
-                <span style="font-size:11px;font-weight:600;">{{ pItem.sku }}</span>
-                <input type="number" [(ngModel)]="pItem.quantity" class="inp" style="width:60px;padding:4px;text-align:center;background:var(--surface);">
+              <div *ngFor="let pItem of plan.items" style="padding:10px;background:var(--surface2);border-radius:10px;display:grid;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <span style="font-size:12px;font-weight:700;color:var(--text1);">{{ pItem.variantName || pItem.sku }}</span>
+                    <div style="font-size:10px;color:var(--text3);">SKU: {{ pItem.sku }}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:700;">Qty:</label>
+                    <input type="number" min="0" [(ngModel)]="pItem.quantity" class="inp" style="width:70px;padding:4px;text-align:center;font-weight:700;background:var(--surface);">
+                  </div>
+                </div>
+
+                <!-- Batch / Mfg / Exp date inputs when allocating stock -->
+                <div *ngIf="pItem.quantity > 0" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;padding-top:6px;border-top:1px dashed var(--border);">
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Batch / Lot #</label>
+                    <input type="text" [(ngModel)]="pItem.batchNumber" placeholder="LOT-..." class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Prod Date</label>
+                    <input type="date" [(ngModel)]="pItem.productionDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Exp Date</label>
+                    <input type="date" [(ngModel)]="pItem.expiryDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                </div>
               </div>
             </div>
           </div>

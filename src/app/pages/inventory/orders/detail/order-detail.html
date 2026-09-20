@@ -96,6 +96,48 @@
               <div style="font-weight:800;font-size:13px;color:var(--text1);">{{ order().destinationStoreName }}</div>
               <div class="label" style="font-size:9px;">Destination</div>
             </div>
+        </div>
+
+        <!-- Carrier & Transport Logistics -->
+        <div class="card" *ngIf="order().driverName || order().vehiclePlateNumber || order().estimatedDeliveryTime || order().notes" style="padding:20px 24px; background:var(--surface);">
+          <div style="font-size:12px;font-weight:800;color:var(--text1);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <span>🚛</span> Carrier & Transport Details
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;">
+            <div *ngIf="order().driverName">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Driver Name</div>
+              <div style="font-weight:700;font-size:14px;color:var(--text1);display:flex;align-items:center;gap:6px;">
+                <span>👤</span> {{ order().driverName }}
+              </div>
+            </div>
+
+            <div *ngIf="order().driverPhone">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Driver Phone</div>
+              <div style="font-weight:700;font-size:14px;color:var(--accent);">
+                <a [href]="'tel:' + order().driverPhone" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                  <span>📞</span> {{ order().driverPhone }}
+                </a>
+              </div>
+            </div>
+
+            <div *ngIf="order().vehiclePlateNumber">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Vehicle Plate #</div>
+              <div style="font-weight:800;font-size:14px;color:var(--text1);display:flex;align-items:center;gap:6px;" class="mono">
+                <span>🏷️</span> {{ order().vehiclePlateNumber }}
+              </div>
+            </div>
+
+            <div *ngIf="order().estimatedDeliveryTime">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Estimated Arrival (ETA)</div>
+              <div style="font-weight:700;font-size:14px;color:var(--amber);display:flex;align-items:center;gap:6px;">
+                <span>⏳</span> {{ order().estimatedDeliveryTime | date:'medium' }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="order().notes" style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;">
+            <span style="font-weight:700;color:var(--text3);text-transform:uppercase;font-size:10px;margin-top:1px;">Notes:</span>
+            <span style="white-space:pre-wrap;">{{ order().notes }}</span>
           </div>
         </div>
 
@@ -118,6 +160,17 @@
                 <td>
                   <div style="font-weight:700;color:var(--text1);">{{ item.variantName }}</div>
                   <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
+                  <div *ngIf="item.batchNumber || item.expiryDate" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
+                    <span *ngIf="item.batchNumber" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                      🏷️ <span class="mono">{{ item.batchNumber }}</span>
+                    </span>
+                    <span *ngIf="item.productionDate" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text2);display:inline-flex;align-items:center;gap:4px;">
+                      📅 Mfg: {{ item.productionDate | date:'mediumDate' }}
+                    </span>
+                    <span *ngIf="item.expiryDate" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:4px;padding:2px 6px;color:var(--red);font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                      ⏳ Exp: {{ item.expiryDate | date:'mediumDate' }}
+                    </span>
+                  </div>
                 </td>
                 <td style="text-align:center;font-weight:700;">
                   {{ formatQuantity(item.quantityOrdered, item) }}
@@ -161,6 +214,12 @@
               <div>
                 <div style="font-size:13px;font-weight:700;color:var(--text1);">Dispatched</div>
                 <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">{{ order().dispatchedAt | date:'short' }}</div>
+                <div *ngIf="order().driverName" style="font-size:11px;color:var(--text2);margin-top:3px;">
+                  Carrier: <span style="font-weight:700;">{{ order().driverName }}</span>
+                </div>
+                <div *ngIf="order().estimatedDeliveryTime" style="font-size:11px;color:var(--amber);margin-top:2px;font-weight:600;">
+                  ETA: {{ order().estimatedDeliveryTime | date:'short' }}
+                </div>
               </div>
             </div>
             <div style="display:flex;gap:16px;">
@@ -200,6 +259,10 @@
           <div style="font-weight:800;color:var(--text1);">{{ item.variantName }}</div>
           <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
           <div style="font-size:9px;font-weight:800;color:var(--text3);margin-top:4px;text-transform:uppercase;">Ordered: {{ item.quantityOrdered }}</div>
+          <div *ngIf="item.batchNumber || item.expiryDate" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;font-size:10px;">
+            <span *ngIf="item.batchNumber" style="color:var(--text2);font-weight:600;">Lot: {{ item.batchNumber }}</span>
+            <span *ngIf="item.expiryDate" style="color:var(--red);font-weight:600;">Exp: {{ item.expiryDate | date:'mediumDate' }}</span>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:8px;">
@@ -350,6 +413,61 @@
       <button (click)="isResolveModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
       <button (click)="submitResolve()" [disabled]="isResolving()" class="btn btn-primary" style="padding:12px 24px;">
         {{ isResolving() ? 'Reconciling...' : 'Confirm Resolution' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispatch Modal -->
+<div *ngIf="isDispatchModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:600px;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);background:var(--accent-d);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--accent);">Dispatch Shipment</div>
+        <div style="font-size:12px;color:var(--text3);">Enter transport, driver, and delivery estimates before dispatch</div>
+      </div>
+      <button (click)="isDispatchModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+
+    <div style="padding:24px;display:grid;gap:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Driver / Courier Name</label>
+          <input type="text" [(ngModel)]="dispatchDto.driverName" class="inp" placeholder="e.g. John Doe">
+        </div>
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Driver Phone Number</label>
+          <input type="tel" [(ngModel)]="dispatchDto.driverPhone" class="inp" placeholder="e.g. +1 (555) 019-2834">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Vehicle Plate Number</label>
+          <input type="text" [(ngModel)]="dispatchDto.vehiclePlateNumber" class="inp" placeholder="e.g. ABC-1234" style="text-transform:uppercase;">
+        </div>
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Dispatch Date & Time</label>
+          <input type="datetime-local" [(ngModel)]="dispatchDto.dispatchedAt" class="inp">
+        </div>
+      </div>
+
+      <div>
+        <label class="label" style="font-size:10px;margin-bottom:4px;">Estimated Time to Deliver (ETA)</label>
+        <input type="datetime-local" [(ngModel)]="dispatchDto.estimatedDeliveryTime" class="inp">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Estimated arrival time for the receiving store to prepare staff.</div>
+      </div>
+
+      <div>
+        <label class="label" style="font-size:10px;margin-bottom:4px;">Dispatch Notes & Shipping Instructions</label>
+        <textarea [(ngModel)]="dispatchDto.dispatchNotes" class="inp" rows="3" placeholder="e.g. Fragile cartons, keep refrigerated, driver contact instructions..."></textarea>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface2);">
+      <button (click)="isDispatchModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitDispatch()" [disabled]="isDispatching()" class="btn btn-primary" style="padding:12px 28px;">
+        {{ isDispatching() ? 'Dispatching...' : 'Confirm & Dispatch Shipment' }}
       </button>
     </div>
   </div>

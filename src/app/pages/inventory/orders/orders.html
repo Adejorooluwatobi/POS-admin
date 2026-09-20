@@ -4,9 +4,9 @@
       <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Movement Orders</div>
       <div style="font-size:12px;color:var(--text3);">Track inbound and outbound stock transfers between stores.</div>
     </div>
-    <button *ngIf="!isSuperAdmin()" (click)="openCreateModal()" class="btn btn-primary" style="padding:10px 20px;border-radius:12px;">
+    <a *ngIf="!isSuperAdmin()" routerLink="/app/inventory/orders/new" class="btn btn-primary" style="padding:10px 20px;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;">
       <span style="font-size:18px;margin-right:6px;">+</span> New Movement Order
-    </button>
+    </a>
   </div>
 
   <div class="card">
@@ -66,132 +66,6 @@
       <div style="font-size:50px;margin-bottom:20px;">🚚</div>
       <div style="font-size:18px;font-weight:800;color:var(--text1);">No Orders Tracked</div>
       <div style="font-size:13px;color:var(--text3);">Store transfers and HQ shipments will be listed here once created.</div>
-    </div>
-  </div>
-</div>
-
-<!-- CREATE MOVEMENT ORDER MODAL -->
-<div *ngIf="isCreateModalOpen()" class="modal-bg">
-  <div class="modal-box fade-up" style="max-width:700px;">
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
-      <div>
-        <div style="font-size:18px;font-weight:800;">New Movement Order</div>
-        <div style="font-size:11px;color:var(--text3);">Dispatch stock from HQ or transfer between stores</div>
-      </div>
-      <button (click)="closeCreateModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-    </div>
-
-    <div style="padding:24px;max-height:65vh;overflow-y:auto;display:grid;gap:20px;">
-      <!-- Order Type -->
-      <div>
-        <label class="label">Transfer Type</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div (click)="newOrder.type = 0; newOrder.sourceStoreId = null" 
-               [style.borderColor]="newOrder.type === 0 ? 'var(--accent)' : 'var(--border)'"
-               [style.background]="newOrder.type === 0 ? 'var(--accent-d)' : 'var(--surface2)'"
-               style="padding:14px;border-radius:10px;border:1px solid;cursor:pointer;display:flex;align-items:center;gap:10px;">
-            <span style="font-size:20px;">🏢</span>
-            <div>
-              <div style="font-size:12px;font-weight:700;">HQ to Store</div>
-              <div style="font-size:10px;color:var(--text3);">Dispatch central warehouse stock</div>
-            </div>
-          </div>
-          <div (click)="newOrder.type = 1" 
-               [style.borderColor]="newOrder.type === 1 ? 'var(--accent)' : 'var(--border)'"
-               [style.background]="newOrder.type === 1 ? 'var(--accent-d)' : 'var(--surface2)'"
-               style="padding:14px;border-radius:10px;border:1px solid;cursor:pointer;display:flex;align-items:center;gap:10px;">
-            <span style="font-size:20px;">🔄</span>
-            <div>
-              <div style="font-size:12px;font-weight:700;">Store to Store</div>
-              <div style="font-size:10px;color:var(--text3);">Transfer between retail outlets</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Route Selection -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-        <div>
-          <label class="label">Origin / Source</label>
-          <div *ngIf="newOrder.type === 0" class="inp" style="background:var(--surface2);display:flex;align-items:center;color:var(--text2);font-weight:600;">
-            🏢 Headquarters (HQ)
-          </div>
-          <select *ngIf="newOrder.type === 1" [(ngModel)]="newOrder.sourceStoreId" class="inp">
-            <option [ngValue]="null" disabled>Select Origin Store...</option>
-            <option *ngFor="let s of stores()" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="label">Destination Store</label>
-          <select [(ngModel)]="newOrder.destinationStoreId" class="inp">
-            <option value="" disabled>Select Destination Store...</option>
-            <option *ngFor="let s of stores()" [value]="s.id" [disabled]="newOrder.type === 1 && s.id === newOrder.sourceStoreId">
-              {{ s.name }} ({{ s.code }})
-            </option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Items Section -->
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <label class="label" style="margin:0;">Transfer Items</label>
-          <button (click)="addItem()" type="button" class="btn btn-secondary btn-xs" style="color:var(--accent);">+ Add Item</button>
-        </div>
-
-        <div style="display:grid;gap:10px;">
-          <div *ngFor="let item of newOrder.items; let i = index" 
-               style="display:flex;gap:12px;align-items:flex-end;background:var(--surface2);padding:12px;border-radius:12px;border:1px solid var(--border);">
-            <div style="flex:1;">
-              <label class="label" style="font-size:9px;">Product / Variant</label>
-              <select [(ngModel)]="item.variantId" (ngModelChange)="onProductSelect(item, $event)" class="inp">
-                <option value="" disabled>Select Product / SKU...</option>
-                <option *ngFor="let v of variants()" [value]="v.id">{{ v.name }} ({{ v.sku }})</option>
-              </select>
-            </div>
-            
-            <ng-container *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1; else singleUnit">
-              <div style="width:60px;" *ngIf="item.conversionFactor > 1">
-                <label class="label" style="font-size:9px;">Packs</label>
-                <input type="number" [(ngModel)]="item.packs" min="0" class="inp" style="text-align:center;font-weight:700;color:var(--text1);padding: 0 4px;">
-              </div>
-              <div style="width:60px;" *ngIf="item.singlesPerRoll > 1">
-                <label class="label" style="font-size:9px;">Rolls</label>
-                <input type="number" [(ngModel)]="item.rolls" min="0" class="inp" style="text-align:center;font-weight:700;color:var(--text1);padding: 0 4px;">
-              </div>
-              <div style="width:60px;">
-                <label class="label" style="font-size:9px;">Extras</label>
-                <input type="number" [(ngModel)]="item.singles" min="0" class="inp" style="text-align:center;font-weight:700;padding: 0 4px;">
-              </div>
-            </ng-container>
-            
-            <ng-template #singleUnit>
-              <div style="width:90px;">
-                <label class="label" style="font-size:9px;">Quantity</label>
-                <input type="number" [(ngModel)]="item.quantityOrdered" min="1" class="inp" style="text-align:center;font-weight:700;">
-              </div>
-            </ng-template>
-
-            <button (click)="removeItem(i)" [disabled]="newOrder.items.length === 1" type="button" class="btn btn-danger btn-xs" style="height:38px;padding:0 12px;">
-              &times;
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div>
-        <label class="label">Dispatch Notes (Optional)</label>
-        <textarea [(ngModel)]="newOrder.notes" class="inp" style="height:70px;resize:none;" placeholder="Delivery instructions, driver notes, or reason for transfer..."></textarea>
-      </div>
-    </div>
-
-    <div style="padding:20px 24px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:flex-end;gap:12px;">
-      <button (click)="closeCreateModal()" type="button" class="btn btn-secondary">Cancel</button>
-      <button (click)="submitCreateOrder()" [disabled]="isCreating()" type="button" class="btn btn-primary" style="padding:10px 24px;">
-        {{ isCreating() ? 'Creating...' : 'Create Movement Order' }}
-      </button>
     </div>
   </div>
 </div>

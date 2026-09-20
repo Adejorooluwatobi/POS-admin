@@ -20,6 +20,18 @@ export class OrderDetailComponent implements OnInit {
 
   public isSuperAdmin = signal<boolean>(false);
 
+  // Dispatch Modal
+  public isDispatchModalOpen = signal<boolean>(false);
+  public isDispatching = signal<boolean>(false);
+  public dispatchDto = {
+    driverName: '',
+    driverPhone: '',
+    vehiclePlateNumber: '',
+    dispatchedAt: '',
+    estimatedDeliveryTime: '',
+    dispatchNotes: ''
+  };
+
   // Receive Modal
   public isReceiveModalOpen = signal<boolean>(false);
   public isReceiving = signal<boolean>(false);
@@ -124,13 +136,46 @@ export class OrderDetailComponent implements OnInit {
     return this.isGeneral() || (ord.sourceStoreId && ord.sourceStoreId === this.userStoreId());
   }
 
-  async dispatch() {
-    if (!confirm('Dispatch this order now? Stock will be reserved/deducted from origin.')) return;
+  openDispatchModal() {
+    const now = new Date();
+    const localIso = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    
+    this.dispatchDto = {
+      driverName: this.order()?.driverName || '',
+      driverPhone: this.order()?.driverPhone || '',
+      vehiclePlateNumber: this.order()?.vehiclePlateNumber || '',
+      dispatchedAt: localIso,
+      estimatedDeliveryTime: this.order()?.estimatedDeliveryTime 
+        ? new Date(new Date(this.order().estimatedDeliveryTime).getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+        : '',
+      dispatchNotes: ''
+    };
+    this.isDispatchModalOpen.set(true);
+  }
+
+  dispatch() {
+    this.openDispatchModal();
+  }
+
+  async submitDispatch() {
+    this.isDispatching.set(true);
     try {
-      await this.stockService.dispatchOrder(this.order().id);
+      const payload = {
+        driverName: this.dispatchDto.driverName.trim() || null,
+        driverPhone: this.dispatchDto.driverPhone.trim() || null,
+        vehiclePlateNumber: this.dispatchDto.vehiclePlateNumber.trim() || null,
+        dispatchedAt: this.dispatchDto.dispatchedAt ? new Date(this.dispatchDto.dispatchedAt).toISOString() : new Date().toISOString(),
+        estimatedDeliveryTime: this.dispatchDto.estimatedDeliveryTime ? new Date(this.dispatchDto.estimatedDeliveryTime).toISOString() : null,
+        dispatchNotes: this.dispatchDto.dispatchNotes.trim() || null
+      };
+
+      await this.stockService.dispatchOrder(this.order().id, payload);
+      this.isDispatchModalOpen.set(false);
       this.loadOrder(this.order().id);
     } catch (error: any) {
       alert(`Dispatch failed: ${error.error?.message || error.message || 'Unknown error'}`);
+    } finally {
+      this.isDispatching.set(false);
     }
   }
 
@@ -153,6 +198,9 @@ export class OrderDetailComponent implements OnInit {
         sku: i.sku || i.variant?.sku || '',
         conversionFactor: sp,
         singlesPerRoll: sr,
+        batchNumber: i.batchNumber,
+        productionDate: i.productionDate,
+        expiryDate: i.expiryDate,
         quantityOrdered: i.quantityOrdered,
         quantityReceived: totalBase,
         packs: packs,

@@ -261,6 +261,11 @@ export interface InventoryOrder {
   dispatchedAt?: string;
   receivedAt?: string;
   approvedAt?: string;
+  estimatedDeliveryTime?: string;
+  driverName?: string;
+  driverPhone?: string;
+  vehiclePlateNumber?: string;
+  notes?: string;
   items: InventoryOrderItemLine[];
   disputeNotes?: string;
   disputePhotoUrl?: string;
@@ -274,6 +279,9 @@ export interface InventoryOrderItemLine {
   sku?: string;
   quantityOrdered: number;
   quantityReceived?: number;
+  batchNumber?: string;
+  productionDate?: string;
+  expiryDate?: string;
 }
 
 export interface StockRequisition {

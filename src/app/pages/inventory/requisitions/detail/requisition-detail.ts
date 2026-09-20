@@ -92,7 +92,10 @@ export class RequisitionDetailComponent implements OnInit {
         variantId: i.variantId,
         sku: i.sku,
         variantName: i.variantName,
-        quantity: i.quantityRequested
+        quantity: i.quantityRequested,
+        batchNumber: '',
+        productionDate: '',
+        expiryDate: ''
       }))
     }]);
   }
@@ -105,7 +108,10 @@ export class RequisitionDetailComponent implements OnInit {
         variantId: i.variantId,
         sku: i.sku,
         variantName: i.variantName,
-        quantity: 0
+        quantity: 0,
+        batchNumber: '',
+        productionDate: '',
+        expiryDate: ''
       }))
     }]);
   }
@@ -117,7 +123,10 @@ export class RequisitionDetailComponent implements OnInit {
           sourceStoreId: p.sourceStoreId || null,
           items: p.items.filter((i: any) => i.quantity > 0).map((i: any) => ({
             variantId: i.variantId,
-            quantity: i.quantity
+            quantity: i.quantity,
+            batchNumber: i.batchNumber?.trim() || null,
+            productionDate: i.productionDate ? new Date(i.productionDate).toISOString() : null,
+            expiryDate: i.expiryDate ? new Date(i.expiryDate).toISOString() : null
           }))
         })).filter(p => p.items.length > 0)
       };
