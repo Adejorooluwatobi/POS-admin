@@ -13,18 +13,19 @@ import { CommonModule } from '@angular/common';
         
         <!-- Step Circle -->
         <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
-          <div [style.background-color]="i <= currentStepIndex ? '#4f46e5' : '#ffffff'"
-               [style.color]="i <= currentStepIndex ? '#ffffff' : '#94a3b8'"
-               [style.border-color]="i <= currentStepIndex ? '#4f46e5' : '#e2e8f0'"
-               [style.box-shadow]="i <= currentStepIndex ? '0 10px 15px -3px rgba(79, 70, 229, 0.2)' : 'none'"
+          <div [style.background-color]="step === failedStep ? '#ef4444' : (i <= currentStepIndex ? '#4f46e5' : '#ffffff')"
+               [style.color]="step === failedStep || i <= currentStepIndex ? '#ffffff' : '#94a3b8'"
+               [style.border-color]="step === failedStep ? '#ef4444' : (i <= currentStepIndex ? '#4f46e5' : '#e2e8f0')"
+               [style.box-shadow]="step === failedStep ? '0 10px 15px -3px rgba(239, 68, 68, 0.2)' : (i <= currentStepIndex ? '0 10px 15px -3px rgba(79, 70, 229, 0.2)' : 'none')"
                style="width:36px; height:36px; border-radius:50%; border:2px solid; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; transition:all 0.3s ease; z-index:10;">
-            <span *ngIf="i < currentStepIndex">✓</span>
-            <span *ngIf="i >= currentStepIndex">{{ i + 1 }}</span>
+            <span *ngIf="step === failedStep">✗</span>
+            <span *ngIf="step !== failedStep && (i < currentStepIndex || (i === currentStepIndex && i === steps.length - 1))">✓</span>
+            <span *ngIf="step !== failedStep && !(i < currentStepIndex || (i === currentStepIndex && i === steps.length - 1))">{{ i + 1 }}</span>
           </div>
           
           <!-- Label -->
           <div style="position:absolute; bottom:-24px; width:max-content; font-size:9px; font-weight:800; text-transform:uppercase; tracking:0.1em; white-space:nowrap;"
-               [style.color]="i <= currentStepIndex ? '#4f46e5' : '#94a3b8'">
+               [style.color]="step === failedStep ? '#ef4444' : (i <= currentStepIndex ? '#4f46e5' : '#94a3b8')">
             {{ formatLabel(step) }}
           </div>
         </div>
@@ -41,6 +42,7 @@ import { CommonModule } from '@angular/common';
 export class StatusStepperComponent {
   @Input() steps: string[] = [];
   @Input() currentStatus: string = '';
+  @Input() failedStep: string = '';
 
   get currentStepIndex(): number {
     return this.steps.indexOf(this.currentStatus);

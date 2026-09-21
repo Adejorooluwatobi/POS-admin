@@ -21,6 +21,7 @@
               <th>REASON / TRANSACTION</th>
               <th style="text-align:right;">POINTS</th>
               <th style="text-align:right;">NEW BALANCE</th>
+              <th style="text-align:right;">ACTION</th>
             </tr>
           </thead>
           <tbody>
@@ -30,12 +31,14 @@
                   {{ entry.createdAt | date:'short' }}
                 </td>
                 <td>
-                  <div style="font-weight:700;font-size:13px;">{{ getCustomerName(entry.customerId) }}</div>
+                  <div style="font-weight:700;font-size:13px;">{{ getCustomerName(entry.customerId, entry) }}</div>
                 </td>
                 <td>
                   <div style="font-size:12px;">{{ entry.reason }}</div>
                   @if (entry.transactionId) {
-                    <div style="font-size:10px;color:var(--accent);font-weight:600;cursor:pointer;">View Tx #{{ entry.transactionId.substring(0,8) }}</div>
+                    <a [routerLink]="['/app/transactions', entry.transactionId]" style="font-size:10px;color:var(--accent);font-weight:600;text-decoration:none;display:inline-block;margin-top:2px;">
+                      View Tx #{{ entry.transactionId.substring(0,8) }} →
+                    </a>
                   }
                 </td>
                 <td style="text-align:right;">
@@ -46,11 +49,14 @@
                 <td style="text-align:right;font-weight:700;" class="mono">
                   {{ entry.balanceAfter }} pts
                 </td>
+                <td style="text-align:right;">
+                  <a [routerLink]="['/app/loyalty', entry.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View Audit</a>
+                </td>
               </tr>
             }
             @if (ledger().length === 0) {
               <tr>
-                <td colspan="5" style="text-align:center;padding:48px;color:var(--text3);">
+                <td colspan="6" style="text-align:center;padding:48px;color:var(--text3);">
                   No point transactions recorded yet.
                 </td>
               </tr>

@@ -1,0 +1,317 @@
+<div class="page-container" style="padding: 24px; max-width: 840px; margin: 0 auto;">
+  <!-- Breadcrumbs & Header -->
+  <div style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/gift-cards" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+        ← Back to Gift Cards
+      </a>
+      <span>/</span>
+      <span>Issue New Card</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+          Issue Card / Store Value
+        </h1>
+        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+          Issue anonymous walk-in prepaid cards or link directly to registered customer accounts to track loyalty ledger points.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSubmitting()">
+          Cancel
+        </button>
+        <button (click)="issueCard()" class="btn btn-primary" [disabled]="isSubmitting()" style="min-width: 150px;">
+          @if (isSubmitting()) {
+            <span style="display:flex; align-items:center; gap:8px; justify-content:center;">
+              <span class="spinner-sm"></span>
+              Issuing...
+            </span>
+          } @else {
+            Issue & Activate Card
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (errorMessage()) {
+    <div style="margin-bottom:20px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1.5px solid rgba(255,60,60,0.3); border-radius:12px; display:flex; align-items:flex-start; gap:12px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Blocked</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
+      </div>
+      <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
+    </div>
+  }
+
+  <div style="display:grid; gap: 24px;">
+    <!-- Card Preview Banner -->
+    <div class="card" style="padding: 24px; border-radius: 16px; background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%); border: 1px solid var(--border); position:relative; overflow:hidden;">
+      <div style="position:absolute; top:0; right:0; padding:15px; opacity:0.05; font-size:80px;">💳</div>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; font-weight:800; color:var(--accent); letter-spacing:0.05em; text-transform:uppercase;">
+            {{ authService.currentUser()?.businessName || 'RETAILOS' }} CARD
+          </span>
+          @if (cardMode() === 'linked') {
+            <span class="badge" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.3); font-size:11px; padding:2px 8px; border-radius:12px; font-weight:700;">
+              👤 Linked Customer
+            </span>
+          } @else {
+            <span class="badge" style="background:rgba(100,116,139,0.15); color:var(--text2); border:1px solid var(--border); font-size:11px; padding:2px 8px; border-radius:12px; font-weight:700;">
+              🚶 Anonymous Walk-In
+            </span>
+          }
+        </div>
+        <button class="btn btn-secondary btn-xs" (click)="regenerateNumber()" style="font-size:11px;">
+          🎲 New Number
+        </button>
+      </div>
+
+      <div class="mono" style="font-size:22px; font-weight:900; letter-spacing:0.12em; color:var(--text1); margin-bottom:16px;">
+        {{ newCard().cardNumber }}
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div style="font-size:10px; color:var(--text3); text-transform:uppercase;">Preloaded Balance</div>
+          <div class="mono" style="font-size:24px; font-weight:900; color:var(--green); margin-top:2px;">
+            ₦{{ (newCard().initialValue || 0).toLocaleString() }}
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px; color:var(--text3); text-transform:uppercase;">Security PIN</div>
+          <div class="mono" style="font-size:16px; font-weight:800; color:var(--text2); letter-spacing:0.1em;">
+            {{ newCard().pin }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Linkage Selection -->
+    <div class="card" style="padding: 20px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+      <div style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+        <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
+        Customer Registration & Loyalty Attachment
+      </div>
+
+      <div style="display:flex; gap:16px; margin-bottom:16px;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; color:var(--text);">
+          <input type="radio" name="cardMode" value="anonymous" [checked]="cardMode() === 'anonymous'" (change)="cardMode.set('anonymous')" style="accent-color:var(--accent);">
+          Anonymous Walk-In Card (No Registration)
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:600; color:var(--text);">
+          <input type="radio" name="cardMode" value="linked" [checked]="cardMode() === 'linked'" (change)="cardMode.set('linked')" style="accent-color:var(--accent);">
+          Link to Registered Customer (Track Loyalty Ledger)
+        </label>
+      </div>
+
+      @if (cardMode() === 'linked') {
+        <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:12px; font-weight:700; color:var(--text2);">Customer Details</span>
+            <button type="button" (click)="isQuickRegistering.set(!isQuickRegistering())" class="btn btn-secondary btn-xs" style="font-size:11px;">
+              {{ isQuickRegistering() ? '← Select Existing Customer' : '+ Quick Register New Customer' }}
+            </button>
+          </div>
+
+          @if (!isQuickRegistering()) {
+            <div>
+              <label class="label">Select Existing Customer</label>
+
+              <!-- Selected Customer Banner -->
+              @if (getSelectedCustomer()) {
+                <div style="margin-bottom:10px; padding:10px 14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:10px; display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:16px; color:var(--green);">✓</span>
+                    <div>
+                      <div style="font-size:13px; font-weight:700; color:var(--green);">
+                        {{ getSelectedCustomer().firstName }} {{ getSelectedCustomer().lastName }}
+                      </div>
+                      <div style="font-size:11px; color:var(--text3);">
+                        {{ getSelectedCustomer().phone || getSelectedCustomer().email || 'No phone/email' }}
+                        @if (getSelectedCustomer().loyaltyCardNo) {
+                          · <span class="mono">{{ getSelectedCustomer().loyaltyCardNo }}</span>
+                        }
+                        · Balance: {{ getSelectedCustomer().pointsBalance || 0 }} pts
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" (click)="selectCustomer(null)" class="btn btn-secondary btn-xs" style="font-size:10px;">Change</button>
+                </div>
+              }
+
+              <!-- Search Bar -->
+              <div style="position:relative; margin-bottom:8px;">
+                <input 
+                  type="text" 
+                  class="inp" 
+                  [ngModel]="customerSearchQuery()" 
+                  (ngModelChange)="customerSearchQuery.set($event)"
+                  placeholder="Search customer by name, phone, email, or loyalty #..."
+                  style="padding-left:36px;"
+                />
+                <span style="position:absolute; left:12px; bottom:11px; color:var(--text3); font-size:14px;">🔍</span>
+                @if (customerSearchQuery()) {
+                  <button 
+                    type="button" 
+                    (click)="customerSearchQuery.set('')" 
+                    style="position:absolute; right:10px; bottom:8px; background:none; border:none; color:var(--text3); cursor:pointer; font-size:14px;">
+                    ✕
+                  </button>
+                }
+              </div>
+
+              <!-- Filtered Customer List -->
+              <div style="max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:10px; background:var(--surface);">
+                @if (filteredCustomers.length === 0) {
+                  <div style="padding:16px; text-align:center; color:var(--text3); font-size:12px;">
+                    No customers found matching "{{ customerSearchQuery() }}".
+                  </div>
+                } @else {
+                  @for (cust of filteredCustomers; track cust.id) {
+                    <div 
+                      (click)="selectCustomer(cust.id)"
+                      style="padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.15s;"
+                      [style.background]="newCard().customerId === cust.id ? 'var(--accent-d)' : 'transparent'">
+                      <div>
+                        <div style="font-size:12px; font-weight:600;" [style.color]="newCard().customerId === cust.id ? 'var(--accent)' : 'inherit'">
+                          {{ cust.firstName }} {{ cust.lastName }}
+                        </div>
+                        <div style="font-size:10px; color:var(--text3);">
+                          {{ cust.phone || cust.email || 'No phone/email' }}
+                        </div>
+                      </div>
+                      <div style="text-align:right;">
+                        <span class="mono" style="font-size:11px; font-weight:700; color:var(--text2);">{{ cust.pointsBalance || 0 }} pts</span>
+                        @if (newCard().customerId === cust.id) {
+                          <span style="font-size:10px; color:var(--accent); font-weight:700; margin-left:6px;">● Selected</span>
+                        }
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+
+              <div style="font-size:11px; color:var(--text3); margin-top:6px;">
+                💡 Card transactions will automatically award points and post to this customer's Loyalty Ledger.
+              </div>
+            </div>
+          } @else {
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+              <div>
+                <label class="label">First Name <span style="color:var(--red);">*</span></label>
+                <input class="inp" [(ngModel)]="quickCustomer().firstName" placeholder="e.g. Adebayo">
+              </div>
+              <div>
+                <label class="label">Last Name <span style="color:var(--red);">*</span></label>
+                <input class="inp" [(ngModel)]="quickCustomer().lastName" placeholder="e.g. Ogunlesi">
+              </div>
+              <div>
+                <label class="label">Phone Number <span style="color:var(--red);">*</span></label>
+                <input class="inp" [(ngModel)]="quickCustomer().phone" placeholder="e.g. 08012345678">
+              </div>
+              <div>
+                <label class="label">Email Address (Optional)</label>
+                <input class="inp" type="email" [(ngModel)]="quickCustomer().email" placeholder="customer@example.com">
+              </div>
+            </div>
+            <div style="font-size:11px; color:var(--green); margin-top:8px;">
+              ✓ The customer will be registered and immediately linked to this new card upon submission.
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Configuration & Payment Parameters -->
+    <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+      <div style="font-size: 13px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
+        <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
+        Financial & Card Parameters
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <label class="label">Initial Loaded Amount (₦) <span style="color:var(--red);">*</span></label>
+          <input type="number" class="inp mono" [(ngModel)]="newCard().initialValue" placeholder="0.00" style="font-size:16px; font-weight:700;">
+        </div>
+        <div>
+          <label class="label">4-Digit Security PIN <span style="color:var(--red);">*</span></label>
+          <input type="text" maxlength="4" class="inp mono" [(ngModel)]="newCard().pin" placeholder="e.g. 1234">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+        <div>
+          <label class="label">Payment Tendered Method</label>
+          <select class="inp" [(ngModel)]="newCard().paymentMethod">
+            <option value="Cash">Cash</option>
+            <option value="BankTransfer">Bank Transfer</option>
+            <option value="Card">POS Terminal / Debit Card</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Payment Reference / Session ID</label>
+          <input class="inp" [(ngModel)]="newCard().reference" placeholder="e.g. TX-98402 / Cash at counter">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+        <div>
+          <label class="label">Expiration Date</label>
+          <input type="date" class="inp" [(ngModel)]="newCard().expiresAt">
+        </div>
+        <div>
+          <label class="label">Issuing Store Branch</label>
+          <select class="inp" [(ngModel)]="newCard().issuingStoreId">
+            <option [ngValue]="null">Headquarters / All Branches</option>
+            @for (s of stores(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Activation Status Toggle -->
+      <div style="margin-top: 16px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:700; font-size:13px; color:var(--text1);">
+          <input type="checkbox" [(ngModel)]="newCard().activateNow" style="width:18px; height:18px; accent-color:#10b981;">
+          Activate Card Immediately
+        </label>
+        <div style="font-size:11px; color:var(--text3); margin-top:4px; margin-left:28px;">
+          By default, cards are issued in <strong>Deactivated</strong> status until manually activated by staff or cashier.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .spinner-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>

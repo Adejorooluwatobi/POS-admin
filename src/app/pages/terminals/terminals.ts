@@ -44,7 +44,7 @@ export class TerminalsComponent implements OnInit {
     private authService: AuthService
   ) {
     const user = this.authService.currentUser();
-    this.isOwner.set(user?.role === 'SUPER_ADMIN');
+    this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'STORE_MANAGER');
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
     this.assignedStoreId.set(user?.store || null);
   }

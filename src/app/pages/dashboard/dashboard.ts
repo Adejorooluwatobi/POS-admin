@@ -3,6 +3,7 @@ import { CommonModule, NgClass } from '@angular/common';
 import { StoreService } from '../../services/store.service';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
+import { AnalyticsService } from '../../services/analytics.service';
 import { Store } from '../../models/pos.models';
 import { Chart, registerables } from 'chart.js';
 import { RouterModule } from '@angular/router';
@@ -18,9 +19,13 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('revChart') revChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('mixChart') mixChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('topProductsChart') topProductsCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('busiestHoursChart') busiestHoursCanvas!: ElementRef<HTMLCanvasElement>;
 
   private revChart?: Chart;
   private mixChart?: Chart;
+  private topProdChart?: Chart;
+  private busHoursChart?: Chart;
 
   public totalRevenue = signal<number>(0);
   public totalTx = signal<number>(0);
@@ -28,10 +33,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public lowStockCount = signal<number>(0);
   public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
+  
+  public profitMargin = signal<number>(0);
+  public grossProfit = signal<number>(0);
 
   constructor(
     private storeService: StoreService,
     private transactionService: TransactionService,
+    private analyticsService: AnalyticsService,
     public authService: AuthService
   ) {}
 
@@ -72,6 +81,16 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           this.totalTx.set(txList.length);
           this.totalRevenue.set(txList.reduce((acc: number, t: any) => acc + (t.grandTotal || t.totalAmount || 0), 0));
         }
+
+        try {
+          const pm = await this.analyticsService.getProfitMarginReport().toPromise();
+          if (pm) {
+            this.profitMargin.set(pm.profitMarginPercentage);
+            this.grossProfit.set(pm.grossProfit);
+          }
+        } catch (e) {
+          console.warn('Failed to load profit margin data', e);
+        }
       }
     } catch (error) {
       console.error('Failed to load dashboard data', error);
@@ -97,6 +116,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (this.revChart) this.revChart.destroy();
     if (this.mixChart) this.mixChart.destroy();
+    if (this.topProdChart) this.topProdChart.destroy();
+    if (this.busHoursChart) this.busHoursChart.destroy();
 
     if (this.revChartCanvas?.nativeElement) {
       // Calculate last 7 days real data
@@ -181,10 +202,72 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         });
       });
     }
+
+    // Top Products Chart
+    if (this.topProductsCanvas?.nativeElement) {
+      this.analyticsService.getTopSellingProducts(undefined, undefined, undefined, 5).subscribe({
+        next: (products) => {
+          this.topProdChart = new Chart(this.topProductsCanvas.nativeElement, {
+            type: 'bar',
+            data: {
+              labels: products.map(p => p.productName),
+              datasets: [{
+                label: 'Quantity Sold',
+                data: products.map(p => p.totalQuantitySold),
+                backgroundColor: '#10b981'
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
+                y: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } }
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // Busiest Hours Chart
+    if (this.busiestHoursCanvas?.nativeElement) {
+      this.analyticsService.getBusiestHours().subscribe({
+        next: (hours) => {
+          this.busHoursChart = new Chart(this.busiestHoursCanvas.nativeElement, {
+            type: 'line',
+            data: {
+              labels: hours.map(h => `${h.hourOfDay}:00`),
+              datasets: [{
+                label: 'Transactions',
+                data: hours.map(h => h.transactionCount),
+                borderColor: '#f5a623',
+                backgroundColor: '#f5a62333',
+                fill: true,
+                tension: 0.4
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
+                y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }
+              }
+            }
+          });
+        }
+      });
+    }
   }
 
   ngOnDestroy() {
     this.revChart?.destroy();
     this.mixChart?.destroy();
+    this.topProdChart?.destroy();
+    this.busHoursChart?.destroy();
   }
 }

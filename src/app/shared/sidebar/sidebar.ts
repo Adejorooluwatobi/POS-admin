@@ -74,7 +74,7 @@ export class SidebarComponent {
   getStoreName() {
     const user = this.authService.currentUser();
     if (user && user.store) {
-      return this.dataService.stores[user.store]?.name || '';
+      return this.dataService.stores[user.store]?.name || 'Store Assigned';
     }
     return '';
   }

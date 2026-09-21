@@ -1,6 +1,6 @@
 import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { StaffService } from '../../services/staff.service';
 import { StoreService } from '../../services/store.service';
 import { RoleService } from '../../services/role.service';
@@ -10,7 +10,7 @@ import { Staff, Store, Role } from '../../models/pos.models';
 @Component({
   selector: 'app-staff',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, RouterModule],
   templateUrl: './staff.html'
 })
 export class StaffComponent implements OnInit {
@@ -22,73 +22,7 @@ export class StaffComponent implements OnInit {
   public isLoading = signal<boolean>(false);
   public currentUser = signal<any>(null);
   public isStoreManager = signal<boolean>(false);
-
   public assignedStoreId = signal<string | null>(null);
-
-  public systemRoles = [
-    { id: 2, name: 'Store Manager', icon: '👔', key: 'StoreManager' },
-    { id: 5, name: 'Manager', icon: '💼', key: 'Manager' },
-    { id: 4, name: 'Supervisor', icon: '🕵️', key: 'Supervisor' },
-    { id: 3, name: 'Cashier', icon: '🛒', key: 'Cashier' }
-  ];
-
-  public selectedRoleSystemRole = computed(() => {
-    const roleId = this.selectedStaff().roleId;
-    if (!roleId) return null;
-    return this.roles().find(r => r.id === roleId)?.systemRole || null;
-  });
-
-  public filteredRoles = computed(() => {
-
-
-    const roles = this.roles();
-    const user = this.currentUser();
-    if (!user) return [];
-
-    // SUPER_ADMIN can create everything
-    if (user.role === 'SUPER_ADMIN') return roles;
-
-    // TENANT_ADMIN can create everything in tenant except SuperAdmin (0)
-    if (user.role === 'TENANT_ADMIN') {
-      return roles.filter(r => r.systemRole !== 0);
-    }
-
-    // MANAGER (General Manager) can create everything in tenant except SuperAdmin (0) and Manager (5)
-    if (user.role === 'MANAGER') {
-      return roles.filter(r => r.systemRole !== 0 && r.systemRole !== 5);
-    }
-
-    // STORE_MANAGER can create everything in tenant except SuperAdmin (0), Manager (5), and Store Manager (2)
-    if (user.role === 'STORE_MANAGER') {
-      return roles.filter(r => r.systemRole !== 0 && r.systemRole !== 5 && r.systemRole !== 2);
-    }
-
-
-    // SUPERVISOR can only create Cashier (3)
-    if (user.role === 'SUPERVISOR') {
-      return roles.filter(r => r.systemRole === 3);
-    }
-
-
-
-    return [];
-  });
-
-  // Modal State
-  public isModalOpen = signal<boolean>(false);
-  public modalMode = signal<'create' | 'edit' | 'view'>('create');
-  public saveError = signal<string | null>(null);
-  public selectedStaff = signal<Partial<Staff>>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    no: '',
-    roleId: '',
-    active: true,
-    hiredAt: new Date().toISOString().split('T')[0],
-    pin: '',
-    revenue: { daily: 0, weekly: 0, monthly: 0, yearly: 0, lifetime: 0 }
-  });
 
   constructor(
     private staffService: StaffService,
@@ -103,7 +37,6 @@ export class StaffComponent implements OnInit {
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
     this.assignedStoreId.set(user?.store || null);
   }
-
 
   ngOnInit() {
     this.loadStaff();
@@ -123,13 +56,11 @@ export class StaffComponent implements OnInit {
         if (user.role === 'CASHIER') {
           filteredItems = items.filter((s: any) => s.id === user.sub || s.email === user.email);
         } else if (user.role === 'SUPERVISOR') {
-          // Supervisors see themselves and Cashiers in their store
           filteredItems = items.filter((s: any) => 
             (s.id === user.sub || s.email === user.email) || 
             (s.storeId === user.store && s.systemRole === 3)
           );
         } else if (user.role === 'STORE_MANAGER') {
-          // Store Managers see everyone in their store
           filteredItems = items.filter((s: any) => s.storeId === user.store);
         }
       }
@@ -142,7 +73,7 @@ export class StaffComponent implements OnInit {
         active: s.isActive,
         hasPin: s.hasPin,
         hasPassword: s.hasPassword,
-        last: 'Never', // Placeholder
+        last: 'Never',
         sales: s.todayRevenue || 0,
         txCount: 0
       })));
@@ -165,168 +96,10 @@ export class StaffComponent implements OnInit {
   async loadRoles() {
     try {
       const response = await this.roleService.getRoles();
-      // Handle different response structures (array, {items: []}, {data: []})
       const rawRoles = Array.isArray(response) ? response : (response.items || response.data || []);
-      
-      const mapped = rawRoles.map((r: any) => ({
-        ...r,
-        systemRole: this.mapSystemRoleToId(r.systemRole)
-      }));
-
-      // If API returns roles, use them; otherwise fall back to built-in system roles
-      if (mapped.length > 0) {
-        this.roles.set(mapped);
-      } else {
-        this.useFallbackRoles();
-      }
+      this.roles.set(rawRoles);
     } catch (error) {
-      console.error('Failed to load roles, using fallback', error);
-      this.useFallbackRoles();
-    }
-  }
-
-  private useFallbackRoles() {
-    // Generate role options from the local systemRoles definition
-    // so the dropdown always has options even if the API is unavailable
-    const fallback = this.systemRoles.map(sr => ({
-      id: `system-${sr.id}`,
-      name: sr.name,
-      systemRole: sr.id,
-      isActive: true
-    }));
-    this.roles.set(fallback as any);
-  }
-
-  private mapSystemRoleToId(role: string | number): number {
-    if (typeof role === 'number') return role;
-    const found = this.systemRoles.find(sr => sr.key === role || sr.name === role);
-    return found ? found.id : 3; // Default to Cashier
-  }
-
-
-  openCreateModal() {
-    this.modalMode.set('create');
-    this.selectedStaff.set({
-      firstName: '',
-      lastName: '',
-      email: '',
-      no: '',
-      roleId: '',
-      active: true,
-      storeId: this.assignedStoreId() || '',
-      hiredAt: new Date().toISOString().split('T')[0],
-      pin: '',
-      password: ''
-    });
-    // Always reload roles when opening modal to ensure dropdown is populated
-    if (this.roles().length === 0) this.loadRoles();
-    this.saveError.set(null);
-    this.isModalOpen.set(true);
-  }
-
-
-  openEditModal(staff: Staff) {
-    this.modalMode.set('edit');
-    this.selectedStaff.set({ 
-      ...staff, 
-      pin: staff.hasPin ? '****' : '', 
-      password: staff.hasPassword ? '********' : '' 
-    });
-    this.saveError.set(null);
-    this.isModalOpen.set(true);
-  }
-
-  async openViewModal(staff: Staff) {
-    this.modalMode.set('view');
-    this.selectedStaff.set({ 
-      ...staff, 
-      pin: staff.hasPin ? '****' : '', 
-      password: staff.hasPassword ? '********' : '' 
-    });
-    this.isModalOpen.set(true);
-
-    // Fetch full stats
-    try {
-      const stats = await this.staffService.getStaffStats(staff.id!);
-      this.selectedStaff.set({ ...this.selectedStaff(), ...stats });
-    } catch (error) {
-      console.error('Failed to load staff stats', error);
-    }
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-  }
-
-  async saveStaff() {
-    const s = this.selectedStaff();
-    const user = this.authService.currentUser();
-    
-    // Find systemRole from selected roleId
-    const selectedRole = this.roles().find(r => r.id === s.roleId);
-    
-    let finalPin = undefined;
-    if (this.modalMode() === 'create') {
-      finalPin = s.pin ? s.pin : '1234';
-    } else {
-      finalPin = (s.pin && s.pin !== '****') ? s.pin : undefined;
-    }
-
-    let finalPassword = undefined;
-    if (s.password === '********') {
-      finalPassword = undefined;
-    } else if (s.password === '') {
-      finalPassword = '';
-    } else {
-      finalPassword = s.password;
-    }
-
-    const systemRole = selectedRole?.systemRole || 3;
-    
-    // If it's a General Manager (systemRole 5), force storeId to null
-    const finalStoreId = (systemRole === 5) ? null : s.storeId;
-
-    // Handle fallback role IDs (e.g. 'system-3') - send null roleId and rely on systemRole
-    const finalRoleId = s.roleId?.startsWith('system-') ? null : s.roleId;
-
-    const dto = {
-      firstName: s.firstName,
-      lastName: s.lastName,
-      email: s.email,
-      employeeNo: s.no,
-      roleId: finalRoleId,
-      systemRole: systemRole,
-      storeId: finalStoreId,
-      isActive: s.active,
-      hiredAt: s.hiredAt,
-      tenantId: user?.tenantId,
-      pin: finalPin,
-      password: finalPassword
-    };
-
-
-
-    try {
-      this.saveError.set(null);
-      if (this.modalMode() === 'create') {
-        await this.staffService.createStaff(dto);
-      } else if (this.modalMode() === 'edit' && s.id) {
-        await this.staffService.updateStaff(s.id, { ...dto, id: s.id });
-      }
-      this.closeModal();
-      this.loadStaff();
-    } catch (error: any) {
-      console.error('Failed to save staff', error);
-      let msg = error.error?.message || error.message || 'An unexpected error occurred.';
-      
-      const detail = error.error?.detail || '';
-      if (detail.includes('IX_Staff_EmployeeNo') || detail.includes('EmployeeNo')) {
-        msg = 'An employee with this Employee Number already exists. Please use a different one.';
-      } else if (detail.includes('IX_Staff_Email') || detail.includes('Email')) {
-        msg = 'An employee with this email address already exists.';
-      }
-
-      this.saveError.set(msg);
+      console.error('Failed to load roles', error);
     }
   }
 
@@ -336,7 +109,6 @@ export class StaffComponent implements OnInit {
     if (storeId && storeId === this.assignedStoreId()) return 'My Store';
     return 'Unknown';
   }
-
 
   getRoleName(roleId: string) {
     return this.roles().find(r => r.id === roleId)?.name || 'No Role';

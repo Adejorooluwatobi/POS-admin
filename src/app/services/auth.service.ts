@@ -108,6 +108,10 @@ export class AuthService {
     return 'Cashier';
   }
 
+  isSuperAdmin(): boolean {
+    return this.currentUser()?.role === 'SUPER_ADMIN';
+  }
+
   getStoreId(): string | null {
     return this.currentUser()?.store || null;
   }

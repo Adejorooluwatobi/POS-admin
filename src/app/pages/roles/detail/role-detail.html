@@ -1,0 +1,122 @@
+<div class="page-container" style="padding: 24px; max-width: 950px; margin: 0 auto;">
+  <!-- Breadcrumbs & Header -->
+  <div style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/roles" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+        ← Back to Roles
+      </a>
+      <span>/</span>
+      <span>Role Policy Details</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div style="display:flex; align-items:center; gap:16px;">
+        <div style="width: 52px; height: 52px; border-radius: 12px; background: rgba(99,102,241,0.12); border: 1.5px solid rgba(99,102,241,0.3); display:flex; align-items:center; justify-content:center; font-size: 26px;">
+          🛡️
+        </div>
+        <div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+              {{ role()?.name }}
+            </h1>
+            <span [class]="role()?.isActive ? 'badge badge-success' : 'badge badge-danger'" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+              {{ role()?.isActive ? 'Active' : 'Disabled' }}
+            </span>
+          </div>
+          <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+            System Role: <strong style="color:var(--text1);">{{ getSystemRoleName(role()?.systemRole) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <a [routerLink]="['/app/roles', role()?.id, 'edit']" class="btn btn-primary" style="display:flex; align-items:center; gap:8px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Edit Role & Permissions
+        </a>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div style="text-align:center; padding: 60px 0;">
+      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+      <div style="color: var(--text3); font-size: 14px;">Loading role details...</div>
+    </div>
+  } @else if (errorMessage()) {
+    <div style="padding: 24px; text-align:center; background:rgba(255,60,60,0.08); border-radius:12px; border:1px solid rgba(255,60,60,0.2);">
+      <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">Failed to load role</div>
+      <div style="color: var(--text2); font-size: 13px;">{{ errorMessage() }}</div>
+    </div>
+  } @else {
+    <!-- Quick Stats -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Permissions Granted</div>
+        <div style="font-size: 24px; font-weight: 800; color: var(--accent); margin-top: 4px;">
+          {{ getActivePermissionsCount() }} <span style="font-size: 13px; color: var(--text3); font-weight: 500;">/ 9 capabilities</span>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">System Authority Level</div>
+        <div style="font-size: 16px; font-weight: 800; color: var(--text1); margin-top: 6px;">
+          {{ getSystemRoleName(role()?.systemRole) }}
+        </div>
+      </div>
+
+      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Description</div>
+        <div style="font-size: 12px; color: var(--text2); margin-top: 6px; line-height: 1.4;">
+          {{ role()?.description || 'No specific description provided for this role.' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Permissions Matrix -->
+    <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
+      <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 20px;">
+        🛡️ Assigned Capabilities & Access Policies
+      </div>
+
+      <div style="display:grid; gap: 24px;">
+        @for (grp of permissionGroups; track grp.group) {
+          <div>
+            <div style="font-size: 12px; font-weight: 800; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);">
+              {{ grp.group }}
+            </div>
+
+            <div style="display:grid; gap: 10px;">
+              @for (p of grp.permissions; track p.key) {
+                <div style="display:flex; align-items:center; justify-content:space-between; padding: 12px 16px; border-radius: 10px; background: var(--surface2); border: 1px solid var(--border);">
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text1);">{{ p.label }}</div>
+                    <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">{{ p.desc }}</div>
+                  </div>
+
+                  <div>
+                    @if (hasPermission(p.key)) {
+                      <span class="badge badge-success" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;">
+                        ✓ Allowed
+                      </span>
+                    } @else {
+                      <span class="badge" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: var(--text3); background: var(--border);">
+                        ✕ Denied
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<style>
+  .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .badge-danger { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>

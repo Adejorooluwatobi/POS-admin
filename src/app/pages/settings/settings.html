@@ -1,25 +1,93 @@
 <div class="fade-up">
-  @if (isOwner()) {
-    <div class="card" style="text-align:center;padding:60px;border:1px dashed var(--border);background:var(--surface);">
-      <div style="font-size:32px;margin-bottom:16px;">⊘</div>
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">Configuration Restricted</div>
-      <div style="font-size:13px;color:var(--text3);max-width:300px;margin:0 auto;">
-        Super Admins can monitor all stores but cannot modify specific store operational settings. Please log in as a Store Manager.
-      </div>
+  @if (isLoading()) {
+    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
+      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading settings...</span>
     </div>
   } @else {
-    @if (isLoading()) {
-      <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-        <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-        <span style="margin-left:12px;font-size:13px;">Loading settings...</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
+      
+      <!-- Loyalty & Rewards Program Settings -->
+      <div class="card" style="padding:24px;grid-column: span 2;border:1px solid var(--border);background:var(--surface);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+            <div>
+              <div style="font-size:16px;font-weight:800;color:var(--text);">Loyalty & Rewards Program Configuration</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px;">Configure organization-wide loyalty points accrual, redemption values, and eligibility rules.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);">
+              <input type="checkbox" [(ngModel)]="loyaltySettings().loyaltyProgramEnabled" style="width:16px;height:16px;accent-color:var(--accent);">
+              Program Active
+            </label>
+          </div>
+        </div>
+
+        @if (loyaltySuccessMessage()) {
+          <div style="background:rgba(16,185,129,0.1);border:1px solid #10b981;color:#10b981;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:16px;">
+            ✓ {{ loyaltySuccessMessage() }}
+          </div>
+        }
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:20px;padding-top:8px;">
+          <div>
+            <label class="label">Points Accrual Spend Rate (₦ per Point)</label>
+            <div style="position:relative;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--text3);font-size:13px;">₦</span>
+              <input class="inp" type="number" step="10" min="1" [(ngModel)]="loyaltySettings().loyaltyPointsEarnRate" style="padding-left:28px;" placeholder="100">
+            </div>
+            <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
+              Spend needed to earn 1 loyalty point (e.g. ₦100 = 1 point).
+            </span>
+          </div>
+
+          <div>
+            <label class="label">Redemption Point Value (₦ per Point)</label>
+            <div style="position:relative;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--text3);font-size:13px;">₦</span>
+              <input class="inp" type="number" step="0.5" min="0.1" [(ngModel)]="loyaltySettings().loyaltyPointRedeemRate" style="padding-left:28px;" placeholder="1">
+            </div>
+            <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
+              Monetary value given per point redeemed (e.g. 1 point = ₦1).
+            </span>
+          </div>
+
+          <div>
+            <label class="label">Minimum Points to Redeem</label>
+            <input class="inp" type="number" step="10" min="0" [(ngModel)]="loyaltySettings().loyaltyMinRedemptionPoints" placeholder="50">
+            <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
+              Minimum point threshold required before points can be used.
+            </span>
+          </div>
+        </div>
+
+        <!-- Accrual Preview Pill -->
+        <div style="margin-top:20px;padding:12px 16px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div style="font-size:12px;color:var(--text2);">
+            <strong style="color:var(--text);">Example:</strong> A customer spending <strong>₦10,000</strong> earns 
+            <strong style="color:var(--accent);">{{ 10000 / (loyaltySettings().loyaltyPointsEarnRate || 100) | number:'1.0-0' }} points</strong>, 
+            worth <strong>₦{{ (10000 / (loyaltySettings().loyaltyPointsEarnRate || 100)) * (loyaltySettings().loyaltyPointRedeemRate || 1) | number:'1.2-2' }}</strong> in discounts.
+          </div>
+          <button (click)="saveLoyaltySettings()" [disabled]="isSavingLoyalty()" class="btn btn-primary" style="padding:8px 20px;">
+            {{ isSavingLoyalty() ? 'Saving...' : 'Save Loyalty Rules' }}
+          </button>
+        </div>
       </div>
-    } @else {
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+      <!-- Store Information (if not Super Admin) -->
+      @if (!isOwner()) {
         <div class="card" style="padding:24px;">
           <div style="font-size:15px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
             <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
             Store Information
           </div>
+          @if (storeSuccessMessage()) {
+            <div style="background:rgba(16,185,129,0.1);border:1px solid #10b981;color:#10b981;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:14px;">
+              ✓ {{ storeSuccessMessage() }}
+            </div>
+          }
           <div style="display:grid;gap:16px;">
             <div>
               <label class="label">Store Name</label>
@@ -38,7 +106,9 @@
               <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 000 0000">
             </div>
             <div style="padding-top:10px;">
-              <button (click)="saveChanges()" class="btn btn-primary">Save Store Details</button>
+              <button (click)="saveChanges()" [disabled]="isSavingStore()" class="btn btn-primary">
+                {{ isSavingStore() ? 'Saving...' : 'Save Store Details' }}
+              </button>
             </div>
           </div>
         </div>
@@ -65,12 +135,14 @@
               <input class="inp" type="number" value="7.5">
             </div>
             <div style="padding-top:10px;">
-              <button (click)="saveChanges()" class="btn btn-primary">Save Config</button>
+              <button (click)="saveChanges()" [disabled]="isSavingStore()" class="btn btn-primary">
+                {{ isSavingStore() ? 'Saving...' : 'Save Config' }}
+              </button>
             </div>
           </div>
         </div>
-      </div>
-    }
+      }
+    </div>
   }
 </div>
 

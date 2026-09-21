@@ -1,6 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { StockMovementService } from '../../services/stock-movement.service';
 import { ProductService } from '../../services/product.service';
@@ -11,7 +12,7 @@ import { InventoryItem, Product, Store } from '../../models/pos.models';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterLink],
   templateUrl: './inventory.html'
 })
 export class InventoryComponent implements OnInit {
@@ -47,12 +48,20 @@ export class InventoryComponent implements OnInit {
   public isCrossStoreModalOpen = signal<boolean>(false);
 
   constructor(
+    private router: Router,
     private inventoryService: InventoryService,
     private stockService: StockMovementService,
     private productService: ProductService,
     private storeService: StoreService,
     private authService: AuthService
   ) {}
+
+  viewDetails(item: any) {
+    const id = item.variantId || item.id;
+    if (id) {
+      this.router.navigate(['/app/inventory', id]);
+    }
+  }
 
   ngOnInit() {
     this.checkUserRole();
@@ -80,7 +89,7 @@ export class InventoryComponent implements OnInit {
 
   checkUserRole() {
     const role = this.authService.getSystemRole();
-    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager');
+    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager' || role === 'StoreManager');
   }
 
   async loadAlerts() {
@@ -111,14 +120,16 @@ export class InventoryComponent implements OnInit {
         n: i.variantName || 'Unknown Product',
         sku: i.sku || i.SKU,
         e: '📦',
+        storeName: i.storeName,
         oh: i.quantityOnHand,
         res: i.quantityReserved,
         ro: i.reorderPoint,
         roQty: i.reorderQty,
         singlesPerRoll: i.singlesPerRoll || 1,
         rollsPerPack: i.rollsPerPack || 1,
+        singlesPerPack: i.singlesPerPack || 1,
         s: i.quantityOnHand <= i.reorderPoint ? (i.quantityOnHand <= 0 ? 'OUT' : 'LOW') : 'OK',
-        formatted: this.formatStock(i.quantityOnHand, i.singlesPerRoll, i.rollsPerPack)
+        formatted: this.formatStock(i.quantityOnHand, i.singlesPerRoll, i.rollsPerPack, i.singlesPerPack)
       })));
     } catch (error) {
       console.error('Failed to load inventory', error);
@@ -186,10 +197,10 @@ export class InventoryComponent implements OnInit {
     }
   }
 
-  formatStock(total: number, sr: number | undefined, rp: number | undefined): string {
+  formatStock(total: number, sr: number | undefined, rp: number | undefined, sp: number | undefined): string {
     const singlesPerRoll = sr && sr > 0 ? sr : 1;
     const rollsPerPack = rp && rp > 0 ? rp : 1;
-    const singlesPerPack = singlesPerRoll * rollsPerPack;
+    const singlesPerPack = sp && sp > 0 ? sp : (singlesPerRoll * rollsPerPack);
 
     if (singlesPerPack <= 1 && singlesPerRoll <= 1) return `${total} Sgl`;
 

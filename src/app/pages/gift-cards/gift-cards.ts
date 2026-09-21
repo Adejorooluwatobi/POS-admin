@@ -1,6 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { GiftCardService } from '../../services/gift-card.service';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
@@ -9,7 +10,7 @@ import { GiftCard, Store } from '../../models/pos.models';
 @Component({
   selector: 'app-gift-cards',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, FormsModule, RouterModule],
   templateUrl: './gift-cards.html'
 })
 export class GiftCardsComponent implements OnInit {
@@ -17,17 +18,6 @@ export class GiftCardsComponent implements OnInit {
   public stores = signal<Store[]>([]);
   public isLoading = signal<boolean>(false);
   public isAdmin = signal<boolean>(false);
-
-  // Modal State
-  public isModalOpen = signal<boolean>(false);
-  public modalMode = signal<'issue' | 'view'>('issue');
-  public newCard = signal({
-    cardNumber: '',
-    initialValue: 0,
-    expiresAt: '',
-    pin: '',
-    issuingStoreId: null as string | null
-  });
 
   constructor(
     private giftCardService: GiftCardService,
@@ -69,63 +59,6 @@ export class GiftCardsComponent implements OnInit {
       console.error('Failed to load gift cards', error);
     } finally {
       this.isLoading.set(false);
-    }
-  }
-
-  openIssueModal() {
-    this.modalMode.set('issue');
-    this.newCard.set({
-      cardNumber: this.generateCardNumber(),
-      initialValue: 0,
-      expiresAt: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
-      pin: Math.floor(1000 + Math.random() * 9000).toString(),
-      issuingStoreId: null
-    });
-    this.isModalOpen.set(true);
-  }
-
-  generateCardNumber(): string {
-    const businessName = this.authService.currentUser()?.businessName || '';
-    const prefix = this.getTenantPrefix(businessName);
-    const digitsCount = 16 - prefix.length;
-    let digits = '';
-    for (let i = 0; i < digitsCount; i++) {
-      digits += Math.floor(Math.random() * 10).toString();
-    }
-    return prefix + digits;
-  }
-
-  private getTenantPrefix(businessName: string): string {
-    const name = (businessName || '').trim().toLowerCase();
-    if (name.includes('nevermind')) return 'NVMD';
-    if (name.includes('shoprite')) return 'SPR';
-
-    const consonants = name.split('').filter(c => /[a-z]/i.test(c) && !'aeiou'.includes(c));
-    if (consonants.length >= 3) {
-      const candidate = consonants.join('').toUpperCase();
-      return candidate.length > 4 ? candidate.substring(0, 4) : candidate;
-    }
-
-    const cleanName = name.split('').filter(c => /[a-z]/i.test(c)).join('').toUpperCase();
-    if (cleanName.length >= 3) {
-      return cleanName.length > 4 ? cleanName.substring(0, 4) : cleanName;
-    }
-
-    return 'GFT';
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-  }
-
-  async issueCard() {
-    try {
-      await this.giftCardService.issueGiftCard(this.newCard());
-      this.closeModal();
-      this.loadGiftCards();
-    } catch (error) {
-      console.error('Failed to issue gift card', error);
-      alert('Error issuing gift card');
     }
   }
 

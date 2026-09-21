@@ -26,10 +26,35 @@
         </div>
       </div>
 
-      <div *ngIf="isGeneral() && (requisition().status === 'Pending' || requisition().status === 'UnderReview')">
-        <button (click)="showPlanner.set(true)" class="btn btn-primary" style="padding:12px 24px;border-radius:12px;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button *ngIf="canCancel()" (click)="cancelRequisition()" class="btn btn-secondary" style="padding:10px 18px;border-radius:10px;">
+          Cancel Request
+        </button>
+        <button *ngIf="canApproveOrReject()" (click)="openRejectModal()" class="btn btn-danger" style="padding:10px 18px;border-radius:10px;">
+          Reject
+        </button>
+        <button *ngIf="canApproveOrReject()" (click)="showPlanner.set(true)" class="btn btn-primary" style="padding:10px 22px;border-radius:10px;">
           🛠️ Fulfillment Planner
         </button>
+      </div>
+    </div>
+
+    <!-- Rejection Notice Banner -->
+    <div *ngIf="requisition().status === 'Rejected'" class="card" style="padding:20px 24px;margin-bottom:24px;background:rgba(239,68,68,0.08);border:1px solid var(--red);display:flex;align-items:center;gap:16px;">
+      <span style="font-size:28px;">❌</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--red);">Requisition Rejected</div>
+        <div style="font-size:13px;color:var(--text1);margin-top:2px;">Reason: {{ requisition().rejectionReason || 'No reason provided.' }}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Reviewed on {{ requisition().reviewedAt | date:'medium' }}</div>
+      </div>
+    </div>
+
+    <!-- Cancelled Notice Banner -->
+    <div *ngIf="requisition().status === 'Cancelled'" class="card" style="padding:16px 24px;margin-bottom:24px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⚪</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--text2);">Request Cancelled</div>
+        <div style="font-size:11px;color:var(--text3);">This stock requisition was cancelled by the store manager.</div>
       </div>
     </div>
 
@@ -37,7 +62,8 @@
     <div class="card" style="padding:16px;margin-bottom:30px;">
       <app-status-stepper 
         [steps]="['Pending', 'UnderReview', 'Approved', 'PartiallyFulfilled', 'FullyFulfilled']" 
-        [currentStatus]="requisition().status">
+        [currentStatus]="requisition().status"
+        [failedStep]="requisition().status === 'Rejected' ? 'Rejected' : (requisition().status === 'Cancelled' ? 'Cancelled' : '')">
       </app-status-stepper>
     </div>
 
@@ -63,12 +89,24 @@
                   <div style="font-weight:700; color:var(--text1); font-size:14px;">{{ item.variantName }}</div>
                   <div style="font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-top:2px;">{{ item.sku }}</div>
                 </td>
-                <td style="text-align:center; font-weight:700; font-size:14px; color:var(--text2);">{{ item.quantityRequested }}</td>
-                <td style="text-align:center; font-weight:800; font-size:14px; color:var(--accent);">{{ item.quantityFulfilled }}</td>
+                <td style="text-align:center;">
+                  <div style="font-weight:700; font-size:14px; color:var(--text2);">
+                    {{ formatQuantity(item.quantityRequested, item) }}
+                  </div>
+                </td>
+                <td style="text-align:center;">
+                  <div style="font-weight:800; font-size:14px; color:var(--accent);">
+                    {{ formatQuantity(item.quantityFulfilled, item) }}
+                  </div>
+                </td>
                 <td style="text-align:right; padding-right:24px;">
-                  <span *ngIf="item.quantityFulfilled >= item.quantityRequested" 
-                        class="badge badge-green" style="font-size:9px; padding:3px 8px;">COMPLETE</span>
-                  <span *ngIf="item.quantityFulfilled < item.quantityRequested" 
+                  <span *ngIf="item.quantityFulfilled >= item.quantityRequested || requisition().status === 'FullyFulfilled'" 
+                        class="badge badge-green" style="font-size:9px; padding:3px 8px;">COMPLETED</span>
+                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status === 'PartiallyFulfilled'" 
+                        class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PARTIAL</span>
+                  <span *ngIf="(requisition().status === 'Cancelled' || requisition().status === 'Rejected') && item.quantityFulfilled < item.quantityRequested" 
+                        class="badge" style="font-size:9px; padding:3px 8px; background:var(--surface2); color:var(--text3); border:1px solid var(--border);">CANCELLED</span>
+                  <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status !== 'PartiallyFulfilled' && requisition().status !== 'FullyFulfilled' && requisition().status !== 'Cancelled' && requisition().status !== 'Rejected'" 
                         class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PENDING</span>
                 </td>
               </tr>
@@ -146,7 +184,7 @@
             </div>
             <div style="text-align:right;">
               <div class="label" style="font-size:9px;">Requested</div>
-              <div style="font-size:18px;font-weight:900;color:var(--accent);">{{ item.quantityRequested }}</div>
+              <div style="font-size:18px;font-weight:900;color:var(--accent);">{{ formatQuantity(item.quantityRequested, item) }}</div>
             </div>
           </div>
 
@@ -177,14 +215,40 @@
               <label class="label" style="font-size:9px;">Source Store</label>
               <select [(ngModel)]="plan.sourceStoreId" class="inp">
                 <option [ngValue]="null">Headquarters (Default)</option>
-                <option *ngFor="let s of getCrossStockForItem(requisition().items[0].variantId)" [value]="s.storeId">{{ s.storeName }}</option>
+                <option *ngFor="let s of stores()" [value]="s.id" [disabled]="s.id === requisition()?.requestingStoreId">
+                  {{ s.name }} ({{ s.code }})
+                </option>
               </select>
             </div>
 
             <div style="display:grid;gap:10px;">
-              <div *ngFor="let pItem of plan.items" style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:var(--surface2);border-radius:10px;">
-                <span style="font-size:11px;font-weight:600;">{{ pItem.sku }}</span>
-                <input type="number" [(ngModel)]="pItem.quantity" class="inp" style="width:60px;padding:4px;text-align:center;background:var(--surface);">
+              <div *ngFor="let pItem of plan.items" style="padding:10px;background:var(--surface2);border-radius:10px;display:grid;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <span style="font-size:12px;font-weight:700;color:var(--text1);">{{ pItem.variantName || pItem.sku }}</span>
+                    <div style="font-size:10px;color:var(--text3);">SKU: {{ pItem.sku }}</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:700;">Qty:</label>
+                    <input type="number" min="0" [(ngModel)]="pItem.quantity" class="inp" style="width:70px;padding:4px;text-align:center;font-weight:700;background:var(--surface);">
+                  </div>
+                </div>
+
+                <!-- Batch / Mfg / Exp date inputs when allocating stock -->
+                <div *ngIf="pItem.quantity > 0" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;padding-top:6px;border-top:1px dashed var(--border);">
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Batch / Lot #</label>
+                    <input type="text" [(ngModel)]="pItem.batchNumber" placeholder="LOT-..." class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Prod Date</label>
+                    <input type="date" [(ngModel)]="pItem.productionDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                  <div>
+                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Exp Date</label>
+                    <input type="date" [(ngModel)]="pItem.expiryDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -196,6 +260,33 @@
     <div style="padding:24px;border-top:1px solid var(--border);background:var(--surface2);display:flex;justify-content:flex-end;gap:12px;">
       <button (click)="showPlanner.set(false)" class="btn btn-secondary">Cancel</button>
       <button (click)="submitFulfillment()" class="btn btn-primary" style="padding:12px 32px;">Finalize & Create Orders</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rejection Modal -->
+<div *ngIf="isRejectModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width: 500px;">
+    <div style="padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+      <div>
+        <div style="font-size: 18px; font-weight: 800; color: var(--red);">Reject Requisition</div>
+        <div style="font-size: 12px; color: var(--text3);">Provide a reason for denying this stock request</div>
+      </div>
+      <button (click)="closeRejectModal()" style="background: none; border: none; color: var(--text3); font-size: 24px; cursor: pointer;">&times;</button>
+    </div>
+
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div>
+        <label class="label">Rejection Reason <span style="color: var(--red);">*</span></label>
+        <textarea [(ngModel)]="rejectionReason" class="inp" rows="4" placeholder="Explain why this requisition is being rejected (e.g., Insufficient stock at HQ, duplicate request)..."></textarea>
+      </div>
+    </div>
+
+    <div style="padding: 20px 24px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; justify-content: flex-end; gap: 12px;">
+      <button (click)="closeRejectModal()" class="btn btn-secondary" [disabled]="isRejecting()">Cancel</button>
+      <button (click)="submitReject()" class="btn btn-danger" [disabled]="isRejecting() || !rejectionReason.trim()">
+        {{ isRejecting() ? 'Rejecting...' : 'Confirm Rejection' }}
+      </button>
     </div>
   </div>
 </div>

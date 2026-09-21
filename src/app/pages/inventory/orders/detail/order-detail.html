@@ -16,7 +16,7 @@
             'badge-dim': order().status === 'Draft',
             'badge-accent': order().status === 'Dispatched',
             'badge-amber': order().status === 'Received',
-            'badge-green': order().status === 'Approved',
+            'badge-green': order().status === 'Approved' || order().status === 'Resolved',
             'badge-red': order().status === 'Disputed'
           }">{{ order().status }}</span>
         </div>
@@ -25,11 +25,13 @@
         </div>
       </div>
 
-      <div style="display:flex;gap:12px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <!-- Contextual Actions -->
-        <button *ngIf="order().status === 'Draft' && order().sourceStoreId === userStoreId()" (click)="dispatch()" class="btn btn-primary" style="padding:12px 24px;">Dispatch Order</button>
-        <button *ngIf="order().status === 'Dispatched' && order().destinationStoreId === userStoreId()" (click)="openReceiveModal()" class="btn btn-amber" style="padding:12px 24px;">Receive Stock</button>
-        <button *ngIf="order().status === 'Received' && (isGeneral() || order().destinationStoreId === userStoreId())" (click)="approve()" class="btn btn-primary" style="padding:12px 24px;background:var(--green);">Finalize & Approve</button>
+        <button *ngIf="canDispatch()" (click)="dispatch()" class="btn btn-primary" style="padding:12px 24px;">Dispatch Order</button>
+        <button *ngIf="canReceive()" (click)="openReceiveModal()" class="btn btn-amber" style="padding:12px 24px;">Receive Stock</button>
+        <button *ngIf="canApprove()" (click)="approve()" class="btn btn-primary" style="padding:12px 24px;background:var(--green);">Finalize & Approve</button>
+        <button *ngIf="canDispute()" (click)="openDisputeModal()" class="btn btn-danger" style="padding:12px 24px;">Raise Dispute</button>
+        <button *ngIf="canResolve()" (click)="openResolveModal()" class="btn btn-primary" style="padding:12px 24px;background:var(--accent);">Resolve Dispute</button>
         
         <!-- Referral Actions -->
         <div *ngIf="order().isReferredTransfer && !order().referralAccepted && order().sourceStoreId === userStoreId()" style="display:flex;gap:8px;">
@@ -39,10 +41,36 @@
       </div>
     </div>
 
+    <!-- Dispute Notice Banner -->
+    <div *ngIf="order().status === 'Disputed'" class="card" style="padding:20px 24px;margin-bottom:30px;background:rgba(239,68,68,0.08);border:1px solid var(--red);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+        <div style="display:flex;align-items:flex-start;gap:16px;">
+          <span style="font-size:28px;">⚠️</span>
+          <div>
+            <div style="font-size:16px;font-weight:800;color:var(--red);margin-bottom:4px;">Dispute Raised by Receiving Store</div>
+            <div style="font-size:13px;color:var(--text1);line-height:1.5;">{{ order().disputeNotes || 'No detailed reason provided.' }}</div>
+            <div *ngIf="order().disputePhotoUrl" style="margin-top:8px;">
+              <a [href]="order().disputePhotoUrl" target="_blank" class="btn btn-secondary btn-xs">View Evidence / Photo ↗</a>
+            </div>
+          </div>
+        </div>
+        <button *ngIf="canResolve()" (click)="openResolveModal()" class="btn btn-primary btn-sm" style="background:var(--red);white-space:nowrap;">Resolve Dispute</button>
+      </div>
+    </div>
+
+    <!-- Resolved Notice Banner -->
+    <div *ngIf="order().status === 'Resolved'" class="card" style="padding:16px 24px;margin-bottom:30px;background:rgba(245,158,11,0.08);border:1px solid var(--amber);display:flex;align-items:center;gap:12px;">
+      <span style="font-size:24px;">⚠️</span>
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--amber);">Dispute Resolved (Pending Your Approval)</div>
+        <div style="font-size:11px;color:var(--text3);">HQ/Source has proposed a resolution. Please review the updated quantities below and click "Finalize & Approve" to update your stock.</div>
+      </div>
+    </div>
+
     <!-- Status Stepper -->
     <div class="card" style="padding:16px;margin-bottom:30px;">
       <app-status-stepper 
-        [steps]="['Draft', 'Dispatched', 'Received', 'Approved']" 
+        [steps]="order().disputeNotes ? ['Draft', 'Dispatched', 'Received', 'Disputed', 'Resolved', 'Approved'] : ['Draft', 'Dispatched', 'Received', 'Approved']" 
         [currentStatus]="order().status">
       </app-status-stepper>
     </div>
@@ -68,6 +96,48 @@
               <div style="font-weight:800;font-size:13px;color:var(--text1);">{{ order().destinationStoreName }}</div>
               <div class="label" style="font-size:9px;">Destination</div>
             </div>
+        </div>
+
+        <!-- Carrier & Transport Logistics -->
+        <div class="card" *ngIf="order().driverName || order().vehiclePlateNumber || order().estimatedDeliveryTime || order().notes" style="padding:20px 24px; background:var(--surface);">
+          <div style="font-size:12px;font-weight:800;color:var(--text1);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+            <span>🚛</span> Carrier & Transport Details
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:16px;">
+            <div *ngIf="order().driverName">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Driver Name</div>
+              <div style="font-weight:700;font-size:14px;color:var(--text1);display:flex;align-items:center;gap:6px;">
+                <span>👤</span> {{ order().driverName }}
+              </div>
+            </div>
+
+            <div *ngIf="order().driverPhone">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Driver Phone</div>
+              <div style="font-weight:700;font-size:14px;color:var(--accent);">
+                <a [href]="'tel:' + order().driverPhone" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:6px;">
+                  <span>📞</span> {{ order().driverPhone }}
+                </a>
+              </div>
+            </div>
+
+            <div *ngIf="order().vehiclePlateNumber">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Vehicle Plate #</div>
+              <div style="font-weight:800;font-size:14px;color:var(--text1);display:flex;align-items:center;gap:6px;" class="mono">
+                <span>🏷️</span> {{ order().vehiclePlateNumber }}
+              </div>
+            </div>
+
+            <div *ngIf="order().estimatedDeliveryTime">
+              <div class="label" style="font-size:10px;margin-bottom:4px;">Estimated Arrival (ETA)</div>
+              <div style="font-weight:700;font-size:14px;color:var(--amber);display:flex;align-items:center;gap:6px;">
+                <span>⏳</span> {{ order().estimatedDeliveryTime | date:'medium' }}
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="order().notes" style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:6px;">
+            <span style="font-weight:700;color:var(--text3);text-transform:uppercase;font-size:10px;margin-top:1px;">Notes:</span>
+            <span style="white-space:pre-wrap;">{{ order().notes }}</span>
           </div>
         </div>
 
@@ -90,12 +160,33 @@
                 <td>
                   <div style="font-weight:700;color:var(--text1);">{{ item.variantName }}</div>
                   <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
+                  <div *ngIf="item.batchNumber || item.expiryDate" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
+                    <span *ngIf="item.batchNumber" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                      🏷️ <span class="mono">{{ item.batchNumber }}</span>
+                    </span>
+                    <span *ngIf="item.productionDate" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text2);display:inline-flex;align-items:center;gap:4px;">
+                      📅 Mfg: {{ item.productionDate | date:'mediumDate' }}
+                    </span>
+                    <span *ngIf="item.expiryDate" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:4px;padding:2px 6px;color:var(--red);font-weight:600;display:inline-flex;align-items:center;gap:4px;">
+                      ⏳ Exp: {{ item.expiryDate | date:'mediumDate' }}
+                    </span>
+                  </div>
                 </td>
-                <td style="text-align:center;font-weight:700;">{{ item.quantityOrdered }}</td>
-                <td style="text-align:center;font-weight:800;color:var(--accent);">{{ item.quantityReceived || '-' }}</td>
+                <td style="text-align:center;font-weight:700;">
+                  {{ formatQuantity(item.quantityOrdered, item) }}
+                </td>
+                <td style="text-align:center;font-weight:800;color:var(--accent);">
+                  <ng-container *ngIf="item.quantityReceivedBaseUnits !== null && item.quantityReceivedBaseUnits !== undefined">
+                    {{ formatQuantity(item.quantityReceivedBaseUnits, item) }}
+                  </ng-container>
+                  <ng-container *ngIf="(item.quantityReceivedBaseUnits === null || item.quantityReceivedBaseUnits === undefined) && item.quantityReceived !== null">
+                    {{ formatQuantity(item.quantityReceived, item) }}
+                  </ng-container>
+                  <span *ngIf="item.quantityReceived === null && item.quantityReceivedBaseUnits === null">-</span>
+                </td>
                 <td style="text-align:right;">
-                  <span *ngIf="item.quantityReceived === item.quantityOrdered" style="color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase;">Verified</span>
-                  <span *ngIf="item.quantityReceived < item.quantityOrdered" style="color:var(--red);font-size:10px;font-weight:800;text-transform:uppercase;">Shortage</span>
+                  <span *ngIf="(item.quantityReceivedBaseUnits ?? item.quantityReceived) === item.quantityOrdered" style="color:var(--green);font-size:10px;font-weight:800;text-transform:uppercase;">Verified</span>
+                  <span *ngIf="(item.quantityReceivedBaseUnits ?? item.quantityReceived) < item.quantityOrdered" style="color:var(--red);font-size:10px;font-weight:800;text-transform:uppercase;">Shortage</span>
                 </td>
               </tr>
             </tbody>
@@ -123,6 +214,12 @@
               <div>
                 <div style="font-size:13px;font-weight:700;color:var(--text1);">Dispatched</div>
                 <div style="font-size:10px;color:var(--text3);text-transform:uppercase;">{{ order().dispatchedAt | date:'short' }}</div>
+                <div *ngIf="order().driverName" style="font-size:11px;color:var(--text2);margin-top:3px;">
+                  Carrier: <span style="font-weight:700;">{{ order().driverName }}</span>
+                </div>
+                <div *ngIf="order().estimatedDeliveryTime" style="font-size:11px;color:var(--amber);margin-top:2px;font-weight:600;">
+                  ETA: {{ order().estimatedDeliveryTime | date:'short' }}
+                </div>
               </div>
             </div>
             <div style="display:flex;gap:16px;">
@@ -162,17 +259,216 @@
           <div style="font-weight:800;color:var(--text1);">{{ item.variantName }}</div>
           <div class="mono" style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
           <div style="font-size:9px;font-weight:800;color:var(--text3);margin-top:4px;text-transform:uppercase;">Ordered: {{ item.quantityOrdered }}</div>
+          <div *ngIf="item.batchNumber || item.expiryDate" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px;font-size:10px;">
+            <span *ngIf="item.batchNumber" style="color:var(--text2);font-weight:600;">Lot: {{ item.batchNumber }}</span>
+            <span *ngIf="item.expiryDate" style="color:var(--red);font-weight:600;">Exp: {{ item.expiryDate | date:'mediumDate' }}</span>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
-          <label class="label" style="margin:0;font-size:9px;">Received:</label>
-          <input type="number" [(ngModel)]="item.quantityReceived" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+          <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:8px;">
+            <div *ngIf="item.conversionFactor > 1">
+              <label class="label" style="margin:0;font-size:9px;">Packs:</label>
+              <input type="number" [(ngModel)]="item.packs" class="inp" style="width:60px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+            </div>
+            <div *ngIf="item.singlesPerRoll > 1">
+              <label class="label" style="margin:0;font-size:9px;">Rolls:</label>
+              <input type="number" [(ngModel)]="item.rolls" class="inp" style="width:60px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+            </div>
+            <div>
+              <label class="label" style="margin:0;font-size:9px;">Extras:</label>
+              <input type="number" [(ngModel)]="item.singles" class="inp" style="width:60px;text-align:center;font-weight:800;color:var(--amber);background:var(--surface);">
+            </div>
+          </div>
+          <div *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1">
+            <label class="label" style="margin:0;font-size:9px;">Received Qty:</label>
+            <input type="number" [(ngModel)]="item.quantityReceived" class="inp" style="width:80px;text-align:center;font-weight:800;color:var(--accent);background:var(--surface);">
+          </div>
         </div>
       </div>
     </div>
 
     <div style="padding:24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface2);">
       <button (click)="isReceiveModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
-      <button (click)="submitReceive()" class="btn btn-primary" style="background:var(--amber);padding:12px 24px;">Confirm & Save Receipt</button>
+      <button (click)="submitReceive()" [disabled]="isReceiving()" class="btn btn-primary" style="background:var(--amber);padding:12px 24px;">
+        {{ isReceiving() ? 'Saving...' : 'Confirm & Save Receipt' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispute Modal -->
+<div *ngIf="isDisputeModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:550px;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);background:rgba(239,68,68,0.08);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--red);">Raise Delivery Dispute</div>
+        <div style="font-size:12px;color:var(--text3);">Flag shortages, damage or discrepancies for resolution</div>
+      </div>
+      <button (click)="isDisputeModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+
+    <div style="padding:24px;display:grid;gap:20px;">
+      <div>
+        <label class="label">Dispute Reason / Detailed Notes *</label>
+        <textarea [(ngModel)]="disputeDto.notes" class="inp" style="height:100px;resize:none;" placeholder="Explain what items are damaged, missing, or why this shipment cannot be approved..."></textarea>
+      </div>
+
+      <div>
+        <label class="label">Evidence / Photo URL (Optional)</label>
+        <input [(ngModel)]="disputeDto.photoUrl" class="inp" placeholder="https://example.com/photos/damage-evidence.jpg">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Link to photo or document showing damaged delivery.</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+      <button (click)="isDisputeModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitDispute()" [disabled]="isDisputing()" class="btn btn-danger" style="padding:12px 24px;">
+        {{ isDisputing() ? 'Submitting...' : 'Submit Dispute' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Resolve Dispute Modal -->
+<div *ngIf="isResolveModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:700px;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);background:var(--accent-d);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--accent);">Resolve Delivery Dispute</div>
+        <div style="font-size:11px;color:var(--text3);">Set agreed quantities to reconcile store inventory and write-offs</div>
+      </div>
+      <button (click)="isResolveModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+
+    <div style="padding:24px;max-height:60vh;overflow-y:auto;display:grid;gap:20px;">
+      <!-- Dispute summary info -->
+      <div class="card" style="padding:16px;background:rgba(239,68,68,0.06);border:1px solid var(--red);">
+        <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;margin-bottom:4px;">Dispute Reason:</div>
+        <div style="font-size:13px;color:var(--text1);">{{ order().disputeNotes }}</div>
+      </div>
+
+      <div>
+        <label class="label">Reconcile Items</label>
+        <div style="display:grid;gap:12px;">
+          <div *ngFor="let item of resolveItems()" class="card" style="padding:16px;background:var(--surface2);display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-weight:800;font-size:14px;color:var(--text1);">{{ item.variantName }}</div>
+                <div class="mono" style="font-size:11px;color:var(--text3);">SKU: {{ item.sku }}</div>
+                <div style="font-size:11px;color:var(--text2);margin-top:4px;">
+                  Ordered: <span style="font-weight:700;">
+                    {{ formatQuantity(item.quantityOrdered, item) }}
+                  </span> | 
+                  Counted: <span style="font-weight:700;color:var(--accent);">
+                    <ng-container *ngIf="item.quantityReceivedBaseUnits !== null && item.quantityReceivedBaseUnits !== undefined; else fbRcv">
+                      {{ formatQuantity(item.quantityReceivedBaseUnits, item) }}
+                    </ng-container>
+                    <ng-template #fbRcv>
+                      {{ formatQuantity(item.quantityReceived, item) }}
+                    </ng-template>
+                  </span>
+                </div>
+              </div>
+
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1">
+                  <label class="label" style="font-size:9px;margin-bottom:2px;">Agreed Qty</label>
+                  <input type="number" [(ngModel)]="item.finalAgreedQuantity" min="0" class="inp" style="width:90px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                </div>
+                <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex;gap:8px;">
+                  <div *ngIf="item.conversionFactor > 1">
+                    <label class="label" style="font-size:9px;margin-bottom:2px;">Packs</label>
+                    <input type="number" [(ngModel)]="item.agreedPacks" min="0" class="inp" style="width:70px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                  </div>
+                  <div *ngIf="item.singlesPerRoll > 1">
+                    <label class="label" style="font-size:9px;margin-bottom:2px;">Rolls</label>
+                    <input type="number" [(ngModel)]="item.agreedRolls" min="0" class="inp" style="width:70px;text-align:center;font-weight:800;color:var(--green);background:var(--surface);">
+                  </div>
+                  <div>
+                    <label class="label" style="font-size:9px;margin-bottom:2px;">Extras</label>
+                    <input type="number" [(ngModel)]="item.agreedSingles" min="0" class="inp" style="width:70px;text-align:center;font-weight:800;color:var(--amber);background:var(--surface);">
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Shrinkage Reason (shown only if there is a shortage) -->
+            <div *ngIf="item.finalAgreedQuantity < item.quantityOrdered" style="width:100%;margin-top:12px;padding-top:12px;border-top:1px dashed var(--border2);">
+              <label class="label" style="font-size:10px;">Shortage Reason (Write-off)</label>
+              <select [(ngModel)]="item.resolutionReason" class="inp" style="font-size:12px;padding:6px 12px;height:auto;">
+                <option value="Damaged in Transit">Damaged in Transit</option>
+                <option value="Missing / Not Found">Missing / Not Found</option>
+                <option value="Expired">Expired</option>
+                <option value="Picking Error">Picking Error (Sender fault)</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);">
+      <button (click)="isResolveModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitResolve()" [disabled]="isResolving()" class="btn btn-primary" style="padding:12px 24px;">
+        {{ isResolving() ? 'Reconciling...' : 'Confirm Resolution' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dispatch Modal -->
+<div *ngIf="isDispatchModalOpen()" class="modal-bg">
+  <div class="modal-box fade-up" style="max-width:600px;">
+    <div style="padding:24px;border-bottom:1px solid var(--border);background:var(--accent-d);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--accent);">Dispatch Shipment</div>
+        <div style="font-size:12px;color:var(--text3);">Enter transport, driver, and delivery estimates before dispatch</div>
+      </div>
+      <button (click)="isDispatchModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+    </div>
+
+    <div style="padding:24px;display:grid;gap:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Driver / Courier Name</label>
+          <input type="text" [(ngModel)]="dispatchDto.driverName" class="inp" placeholder="e.g. John Doe">
+        </div>
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Driver Phone Number</label>
+          <input type="tel" [(ngModel)]="dispatchDto.driverPhone" class="inp" placeholder="e.g. +1 (555) 019-2834">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Vehicle Plate Number</label>
+          <input type="text" [(ngModel)]="dispatchDto.vehiclePlateNumber" class="inp" placeholder="e.g. ABC-1234" style="text-transform:uppercase;">
+        </div>
+        <div>
+          <label class="label" style="font-size:10px;margin-bottom:4px;">Dispatch Date & Time</label>
+          <input type="datetime-local" [(ngModel)]="dispatchDto.dispatchedAt" class="inp">
+        </div>
+      </div>
+
+      <div>
+        <label class="label" style="font-size:10px;margin-bottom:4px;">Estimated Time to Deliver (ETA)</label>
+        <input type="datetime-local" [(ngModel)]="dispatchDto.estimatedDeliveryTime" class="inp">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Estimated arrival time for the receiving store to prepare staff.</div>
+      </div>
+
+      <div>
+        <label class="label" style="font-size:10px;margin-bottom:4px;">Dispatch Notes & Shipping Instructions</label>
+        <textarea [(ngModel)]="dispatchDto.dispatchNotes" class="inp" rows="3" placeholder="e.g. Fragile cartons, keep refrigerated, driver contact instructions..."></textarea>
+      </div>
+    </div>
+
+    <div style="padding:20px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface2);">
+      <button (click)="isDispatchModalOpen.set(false)" class="btn btn-secondary">Cancel</button>
+      <button (click)="submitDispatch()" [disabled]="isDispatching()" class="btn btn-primary" style="padding:12px 28px;">
+        {{ isDispatching() ? 'Dispatching...' : 'Confirm & Dispatch Shipment' }}
+      </button>
     </div>
   </div>
 </div>

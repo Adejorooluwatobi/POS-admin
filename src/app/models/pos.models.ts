@@ -112,6 +112,7 @@ export interface InventoryItem {
   singlesPerRoll?: number;
   rollsPerPack?: number;
   formatted?: string;
+  storeName?: string;
 }
 
 export interface Customer {
@@ -127,6 +128,20 @@ export interface Customer {
   spend: number;
   last: string;
   active?: boolean;
+  identityType?: string;
+  identityNumber?: string;
+  maskedIdentityNumber?: string;
+  photoUrl?: string;
+  isIdentityVerified?: boolean;
+  livenessVerifiedAt?: string;
+  isSelfRegistered?: boolean;
+  storeName?: string;
+  registeredStoreId?: string;
+  registeredStoreName?: string;
+  registeredByStaffId?: string;
+  registeredByStaffName?: string;
+  totalSpend?: number;
+  totalVisits?: number;
 }
 
 export interface Staff {
@@ -232,8 +247,40 @@ export interface GiftCard {
   initialValue: number;
   expiresAt?: string;
   isActive: boolean;
+  notes?: string;
   issuedAt: string;
   issuingStoreId?: string | null;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  customerLoyaltyCardNo?: string | null;
+  customerPointsBalance?: number | null;
+}
+
+export interface GiftCardTransaction {
+  id: string;
+  giftCardId: string;
+  cardNumber: string;
+  type: 'Issuance' | 'TopUp' | 'Redemption' | 'TransferOut' | 'TransferIn';
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  paymentMethod?: string;
+  reference?: string;
+  storeId?: string;
+  storeName?: string;
+  staffId?: string;
+  staffName?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface LoyaltySettings {
+  loyaltyProgramEnabled: boolean;
+  loyaltyPointsEarnRate: number;
+  loyaltyPointRedeemRate: number;
+  loyaltyMinRedemptionPoints: number;
 }
 
 export interface LoyaltyLedgerEntry {
@@ -260,6 +307,11 @@ export interface InventoryOrder {
   dispatchedAt?: string;
   receivedAt?: string;
   approvedAt?: string;
+  estimatedDeliveryTime?: string;
+  driverName?: string;
+  driverPhone?: string;
+  vehiclePlateNumber?: string;
+  notes?: string;
   items: InventoryOrderItemLine[];
   disputeNotes?: string;
   disputePhotoUrl?: string;
@@ -273,6 +325,9 @@ export interface InventoryOrderItemLine {
   sku?: string;
   quantityOrdered: number;
   quantityReceived?: number;
+  batchNumber?: string;
+  productionDate?: string;
+  expiryDate?: string;
 }
 
 export interface StockRequisition {

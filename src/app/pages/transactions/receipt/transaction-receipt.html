@@ -1,0 +1,165 @@
+<div class="page-container" style="padding: 24px; max-width: 850px; margin: 0 auto;">
+  <!-- Header (Hidden on Print) -->
+  <div class="no-print" style="margin-bottom: 24px;">
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/transactions" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+        ← Back to Transactions
+      </a>
+      <span>/</span>
+      <span>Receipt {{ tx()?.id }}</span>
+    </div>
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+            Transaction Receipt
+          </h1>
+          <span [class]="'badge ' + getStatusClass(tx()?.status)" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+            {{ getStatusText(tx()?.status) }}
+          </span>
+        </div>
+        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+          Receipt Reference: <span class="mono" style="color:var(--text2); font-weight:700;">{{ tx()?.id }}</span>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button (click)="printReceipt()" class="btn btn-primary" style="display:flex; align-items:center; gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="no-print" style="text-align:center; padding: 60px 0;">
+      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
+      <div style="color: var(--text3); font-size: 14px;">Loading receipt data...</div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="no-print" style="padding: 24px; text-align:center; background:rgba(255,60,60,0.08); border-radius:12px; border:1px solid rgba(255,60,60,0.2);">
+      <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">Failed to load transaction</div>
+      <div style="color: var(--text2); font-size: 13px;">{{ errorMessage() }}</div>
+    </div>
+  } @else {
+    <!-- Receipt Printable Surface -->
+    <div class="receipt-printable card" style="padding: 32px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+      
+      <!-- Store & Receipt Info Header -->
+      <div style="border-bottom: 2px dashed var(--border); padding-bottom: 24px; margin-bottom: 24px; text-align:center;">
+        <div style="font-size: 22px; font-weight: 900; letter-spacing: -0.02em; color: var(--text1); text-transform:uppercase;">
+          {{ tx()?.storeName || 'Retail Store' }}
+        </div>
+        <div style="font-size: 12px; color: var(--text3); margin-top: 4px;">
+          Official Sales Receipt & Invoice
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; text-align:left; font-size: 12px;">
+          <div>
+            <div style="color:var(--text3); margin-bottom:2px;">TRANSACTION ID</div>
+            <div class="mono" style="font-weight:700; color:var(--text1);">{{ tx()?.id }}</div>
+            
+            <div style="color:var(--text3); margin-top:10px; margin-bottom:2px;">DATE & TIME</div>
+            <div style="font-weight:600; color:var(--text1);">{{ tx()?.createdAt | date:'medium' }}</div>
+          </div>
+
+          <div style="text-align:right;">
+            <div style="color:var(--text3); margin-bottom:2px;">CASHIER</div>
+            <div style="font-weight:700; color:var(--text1);">{{ tx()?.cashierName || 'Staff' }}</div>
+
+            <div style="color:var(--text3); margin-top:10px; margin-bottom:2px;">CUSTOMER</div>
+            <div style="font-weight:600; color:var(--text1);">{{ tx()?.customerName || 'Walk-in Customer' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Items Table -->
+      <div style="margin-bottom: 24px;">
+        <table class="tbl" style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1.5px solid var(--border); font-size: 11px; text-transform:uppercase; color:var(--text3);">
+              <th style="padding: 10px 0; text-align:left;">Item Description</th>
+              <th style="padding: 10px 0; text-align:center;">Qty</th>
+              <th style="padding: 10px 0; text-align:right;">Unit Price</th>
+              <th style="padding: 10px 0; text-align:right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of tx()?.items; track item.id) {
+              <tr style="border-bottom: 1px solid var(--border); font-size: 13px;">
+                <td style="padding: 12px 0;">
+                  <div style="font-weight: 700; color: var(--text1);">{{ item.variantName || item.productName || 'Item' }}</div>
+                  @if (item.sku) {
+                    <div class="mono" style="font-size: 11px; color: var(--text3);">SKU: {{ item.sku }}</div>
+                  }
+                </td>
+                <td style="padding: 12px 0; text-align:center; font-weight:600;">
+                  {{ item.quantity }}
+                </td>
+                <td class="mono" style="padding: 12px 0; text-align:right; color:var(--text2);">
+                  ₦{{ (item.unitPrice || 0) | number:'1.2-2' }}
+                </td>
+                <td class="mono" style="padding: 12px 0; text-align:right; font-weight:700; color:var(--text1);">
+                  ₦{{ (item.lineTotal || 0) | number:'1.2-2' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Financial Calculations -->
+      <div style="display:flex; justify-content:flex-end; margin-bottom: 24px;">
+        <div style="width: 100%; max-width: 320px; display:grid; gap: 8px;">
+          <div style="display:flex; justify-content:space-between; font-size: 13px; color: var(--text2);">
+            <span>Subtotal:</span>
+            <span class="mono" style="font-weight:600;">₦{{ (tx()?.subtotal || 0) | number:'1.2-2' }}</span>
+          </div>
+
+          @if ((tx()?.discountTotal || 0) > 0) {
+            <div style="display:flex; justify-content:space-between; font-size: 13px; color: var(--red);">
+              <span>Discount Applied:</span>
+              <span class="mono" style="font-weight:600;">-₦{{ tx()?.discountTotal | number:'1.2-2' }}</span>
+            </div>
+          }
+
+          @if ((tx()?.taxTotal || 0) > 0) {
+            <div style="display:flex; justify-content:space-between; font-size: 13px; color: var(--text2);">
+              <span>Tax / VAT:</span>
+              <span class="mono" style="font-weight:600;">₦{{ tx()?.taxTotal | number:'1.2-2' }}</span>
+            </div>
+          }
+
+          <div style="border-top: 2px solid var(--border); padding-top: 10px; margin-top: 4px; display:flex; justify-content:space-between; font-size: 18px; font-weight: 900; color: var(--text1);">
+            <span>Grand Total:</span>
+            <span class="mono" style="color:var(--accent);">₦{{ (tx()?.grandTotal || 0) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments Breakdown -->
+      <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+          💳 Payment Tendered
+        </div>
+
+        <div style="display:grid; gap: 8px;">
+          @for (pay of tx()?.payments; track pay.id) {
+            <div style="display:flex; justify-content:space-between; font-size: 13px;">
+              <span style="font-weight: 700; color: var(--text1);">{{ pay.method }}</span>
+              <span class="mono" style="font-weight: 700; color: #10b981;">₦{{ (pay.amount || 0) | number:'1.2-2' }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer Message -->
+      <div style="text-align:center; border-top: 1px dashed var(--border); padding-top: 20px; font-size: 12px; color: var(--text3);">
+        <p style="margin:0 0 4px 0; font-weight:600; color:var(--text2);">Thank you for your patronage!</p>
+        <p style="margin:0;">Goods sold in good condition are subject to standard return policy within 7 days.</p>
+      </div>
+    </div>
+  }
+</div>

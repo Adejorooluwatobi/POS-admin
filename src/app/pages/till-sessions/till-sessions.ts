@@ -1,6 +1,6 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TillService } from '../../services/till.service';
 import { TerminalService } from '../../services/terminal.service';
 import { StaffService } from '../../services/staff.service';
@@ -9,7 +9,7 @@ import { TillSession, Terminal, Staff } from '../../models/pos.models';
 @Component({
   selector: 'app-till-sessions',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule],
+  imports: [CommonModule, NgClass, RouterModule],
   templateUrl: './till-sessions.html'
 })
 export class TillSessionsComponent implements OnInit {
@@ -17,8 +17,6 @@ export class TillSessionsComponent implements OnInit {
   public terminals = signal<Terminal[]>([]);
   public staff = signal<Staff[]>([]);
   public isLoading = signal<boolean>(false);
-  public isModalOpen = signal<boolean>(false);
-  public selectedSession = signal<any>(null);
 
   constructor(
     private tillService: TillService,
@@ -69,26 +67,5 @@ export class TillSessionsComponent implements OnInit {
   getStaffName(staffId: string) {
     const s = this.staff().find(st => st.id === staffId);
     return s ? `${s.firstName} ${s.lastName}` : 'Unknown Staff';
-  }
-
-  async viewDetails(session: TillSession) {
-    if (!session.id) return;
-    this.selectedSession.set(session);
-    this.isModalOpen.set(true);
-
-    try {
-      const [details, progress] = await Promise.all([
-        this.tillService.getTillSessionById(session.id),
-        this.tillService.getTillSessionProgress(session.id)
-      ]);
-      this.selectedSession.set({ ...session, ...details, progress });
-    } catch (error) {
-      console.error('Failed to fetch session details', error);
-    }
-  }
-
-  closeModal() {
-    this.isModalOpen.set(false);
-    this.selectedSession.set(null);
   }
 }

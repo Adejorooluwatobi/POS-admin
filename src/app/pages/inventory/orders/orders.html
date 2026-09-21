@@ -1,7 +1,12 @@
 <div class="fade-up" style="padding:24px;">
-  <div style="margin-bottom:30px;">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Movement Orders</div>
-    <div style="font-size:12px;color:var(--text3);">Track inbound and outbound stock transfers between stores.</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:30px;">
+    <div>
+      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Movement Orders</div>
+      <div style="font-size:12px;color:var(--text3);">Track inbound and outbound stock transfers between stores.</div>
+    </div>
+    <a *ngIf="!isSuperAdmin()" routerLink="/app/inventory/orders/new" class="btn btn-primary" style="padding:10px 20px;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;">
+      <span style="font-size:18px;margin-right:6px;">+</span> New Movement Order
+    </a>
   </div>
 
   <div class="card">
@@ -27,25 +32,28 @@
               <span *ngIf="order.sourceStoreId === userStoreId()" style="color:var(--amber);display:flex;align-items:center;gap:4px;font-weight:600;font-size:11px;">
                 <span style="font-size:16px;">↑</span> Outbound
               </span>
+              <span *ngIf="order.sourceStoreId !== userStoreId() && order.destinationStoreId !== userStoreId()" style="color:var(--text3);font-size:11px;">
+                Internal Transfer
+              </span>
             </td>
             <td>
               <span class="badge" [ngClass]="{
                 'badge-dim': order.status === 'Draft',
                 'badge-accent': order.status === 'Dispatched',
                 'badge-amber': order.status === 'Received',
-                'badge-green': order.status === 'Approved',
+                'badge-green': order.status === 'Approved' || order.status === 'Resolved',
                 'badge-red': order.status === 'Disputed'
               }">{{ order.status }}</span>
             </td>
             <td style="font-size:11px;color:var(--text2);">
-              {{ order.sourceStoreName }} <span style="color:var(--text3);margin:0 4px;">→</span> {{ order.destinationStoreName }}
+              {{ order.sourceStoreName || 'Headquarters' }} <span style="color:var(--text3);margin:0 4px;">→</span> {{ order.destinationStoreName }}
             </td>
-            <td style="color:var(--text2);">{{ order.items.length }} SKU(s)</td>
+            <td style="color:var(--text2);">{{ order.items?.length || 0 }} SKU(s)</td>
             <td style="text-align:right;">
               <div style="display:flex;justify-content:flex-end;gap:8px;">
-                <button *ngIf="order.status === 'Draft' && order.sourceStoreId === userStoreId()" (click)="dispatch(order)" class="btn btn-primary btn-xs">Dispatch</button>
+                <button *ngIf="order.status === 'Draft' && (isGeneral() || order.sourceStoreId === userStoreId())" (click)="dispatch(order)" class="btn btn-primary btn-xs">Dispatch</button>
                 <button *ngIf="order.status === 'Dispatched' && order.destinationStoreId === userStoreId()" (click)="receive(order)" class="btn btn-amber btn-xs">Receive</button>
-                <button *ngIf="order.status === 'Received' && order.sourceStoreId === userStoreId()" (click)="approve(order)" class="btn btn-primary btn-xs" style="background:var(--green);">Approve</button>
+                <button *ngIf="order.status === 'Received' && order.destinationStoreId === userStoreId()" (click)="approve(order)" class="btn btn-primary btn-xs" style="background:var(--green);">Approve</button>
                 <a [routerLink]="['/app/inventory/orders', order.id]" class="btn btn-secondary btn-xs">View</a>
               </div>
             </td>
