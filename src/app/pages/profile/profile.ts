@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { StaffService } from '../../services/staff.service';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { StoreService } from '../../services/store.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,13 +13,16 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ProfileComponent implements OnInit {
   public user = signal<any>(null);
-  public isEditing = signal(false);
-  public isChangingPin = signal(false);
-  
+  public isEditing = signal<boolean>(false);
+  public isChangingPin = signal<boolean>(false);
+  public isLoading = signal<boolean>(false);
+  public isSaving = signal<boolean>(false);
+
   public profileForm = {
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    phone: ''
   };
 
   public pinForm = {
@@ -29,12 +31,12 @@ export class ProfileComponent implements OnInit {
     confirmPin: ''
   };
 
-  public statusMsg = signal<{text: string, type: 'success' | 'error'} | null>(null);
+  public statusMsg = signal<{ text: string; type: 'success' | 'error' } | null>(null);
 
   constructor(
     private authService: AuthService,
     private staffService: StaffService,
-    private http: HttpClient
+    private storeService: StoreService
   ) {}
 
   ngOnInit() {
@@ -42,60 +44,111 @@ export class ProfileComponent implements OnInit {
   }
 
   async loadProfile() {
+    this.isLoading.set(true);
     const currentUser = this.authService.currentUser();
-    if (!currentUser) return;
+    if (!currentUser) {
+      this.isLoading.set(false);
+      return;
+    }
 
     try {
-      const staff = await this.staffService.getStaffById(currentUser.sub);
-      this.user.set({ ...currentUser, ...staff });
-      
-      this.profileForm.firstName = staff.firstName || '';
-      this.profileForm.lastName = staff.lastName || '';
-      this.profileForm.email = staff.email || '';
-
-      if (staff.storeId) {
-        // Fetch store name
-        const store: any = await firstValueFrom(this.http.get<any>(`https://pos-saas-cl9g.onrender.com/api/stores/${staff.storeId}`));
-        this.user.update(u => ({ ...u, storeName: store?.name }));
+      let staff: any = null;
+      try {
+        staff = await this.staffService.getStaffById(currentUser.sub);
+      } catch (err) {
+        console.warn('Could not fetch staff record by sub ID, using token auth details', err);
       }
+
+      const combined = { ...currentUser, ...(staff || {}) };
+
+      const names = (combined.name || '').split(' ');
+      this.profileForm.firstName = combined.firstName || names[0] || '';
+      this.profileForm.lastName = combined.lastName || names.slice(1).join(' ') || '';
+      this.profileForm.email = combined.email || '';
+      this.profileForm.phone = combined.phone || '';
+
+      if (combined.storeId) {
+        try {
+          const store = await this.storeService.getStoreById(combined.storeId);
+          combined.storeName = store?.name || combined.storeId;
+        } catch (e) {
+          console.warn('Could not fetch assigned store name', e);
+        }
+      }
+
+      this.user.set(combined);
     } catch (e) {
       console.error('Failed to load profile details', e);
-      // Fallback to basic info from token
       this.user.set(currentUser);
-      const names = currentUser.name.split(' ');
-      this.profileForm.firstName = names[0] || '';
-      this.profileForm.lastName = names.slice(1).join(' ') || '';
-      this.profileForm.email = currentUser.email;
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
   async updateProfile() {
+    this.isSaving.set(true);
     this.statusMsg.set(null);
     try {
-      // Logic to update profile via staff service
-      // await this.staffService.updateStaff(this.user().sub, { ... });
-      this.statusMsg.set({ text: 'Profile updated successfully!', type: 'success' });
+      const u = this.user();
+      if (u && u.sub) {
+        await this.staffService.updateStaff(u.sub, {
+          firstName: this.profileForm.firstName,
+          lastName: this.profileForm.lastName,
+          email: this.profileForm.email,
+          phone: this.profileForm.phone
+        });
+      }
+
+      this.user.update(current => ({
+        ...current,
+        name: `${this.profileForm.firstName} ${this.profileForm.lastName}`.trim(),
+        email: this.profileForm.email,
+        phone: this.profileForm.phone
+      }));
+
+      this.statusMsg.set({ text: 'Personal profile credentials updated successfully!', type: 'success' });
       this.isEditing.set(false);
-    } catch (e) {
-      this.statusMsg.set({ text: 'Failed to update profile.', type: 'error' });
+    } catch (e: any) {
+      this.statusMsg.set({ text: e?.error?.message || 'Failed to update profile credentials.', type: 'error' });
+    } finally {
+      this.isSaving.set(false);
     }
   }
 
+  generateRandomPin() {
+    const random = Math.floor(1000 + Math.random() * 9000).toString();
+    this.pinForm.newPin = random;
+    this.pinForm.confirmPin = random;
+  }
+
   async changePin() {
-    if (this.pinForm.newPin !== this.pinForm.confirmPin) {
-      this.statusMsg.set({ text: 'New PINs do not match.', type: 'error' });
+    if (!this.pinForm.newPin || this.pinForm.newPin.length !== 4) {
+      this.statusMsg.set({ text: 'New PIN must be exactly 4 digits.', type: 'error' });
       return;
     }
 
+    if (this.pinForm.newPin !== this.pinForm.confirmPin) {
+      this.statusMsg.set({ text: 'New PIN and confirmation PIN do not match.', type: 'error' });
+      return;
+    }
+
+    this.isSaving.set(true);
     this.statusMsg.set(null);
     try {
-      // Verify current PIN and update to new PIN
-      // await this.staffService.changePin(this.user().sub, this.pinForm.currentPin, this.pinForm.newPin);
-      this.statusMsg.set({ text: 'PIN changed successfully!', type: 'success' });
+      const u = this.user();
+      if (u && u.sub) {
+        await this.staffService.updateStaff(u.sub, {
+          pin: this.pinForm.newPin
+        });
+      }
+
+      this.statusMsg.set({ text: 'POS Terminal Quick PIN updated successfully!', type: 'success' });
       this.isChangingPin.set(false);
       this.pinForm = { currentPin: '', newPin: '', confirmPin: '' };
     } catch (e: any) {
-      this.statusMsg.set({ text: e.error?.message || 'Failed to change PIN.', type: 'error' });
+      this.statusMsg.set({ text: e?.error?.message || 'Failed to update POS PIN.', type: 'error' });
+    } finally {
+      this.isSaving.set(false);
     }
   }
 }

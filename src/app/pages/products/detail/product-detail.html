@@ -1,36 +1,40 @@
-<div class="page-container" style="padding: 24px; max-width: 1100px; margin: 0 auto;">
+<div class="fade-up" style="max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 4px 0 32px;">
+
   <!-- Breadcrumbs & Header -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/products" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/products" style="color: var(--accent); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px;">
         ← Back to Products Catalog
       </a>
       <span>/</span>
-      <span>Product Details</span>
+      <span style="color: var(--text);">Product Specification</span>
     </div>
 
     @if (product()) {
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
         <div>
-          <div style="display:flex; align-items:center; gap:12px;">
-            <h1 style="font-size: 26px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <h1 class="font-headline" style="font-size: 24px; font-weight: 800; color: var(--text); margin: 0;">
               {{ product().name }}
             </h1>
             <span class="badge" [class.badge-green]="product().isActive" [class.badge-red]="!product().isActive">
               {{ product().isActive ? 'ACTIVE' : 'INACTIVE' }}
             </span>
           </div>
-          <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-            Brand: <strong style="color:var(--text2);">{{ product().brand || 'RetailOS' }}</strong> · SKU: <code class="mono" style="color:var(--accent); font-weight:700;">{{ product().masterSku }}</code>
-          </div>
+          <p style="font-size: 12px; color: var(--text2); margin-top: 4px;">
+            Brand: <strong style="color: var(--text);">{{ product().brand || 'RetailOS' }}</strong> · SKU: <code class="mono" style="color: var(--accent); font-weight: 700;">{{ product().masterSku }}</code>
+          </p>
         </div>
 
-        <div style="display:flex; gap:10px;">
-          <a [routerLink]="['/app/products', product().id, 'edit']" class="btn btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-            ✏️ Edit Product
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <a [routerLink]="['/app/products', product().id, 'edit']" class="btn btn-primary" style="height: 34px; padding: 0 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+            <span>Edit Product</span>
           </a>
-          <a routerLink="/app/inventory/seed" class="btn btn-secondary" style="text-decoration:none;">
-            🌱 Seed Stock
+          <a routerLink="/app/inventory/seed" class="btn btn-secondary" style="height: 34px; padding: 0 14px; text-decoration: none;">
+            Seed Stock
           </a>
         </div>
       </div>
@@ -38,83 +42,103 @@
   </div>
 
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
-      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading product profile...</div>
+    <div class="card" style="padding: 60px; text-align: center;">
+      <div class="spinner" style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+      <span style="font-size: 13px; color: var(--text3);">Loading product specifications...</span>
     </div>
   } @else if (product()) {
-    <div style="display:grid; gap: 24px;">
-      <!-- Stats / Pricing Grid -->
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
-        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Selling Price</div>
-          <div style="font-size: 24px; font-weight: 900; color: var(--accent); margin-top: 4px;" class="mono">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- KPI Stats / Pricing Bento Row -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+        <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Selling Price</span>
+          <div class="font-headline mono" style="font-size: 24px; font-weight: 900; color: var(--accent);">
             {{ formatCurrency(product().sellingPrice || product().basePrice) }}
           </div>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Unit: {{ product().unitOfMeasure || 'Each' }}</div>
+          <div style="font-size: 11px; color: var(--text3);">Unit: {{ product().unitOfMeasure || 'Each' }}</div>
         </div>
 
-        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Cost Price</div>
-          <div style="font-size: 24px; font-weight: 900; color: var(--text1); margin-top: 4px;" class="mono">
+        <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Cost Price</span>
+          <div class="font-headline mono" style="font-size: 24px; font-weight: 900; color: var(--text);">
             {{ formatCurrency(product().costPrice) }}
           </div>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Purchase acquisition cost</div>
+          <div style="font-size: 11px; color: var(--text3);">Purchase acquisition cost</div>
         </div>
 
-        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Profit Margin</div>
-          <div style="font-size: 24px; font-weight: 900; color: var(--green); margin-top: 4px;" class="mono">
+        <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Gross Profit Margin</span>
+          <div class="font-headline mono" style="font-size: 24px; font-weight: 900; color: var(--green);">
             {{ formatCurrency(calculateMargin().profit) }}
           </div>
-          <div style="font-size: 11px; color: var(--green); font-weight: 700; margin-top: 4px;">
+          <div style="font-size: 11px; color: var(--green); font-weight: 700;">
             +{{ calculateMargin().percent | number:'1.1-1' }}% markup
           </div>
         </div>
 
-        <div class="card" style="padding: 20px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Tax Profile</div>
-          <div style="font-size: 18px; font-weight: 800; color: var(--text1); margin-top: 6px;">
+        <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Tax Profile</span>
+          <div style="font-size: 16px; font-weight: 800; color: var(--text); margin-top: 4px;">
             {{ getTaxLabel(product().taxCategory) }}
           </div>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 6px;">
-            VAT Rate: {{ product().taxRate || 0 }}%
-          </div>
+          <div style="font-size: 11px; color: var(--text3);">VAT Rate: {{ product().taxRate || 0 }}%</div>
         </div>
       </div>
 
-      <!-- Two-column info sections -->
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <!-- Two-column specifications -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
         <!-- Card: Classification & Specs -->
-        <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-            📋 Product Specifications
+        <div class="card" style="padding: 20px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;">
+            Product Specifications
           </div>
 
-          <div style="display:grid; gap: 14px;">
-            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
               <span style="font-size: 12px; color: var(--text3);">Category</span>
-              <span style="font-weight: 700; font-size: 13px;" class="badge badge-dim">{{ categoryName() }}</span>
+              <span class="badge badge-dim" style="font-weight: 700; font-size: 12px;">{{ categoryName() }}</span>
             </div>
 
-            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
               <span style="font-size: 12px; color: var(--text3);">Master SKU</span>
-              <span class="mono" style="font-weight: 700; font-size: 13px;">{{ product().masterSku }}</span>
+              <span class="mono" style="font-weight: 700; font-size: 12.5px;">{{ product().masterSku }}</span>
             </div>
 
-            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">POS Fast-Grid Tile</span>
+              <span class="badge badge-accent" style="font-size: 11px;">{{ product().fastGridTile || 'Disabled' }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
               <span style="font-size: 12px; color: var(--text3);">Weight</span>
-              <span style="font-weight: 600; font-size: 13px;">{{ product().weightGrams ? product().weightGrams + ' g' : '—' }}</span>
+              <span style="font-weight: 600; font-size: 12px;">{{ product().weightGrams ? product().weightGrams + ' g' : '—' }}</span>
             </div>
 
-            <div style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
               <span style="font-size: 12px; color: var(--text3);">Unit of Measure</span>
-              <span style="font-weight: 600; font-size: 13px;">{{ product().unitOfMeasure || 'Each' }}</span>
+              <span style="font-weight: 600; font-size: 12px;">{{ product().unitOfMeasure || 'Each' }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">KDS Station Routing</span>
+              <span class="badge badge-dim" style="font-weight: 600; font-size: 11.5px;">{{ product().kdsStation || 'Front Counter' }}</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Low Stock Threshold</span>
+              <span class="mono" style="font-weight: 700; font-size: 12px;">&lt; {{ product().lowStockThreshold || 10 }} units</span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 8px;">
+              <span style="font-size: 12px; color: var(--text3);">Backorders</span>
+              <span class="badge" [class.badge-green]="product().allowBackorders" [class.badge-dim]="!product().allowBackorders" style="font-size: 10px;">
+                {{ product().allowBackorders ? 'ALLOWED PAST ZERO' : 'STRICT OUT OF STOCK' }}
+              </span>
             </div>
 
             <div>
-              <span style="font-size: 12px; color: var(--text3); display:block; margin-bottom: 4px;">Description</span>
-              <div style="font-size: 13px; color: var(--text2); line-height: 1.5; background: var(--surface2); padding: 10px; border-radius: 8px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; display: block; margin-bottom: 4px;">Description</span>
+              <div style="font-size: 12px; color: var(--text2); line-height: 1.5; background: var(--surface2); padding: 10px; border-radius: 8px; border: 1px solid var(--border);">
                 {{ product().description || 'No description entered for this product.' }}
               </div>
             </div>
@@ -122,24 +146,26 @@
         </div>
 
         <!-- Card: Barcodes -->
-        <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-          <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-            ║▌ Registered Barcodes
+        <div class="card" style="padding: 20px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;">
+            Registered Barcodes
           </div>
 
-          <div style="display:flex; flex-direction:column; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
             @for (bc of product().barcodes; track bc) {
-              <div style="display:flex; align-items:center; justify-content:space-between; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;">
-                <div style="display:flex; align-items:center; gap: 10px;">
-                  <span style="font-size: 18px;">🛒</span>
-                  <span class="mono" style="font-size: 13px; font-weight: 700;">{{ bc.barcode || bc }}</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <svg style="width: 14px; height: 14px; color: var(--accent);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                  </svg>
+                  <span class="mono" style="font-size: 12.5px; font-weight: 700;">{{ bc.barcode || bc }}</span>
                 </div>
-                <span class="badge badge-dim" style="font-size: 10px;">SCANNER READY</span>
+                <span class="badge badge-dim" style="font-size: 9px;">SCANNER READY</span>
               </div>
             }
             @if (!product().barcodes || product().barcodes.length === 0) {
-              <div style="text-align:center; padding: 30px; color: var(--text3);">
-                No barcodes assigned. Edit this product to attach barcodes.
+              <div style="text-align: center; padding: 30px 10px; color: var(--text3); font-size: 12px;">
+                No barcodes assigned to this product.
               </div>
             }
           </div>
@@ -147,27 +173,27 @@
       </div>
 
       <!-- Card: Bulk Packaging & Hierarchy -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          📦 Bulk Ratios & Packaging Hierarchy
+      <div class="card" style="padding: 20px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;">
+          Bulk Ratios & Packaging Hierarchy
         </div>
 
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+          <div style="background: var(--surface2); padding: 14px; border-radius: 10px; border: 1px solid var(--border);">
             <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Singles per Roll</div>
-            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">{{ product().singlesPerRoll || '—' }}</div>
+            <div class="mono" style="font-size: 18px; font-weight: 800; margin-top: 4px;">{{ product().singlesPerRoll || '—' }}</div>
             <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Roll Price: {{ formatCurrency(product().rollPrice) }}</div>
           </div>
 
-          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+          <div style="background: var(--surface2); padding: 14px; border-radius: 10px; border: 1px solid var(--border);">
             <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Rolls per Pack</div>
-            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">{{ product().rollsPerPack || '—' }}</div>
+            <div class="mono" style="font-size: 18px; font-weight: 800; margin-top: 4px;">{{ product().rollsPerPack || '—' }}</div>
             <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Pack Price: {{ formatCurrency(product().packPrice) }}</div>
           </div>
 
-          <div style="background:var(--surface2); padding:16px; border-radius:12px; border:1px solid var(--border);">
+          <div style="background: var(--surface2); padding: 14px; border-radius: 10px; border: 1px solid var(--border);">
             <div style="font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase;">Total Singles in Pack</div>
-            <div class="mono" style="font-size: 20px; font-weight: 800; margin-top: 4px;">
+            <div class="mono" style="font-size: 18px; font-weight: 800; margin-top: 4px;">
               {{ product().singlesPerPack || (product().singlesPerRoll && product().rollsPerPack ? product().singlesPerRoll * product().rollsPerPack : '—') }}
             </div>
             <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Full Case / Carton count</div>
@@ -176,4 +202,5 @@
       </div>
     </div>
   }
+
 </div>

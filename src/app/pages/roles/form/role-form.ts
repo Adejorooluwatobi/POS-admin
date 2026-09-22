@@ -144,6 +144,7 @@ export class RoleFormComponent implements OnInit {
       name: r.name.trim(),
       description: r.description ? r.description.trim() : '',
       systemRole: r.systemRole,
+      isActive: r.isActive !== undefined ? Boolean(r.isActive) : true,
       permissions: r.permissions || {}
     };
 

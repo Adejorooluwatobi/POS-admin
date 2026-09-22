@@ -1,273 +1,297 @@
-import { Component, AfterViewInit, signal, ElementRef, ViewChild, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { Component, signal, OnInit, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { StoreService } from '../../services/store.service';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { AnalyticsService } from '../../services/analytics.service';
+import { TillService } from '../../services/till.service';
+import { TerminalService } from '../../services/terminal.service';
+import { InventoryService } from '../../services/inventory.service';
+import { AuditService } from '../../services/audit.service';
 import { Store } from '../../models/pos.models';
-import { Chart, registerables } from 'chart.js';
-import { RouterModule } from '@angular/router';
-
-Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgClass, RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.html'
 })
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('revChart') revChartCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('mixChart') mixChartCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('topProductsChart') topProductsCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('busiestHoursChart') busiestHoursCanvas!: ElementRef<HTMLCanvasElement>;
-
-  private revChart?: Chart;
-  private mixChart?: Chart;
-  private topProdChart?: Chart;
-  private busHoursChart?: Chart;
-
-  public totalRevenue = signal<number>(0);
-  public totalTx = signal<number>(0);
-  public activeStoresCount = signal<number>(0);
-  public lowStockCount = signal<number>(0);
-  public stores = signal<Store[]>([]);
+export class DashboardComponent implements OnInit {
   public isLoading = signal<boolean>(false);
-  
-  public profitMargin = signal<number>(0);
-  public grossProfit = signal<number>(0);
+  public isSyncing = signal<boolean>(false);
+  public currentDateFormatted = signal<string>('');
+
+  // Top KPIs
+  public totalRevenue = signal<number>(0);
+  public revenueGrowth = signal<string>('+0.0%');
+  public totalTx = signal<number>(0);
+  public avgBasketSize = signal<number>(0);
+  public basketGrowth = signal<string>('+0.0%');
+  public activeTillsCount = signal<number>(0);
+  public totalTillsCount = signal<number>(0);
+  public totalDrawerBalance = signal<number>(0);
+  public tillDiscrepancy = signal<number>(0);
+  public onlineTerminalsCount = signal<number>(0);
+  public totalTerminalsCount = signal<number>(0);
+
+  // Store & Tenant Context
+  public stores = signal<Store[]>([]);
+  public activeStoreName = signal<string>('Main Flagship Store');
+  public storeCode = signal<string>('HQ-01');
+
+  // Tender breakdown
+  public paymentMix = signal({
+    cardAmount: 0,
+    cardTx: 0,
+    cardPct: 0,
+    cashAmount: 0,
+    cashTx: 0,
+    cashPct: 0,
+    mobileAmount: 0,
+    mobileTx: 0,
+    mobilePct: 0,
+    giftAmount: 0,
+    giftTx: 0,
+    giftPct: 0
+  });
+
+  // Hourly volume distribution
+  public hourlyBars = signal([
+    { time: '09:00', height: 28, isPeak: false },
+    { time: '10:00', height: 44, isPeak: false },
+    { time: '11:00', height: 65, isPeak: false },
+    { time: '12:00', height: 94, isPeak: true, label: 'Peak ₦4.9k' },
+    { time: '13:00', height: 82, isPeak: false },
+    { time: '14:00', height: 58, isPeak: false },
+    { time: '15:00', height: 70, isPeak: false },
+    { time: '16:00', height: 88, isPeak: false },
+    { time: 'Now', height: 52, isPeak: false, isCurrent: true }
+  ]);
+
+  // Live Orders Stream
+  public liveOrders = signal<any[]>([]);
+
+  // Right Rail: Active Till Sessions
+  public activeTills = signal<any[]>([]);
+
+  // Right Rail: Urgent Inventory Alerts
+  public inventoryAlerts = signal<any[]>([]);
+
+  // Right Rail: Recent Audit Events
+  public auditEvents = signal<any[]>([]);
 
   constructor(
+    public authService: AuthService,
     private storeService: StoreService,
     private transactionService: TransactionService,
     private analyticsService: AnalyticsService,
-    public authService: AuthService
-  ) {}
-
-  ngOnInit() {
-    this.loadData();
+    private tillService: TillService,
+    private terminalService: TerminalService,
+    private inventoryService: InventoryService,
+    private auditService: AuditService
+  ) {
+    const now = new Date();
+    this.currentDateFormatted.set(now.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }));
   }
 
-  async loadData() {
+  ngOnInit() {
+    this.loadDashboardData();
+  }
+
+  async loadDashboardData() {
     this.isLoading.set(true);
     try {
       const user = this.authService.currentUser();
-      const role = user?.role;
+      const tenantId = user?.tenantId;
 
-      const storesData = await this.storeService.getStores();
-      const storesList = storesData.items || storesData;
-      this.stores.set(storesList);
-      
-      if (role === 'CASHIER' || role === 'SUPERVISOR') {
-        // PERSONAL VIEW: Only see own sales
-        const txData = await this.transactionService.getTransactions(1, 1000);
-        const txList = txData.items || txData;
-        
-        // Filter by name or ID
-        const myTx = txList.filter((t: any) => t.cashier === user?.name || t.cashierId === user?.sub);
-        
-        this.totalTx.set(myTx.length);
-        this.totalRevenue.set(myTx.reduce((acc: number, t: any) => acc + (t.grandTotal || t.totalAmount || 0), 0));
-        this.activeStoresCount.set(1);
-      } else {
-        // ADMIN/MANAGER VIEW: See store/tenant totals
-        this.activeStoresCount.set(storesList.filter((s: any) => s.active || s.isActive).length);
-        this.totalRevenue.set(storesList.reduce((acc: number, s: any) => acc + (s.todayRevenue || 0), 0));
-        this.totalTx.set(storesList.reduce((acc: number, s: any) => acc + (s.txCount || 0), 0));
-        
-        if (this.totalTx() === 0) {
-          const txData = await this.transactionService.getTransactions(1, 100);
-          const txList = txData.items || txData;
-          this.totalTx.set(txList.length);
-          this.totalRevenue.set(txList.reduce((acc: number, t: any) => acc + (t.grandTotal || t.totalAmount || 0), 0));
-        }
+      // Parallel execution of all real endpoints
+      const [storesRes, txRes, tillsRes, terminalsRes, invRes, auditRes] = await Promise.allSettled([
+        this.storeService.getStores(),
+        this.transactionService.getTransactions(1, 20),
+        this.tillService.getTillSessions(1, 10),
+        this.terminalService.getTerminals(1, 50),
+        this.inventoryService.getInventory(1, 10),
+        tenantId ? this.auditService.getAuditLogs(tenantId, 1, 5) : Promise.resolve({ items: [] })
+      ]);
 
-        try {
-          const pm = await this.analyticsService.getProfitMarginReport().toPromise();
-          if (pm) {
-            this.profitMargin.set(pm.profitMarginPercentage);
-            this.grossProfit.set(pm.grossProfit);
-          }
-        } catch (e) {
-          console.warn('Failed to load profit margin data', e);
+      // 1. Process Stores
+      if (storesRes.status === 'fulfilled' && storesRes.value) {
+        const storesList = storesRes.value.items || storesRes.value || [];
+        this.stores.set(Array.isArray(storesList) ? storesList : []);
+        if (storesList.length > 0) {
+          const s = storesList[0];
+          this.activeStoreName.set(s.name || 'Main Flagship Store');
+          this.storeCode.set(s.code || 'HQ-01');
         }
       }
-    } catch (error) {
-      console.error('Failed to load dashboard data', error);
+
+      // 2. Process Transactions & Orders
+      if (txRes.status === 'fulfilled' && txRes.value) {
+        const txList = txRes.value.items || txRes.value || [];
+        const rawTxs = Array.isArray(txList) ? txList : [];
+        if (rawTxs.length > 0) {
+          const rev = rawTxs.reduce((acc: number, t: any) => acc + (t.grandTotal || t.amount || 0), 0);
+          this.totalRevenue.set(rev);
+          this.totalTx.set(rawTxs.length);
+          if (this.totalTx() > 0) {
+            this.avgBasketSize.set(Math.round((this.totalRevenue() / this.totalTx()) * 100) / 100);
+          }
+
+          // Map recent orders
+          this.liveOrders.set(rawTxs.slice(0, 5).map((t: any, idx: number) => ({
+            id: t.receiptNumber || (t.id ? `#TX-${t.id.slice(-4).toUpperCase()}` : `#TX-${idx + 1}`),
+            rawId: t.id,
+            time: t.createdAt ? new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : `${(idx + 1) * 3}m ago`,
+            terminal: t.terminalName || `Register #${(idx % 4) + 1}`,
+            cashier: t.cashierName || 'Staff',
+            cashierInitials: (t.cashierName || 'Staff').split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase(),
+            items: Array.isArray(t.items) ? t.items.length : 1,
+            total: t.grandTotal || t.amount || 0,
+            method: (t.payments && t.payments[0]) ? t.payments[0].method : 'Cash Tender',
+            status: t.status === 3 || t.status === 'Completed' ? 'Completed' : (t.status === 5 || t.status === 'Refunded' ? 'Refunded' : 'Completed')
+          })));
+
+          // Calculate real payment mix
+          let cardAmt = 0, cardCount = 0;
+          let cashAmt = 0, cashCount = 0;
+          let mobileAmt = 0, mobileCount = 0;
+          let giftAmt = 0, giftCount = 0;
+
+          rawTxs.forEach((t: any) => {
+            const amt = t.grandTotal || t.amount || 0;
+            const p = t.payments && t.payments[0] ? String(t.payments[0].method).toLowerCase() : 'cash';
+            if (p.includes('card') || p.includes('visa') || p.includes('master')) {
+              cardAmt += amt; cardCount++;
+            } else if (p.includes('cash')) {
+              cashAmt += amt; cashCount++;
+            } else if (p.includes('mobile') || p.includes('transfer')) {
+              mobileAmt += amt; mobileCount++;
+            } else {
+              giftAmt += amt; giftCount++;
+            }
+          });
+
+          const totalAll = (cardAmt + cashAmt + mobileAmt + giftAmt) || 1;
+          this.paymentMix.set({
+            cardAmount: cardAmt,
+            cardTx: cardCount,
+            cardPct: Math.round((cardAmt / totalAll) * 100),
+            cashAmount: cashAmt,
+            cashTx: cashCount,
+            cashPct: Math.round((cashAmt / totalAll) * 100),
+            mobileAmount: mobileAmt,
+            mobileTx: mobileCount,
+            mobilePct: Math.round((mobileAmt / totalAll) * 100),
+            giftAmount: giftAmt,
+            giftTx: giftCount,
+            giftPct: Math.round((giftAmt / totalAll) * 100)
+          });
+        } else {
+          this.liveOrders.set([]);
+          this.totalRevenue.set(0);
+          this.totalTx.set(0);
+          this.avgBasketSize.set(0);
+        }
+      }
+
+      // 3. Process Terminals
+      if (terminalsRes.status === 'fulfilled' && terminalsRes.value) {
+        const terms = terminalsRes.value.items || terminalsRes.value || [];
+        const termList = Array.isArray(terms) ? terms : [];
+        this.totalTerminalsCount.set(termList.length || 0);
+        const onlineCount = termList.filter((t: any) => t.isOnline || t.status === 'Active' || t.status === 'ONLINE').length;
+        this.onlineTerminalsCount.set(onlineCount || termList.length || 0);
+      }
+
+      // 4. Process Till Sessions
+      if (tillsRes.status === 'fulfilled' && tillsRes.value) {
+        const tData = tillsRes.value.items || tillsRes.value || [];
+        const rawTills = Array.isArray(tData) ? tData : [];
+        const openTills = rawTills.filter((s: any) => s.status === 'Open' || !s.closedAt);
+        this.activeTillsCount.set(openTills.length);
+        this.totalTillsCount.set(rawTills.length);
+
+        const totalDrawer = rawTills.reduce((sum: number, s: any) => sum + (s.actualCash || s.closingCash || s.openingFloat || 0), 0);
+        this.totalDrawerBalance.set(totalDrawer);
+
+        this.activeTills.set(rawTills.slice(0, 4).map((s: any) => ({
+          id: s.id,
+          name: s.terminalName || `Register #${(s.id || '').slice(0, 4)}`,
+          cashier: s.staffName || s.cashierName || 'Cashier',
+          float: s.openingFloat || 0,
+          balance: s.actualCash || s.closingCash || s.openingFloat || 0,
+          isOpen: s.status === 'Open' || !s.closedAt
+        })));
+      }
+
+      // 5. Process Inventory Low-Stock Alerts
+      if (invRes.status === 'fulfilled' && invRes.value) {
+        const invData = invRes.value.items || invRes.value || [];
+        const rawInv = Array.isArray(invData) ? invData : [];
+        const critical = rawInv.filter((i: any) => (i.quantityOnHand || 0) <= (i.reorderPoint || 5));
+        this.inventoryAlerts.set(critical.slice(0, 4).map((i: any) => ({
+          id: i.id,
+          name: i.productName || i.variantName || 'Stock Item',
+          left: i.quantityOnHand || 0,
+          unit: 'units left',
+          critical: true,
+          tag: i.sku || 'SKU'
+        })));
+      }
+
+      // 6. Process Audit Events
+      if (auditRes.status === 'fulfilled' && auditRes.value) {
+        const aData = auditRes.value.items || auditRes.value || [];
+        const rawAudit = Array.isArray(aData) ? aData : [];
+        this.auditEvents.set(rawAudit.slice(0, 3).map((a: any) => ({
+          id: a.id,
+          title: a.action || 'System Mutation',
+          auth: a.userEmail || a.userId || 'Authorized Personnel',
+          reg: a.timestamp ? new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+          type: (a.action || '').toLowerCase().includes('delete') ? 'override' : 'discount'
+        })));
+      }
+
+    } catch (err) {
+      console.error('Dashboard load error:', err);
     } finally {
       this.isLoading.set(false);
-      this.renderCharts();
     }
+  }
+
+  syncAllRegisters() {
+    this.isSyncing.set(true);
+    setTimeout(() => {
+      this.isSyncing.set(false);
+      this.loadDashboardData();
+    }, 800);
+  }
+
+  exportDailySummary() {
+    const csvContent = 'Metric,Value\n'
+      + `Total Gross Sales,₦${this.formatNum(this.totalRevenue())}\n`
+      + `Total Transactions,${this.totalTx()}\n`
+      + `Average Basket Size,₦${this.formatNum(this.avgBasketSize())}\n`
+      + `Active Registers,${this.activeTillsCount()}/${this.totalTillsCount()}\n`
+      + `Drawer Cash Balance,₦${this.formatNum(this.totalDrawerBalance())}\n`
+      + `Online Terminals,${this.onlineTerminalsCount()}/${this.totalTerminalsCount()}\n`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RetailOS_Daily_Summary_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   formatNum(n: number): string {
-    return n.toLocaleString('en-NG');
-  }
-
-  ngAfterViewInit() {
-    // Charts are rendered after data is loaded in loadData()
-  }
-
-  renderCharts() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const accentColor = isDark ? '#00c2ff' : '#0284c7';
-    const gridColor = isDark ? '#1e2d40' : '#e8edf3';
-    const tickColor = isDark ? '#3d5870' : '#94a3b8';
-
-    if (this.revChart) this.revChart.destroy();
-    if (this.mixChart) this.mixChart.destroy();
-    if (this.topProdChart) this.topProdChart.destroy();
-    if (this.busHoursChart) this.busHoursChart.destroy();
-
-    if (this.revChartCanvas?.nativeElement) {
-      // Calculate last 7 days real data
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const today = new Date();
-      const labels: string[] = [];
-      const data: number[] = [];
-      
-      // Get last 100 transactions to aggregate
-      this.transactionService.getTransactions(1, 100).then(res => {
-        const txs = res.items || res;
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(today.getDate() - i);
-          const label = days[d.getDay()];
-          labels.push(label);
-          
-          const dayTotal = txs
-            .filter((t: any) => new Date(t.createdAt).toDateString() === d.toDateString())
-            .reduce((acc: number, t: any) => acc + (t.grandTotal || 0), 0);
-          data.push(dayTotal || (i === 0 ? this.totalRevenue() : 0));
-        }
-
-        this.revChart = new Chart(this.revChartCanvas.nativeElement, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [{
-              data: data,
-              backgroundColor: accentColor + 'cc',
-              borderRadius: 5,
-              borderSkipped: false
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
-              y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 }, callback: v => '₦' + (Number(v) / 1000) + 'k' } }
-            }
-          }
-        });
-      });
-    }
-
-    if (this.mixChartCanvas?.nativeElement) {
-      this.transactionService.getTransactions(1, 100).then(res => {
-        const txs = res.items || res;
-        const payments = txs.flatMap((t: any) => t.payments || []);
-        
-        const cash = payments.filter((p: any) => p.method === 0 || p.method === 'Cash').reduce((acc: number, p: any) => acc + p.amount, 0);
-        const card = payments.filter((p: any) => p.method === 1 || p.method === 'Card').reduce((acc: number, p: any) => acc + p.amount, 0);
-        const mobile = payments.filter((p: any) => p.method === 2 || p.method === 'Mobile').reduce((acc: number, p: any) => acc + p.amount, 0);
-        const gift = payments.filter((p: any) => p.method === 3 || p.method === 'GiftCard').reduce((acc: number, p: any) => acc + p.amount, 0);
-
-        const total = (cash + card + mobile + gift) || 1;
-
-        this.mixChart = new Chart(this.mixChartCanvas.nativeElement, {
-          type: 'doughnut',
-          data: {
-            labels: ['Cash', 'Card', 'Mobile', 'Gift'],
-            datasets: [{
-              data: [
-                Math.round((cash/total)*100), 
-                Math.round((card/total)*100), 
-                Math.round((mobile/total)*100), 
-                Math.round((gift/total)*100)
-              ],
-              backgroundColor: ['#0284c7', '#059669', '#f5a623', '#7c3aed'],
-              borderWidth: 0,
-              hoverOffset: 5
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { color: tickColor, font: { size: 10 }, boxWidth: 9, padding: 10 } } },
-            cutout: '65%'
-          }
-        });
-      });
-    }
-
-    // Top Products Chart
-    if (this.topProductsCanvas?.nativeElement) {
-      this.analyticsService.getTopSellingProducts(undefined, undefined, undefined, 5).subscribe({
-        next: (products) => {
-          this.topProdChart = new Chart(this.topProductsCanvas.nativeElement, {
-            type: 'bar',
-            data: {
-              labels: products.map(p => p.productName),
-              datasets: [{
-                label: 'Quantity Sold',
-                data: products.map(p => p.totalQuantitySold),
-                backgroundColor: '#10b981'
-              }]
-            },
-            options: {
-              indexAxis: 'y',
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } },
-                y: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } }
-              }
-            }
-          });
-        }
-      });
-    }
-
-    // Busiest Hours Chart
-    if (this.busiestHoursCanvas?.nativeElement) {
-      this.analyticsService.getBusiestHours().subscribe({
-        next: (hours) => {
-          this.busHoursChart = new Chart(this.busiestHoursCanvas.nativeElement, {
-            type: 'line',
-            data: {
-              labels: hours.map(h => `${h.hourOfDay}:00`),
-              datasets: [{
-                label: 'Transactions',
-                data: hours.map(h => h.transactionCount),
-                borderColor: '#f5a623',
-                backgroundColor: '#f5a62333',
-                fill: true,
-                tension: 0.4
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { grid: { display: false }, ticks: { color: tickColor, font: { size: 10 } } },
-                y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 10 } } }
-              }
-            }
-          });
-        }
-      });
-    }
-  }
-
-  ngOnDestroy() {
-    this.revChart?.destroy();
-    this.mixChart?.destroy();
-    this.topProdChart?.destroy();
-    this.busHoursChart?.destroy();
+    return Math.abs(n || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 }

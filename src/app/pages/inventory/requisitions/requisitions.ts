@@ -19,6 +19,30 @@ export class RequisitionsComponent implements OnInit {
   public pendingCount = computed(() => this.requisitions().filter(r => r.status === 'Pending').length);
   public reviewCount = computed(() => this.requisitions().filter(r => r.status === 'UnderReview').length);
   public fulfilledCount = computed(() => this.requisitions().filter(r => r.status === 'FullyFulfilled' || r.status === 'PartiallyFulfilled').length);
+  public totalCount = computed(() => this.requisitions().length);
+
+  public searchQuery = signal<string>('');
+  public statusFilter = signal<string>('All');
+
+  public filteredRequisitions = computed(() => {
+    let list = this.requisitions();
+    const q = this.searchQuery().toLowerCase().trim();
+    const filter = this.statusFilter();
+
+    if (filter !== 'All') {
+      list = list.filter(r => r.status === filter);
+    }
+
+    if (q) {
+      list = list.filter(r => 
+        (r.requisitionNumber && r.requisitionNumber.toLowerCase().includes(q)) ||
+        (r.requestingStoreName && r.requestingStoreName.toLowerCase().includes(q)) ||
+        (r.notes && r.notes.toLowerCase().includes(q))
+      );
+    }
+
+    return list;
+  });
 
   public products = signal<any[]>([]);
   public stores = signal<any[]>([]);

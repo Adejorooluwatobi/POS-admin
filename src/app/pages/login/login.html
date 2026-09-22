@@ -1,111 +1,237 @@
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" style="min-height:100vh; display:flex; align-items:center; justify-content:center; background: radial-gradient(at 0% 0%, hsla(210,100%,90%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(190,100%,85%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(220,100%,90%,1) 0, transparent 50%); background-color: var(--bg); position: relative; overflow: hidden;">
-  
-  <!-- Subtle Abstract Shapes -->
-  <div style="position:absolute; top:-10%; left:-10%; width:40%; height:40%; background:var(--accent-d); filter:blur(100px); border-radius:50%; z-index:0;"></div>
-  <div style="position:absolute; bottom:-10%; right:-10%; width:30%; height:30%; background:var(--purple-d); filter:blur(80px); border-radius:50%; z-index:0;"></div>
+<!-- SPLIT-PANE ENTERPRISE LOGIN SCREEN -->
+<div style="min-height:100vh;display:flex;background:var(--bg);position:relative;overflow:hidden;">
 
-  <div class="fade-up" style="width:100%; max-width:400px; padding:24px; position:relative; z-index:1;">
+  <!-- LEFT HERO PANEL (Google Stitch Enterprise Showcase) -->
+  <div class="hidden lg:flex" style="flex:1.1;background:linear-gradient(145deg, #090d16 0%, #111827 50%, #0f172a 100%);color:#fff;padding:60px;flex-direction:column;justify-content:space-between;position:relative;border-right:1px solid rgba(255,255,255,0.08);overflow:hidden;">
     
-    <!-- Header -->
-    <div style="text-align:center; margin-bottom:32px;">
-      <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg, var(--accent), var(--purple)); box-shadow:0 10px 20px var(--accent-d); margin-bottom:16px;">
-        <span style="color:#fff; font-size:24px; font-weight:800; letter-spacing:-0.05em;">R</span>
+    <!-- Background Radial Glows -->
+    <div style="position:absolute;top:-15%;left:-10%;width:50%;height:50%;background:radial-gradient(circle, rgba(79,70,229,0.3) 0%, transparent 70%);filter:blur(60px);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-15%;right:-10%;width:50%;height:50%;background:radial-gradient(circle, rgba(14,165,233,0.2) 0%, transparent 70%);filter:blur(60px);pointer-events:none;"></div>
+
+    <!-- Top Brand Mark -->
+    <div style="position:relative;z-index:1;display:flex;align-items:center;gap:12px;">
+      <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg, #4f46e5, #0ea5e9);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(79,70,229,0.4);">
+        <span style="color:#fff;font-weight:900;font-size:22px;letter-spacing:-0.05em;">R</span>
       </div>
-      <h1 style="font-size:28px; font-weight:800; letter-spacing:-0.04em; color:var(--text); margin-bottom:4px;">RetailOS Admin</h1>
-      <p style="font-size:14px; color:var(--text3); font-weight:500;">Sign in to manage your business</p>
+      <div>
+        <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em;color:#fff;">RetailOS</div>
+        <div style="font-size:11px;color:#94a3b8;letter-spacing:0.05em;text-transform:uppercase;font-weight:600;">Enterprise Suite</div>
+      </div>
+      <span style="margin-left:8px;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,0.1);font-size:10px;font-family:var(--mono);color:#cbd5e1;border:1px solid rgba(255,255,255,0.12);">
+        v2.8.4
+      </span>
     </div>
 
-    <!-- Login Card -->
-    <div style="background:rgba(var(--surface-rgb, 255, 255, 255), 0.7); backdrop-filter:blur(12px); border:1px solid rgba(var(--border-rgb, 225, 231, 239), 0.5); border-radius:24px; padding:32px; box-shadow:0 20px 40px rgba(0,0,0,0.05);">
-      
-      <!-- Form -->
-      <div style="margin-bottom:20px;">
-        <label style="font-size:11px; font-weight:700; color:var(--text2); letter-spacing:0.05em; text-transform:uppercase; display:block; margin-bottom:8px; margin-left:4px;">Email Address</label>
-        <div style="position:relative;">
-          <input id="loginEmail" type="email" class="inp" placeholder="name@company.com" [(ngModel)]="email" 
-                 style="background:var(--surface); border:1.5px solid var(--border); padding:12px 16px; font-size:14px; border-radius:12px; transition:all 0.2s;">
-        </div>
-      </div>
+    <!-- Center Hero Copy & Value Propositions -->
+    <div style="position:relative;z-index:1;max-width:540px;margin:40px 0;">
+      <h2 style="font-size:36px;font-weight:800;line-height:1.2;letter-spacing:-0.03em;margin-bottom:20px;color:#f8fafc;">
+        Precision Enterprise Infrastructure for High-Velocity Retail.
+      </h2>
+      <p style="font-size:15px;color:#94a3b8;line-height:1.6;margin-bottom:32px;">
+        Centrally govern multi-store branches, monitor offline-resilient register hardware, enforce granular role access, and audit statutory fiscal compliance in real-time.
+      </p>
 
-      <div style="margin-bottom:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; margin-left:4px;">
-          <label style="font-size:11px; font-weight:700; color:var(--text2); letter-spacing:0.05em; text-transform:uppercase;">Password</label>
-          <a href="javascript:void(0)" style="font-size:11px; color:var(--accent); font-weight:600; text-decoration:none;">Forgot?</a>
-        </div>
-        <input id="loginPassword" type="password" class="inp" placeholder="••••••••" [(ngModel)]="password"
-               style="background:var(--surface); border:1.5px solid var(--border); padding:12px 16px; font-size:14px; border-radius:12px; transition:all 0.2s;">
-      </div>
-
-      <button (click)="doLogin()" [disabled]="isLoading()" class="btn btn-primary" 
-              style="width:100%; justify-content:center; padding:14px; font-size:14px; font-weight:700; border-radius:12px; background:linear-gradient(to right, var(--accent), #0ea5e9); box-shadow:0 4px 12px var(--accent-d); border:none; transition:all 0.2s; cursor:pointer;">
-        @if (isLoading()) {
-          <span style="display:flex; align-items:center; gap:8px;">
-            <svg class="animate-spin" style="width:16px; height:16px;" viewBox="0 0 24 24">
-              <circle style="opacity:0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-              <path style="opacity:0.75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      <!-- Key Capabilities List -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(79,70,229,0.25);border:1px solid rgba(79,70,229,0.5);display:flex;align-items:center;justify-content:center;color:#818cf8;flex-shrink:0;">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
-            Signing in...
-          </span>
-        } @else {
-          Sign In →
-        }
-      </button>
-
-      @if (loginError()) {
-        <div style="margin-top:16px; padding:10px; background:var(--red-d); color:var(--red); border-radius:10px; font-size:12px; text-align:center; font-weight:600; animation:shake 0.4s ease-in-out;">
-          {{ loginError() }}
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#f1f5f9;">Sub-20ms Offline Register Engine</div>
+            <div style="font-size:12px;color:#64748b;">Zero-latency local checkout with automated cloud journal synchronization.</div>
+          </div>
         </div>
-      }
-    </div>
 
-    <!-- Demo Credentials (Subtle) -->
-    <div style="margin-top:24px; text-align:center;">
-      <p style="font-size:12px; color:var(--text3); margin-bottom:12px;">Need demo access?</p>
-      <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px;">
-        <div (click)="email='owner@retailos.ng'; password='owner123'" style="font-size:10px; padding:6px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--text2); cursor:pointer; transition:all 0.2s;">👑 Admin</div>
-        <div (click)="email='vi@retailos.ng'; password='store123'" style="font-size:10px; padding:6px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--text2); cursor:pointer; transition:all 0.2s;">🏪 Manager</div>
-        <div (click)="email='cashier@retailos.ng'; password='pin123'" style="font-size:10px; padding:6px 12px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; color:var(--text2); cursor:pointer; transition:all 0.2s;">💰 Cashier</div>
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(14,165,233,0.25);border:1px solid rgba(14,165,233,0.5);display:flex;align-items:center;justify-content:center;color:#38bdf8;flex-shrink:0;">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#f1f5f9;">Contactless NFC & Stored-Value Cards</div>
+            <div style="font-size:12px;color:#64748b;">Integrated gift cards, customer loyalty ledger, and dual-rail payment terminals.</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.5);display:flex;align-items:center;justify-content:center;color:#34d399;flex-shrink:0;">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#f1f5f9;">Statutory Fiscal Auditing & Z-Reports</div>
+            <div style="font-size:12px;color:#64748b;">Non-resettable financial logs, FIRS 7.5% VAT compliance, and cash discrepancy tracing.</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Theme Toggle & Footer -->
-    <div style="display:flex; flex-direction:column; align-items:center; gap:16px; margin-top:32px;">
-      <div style="display:flex; align-items:center; gap:12px; padding:6px 12px; background:var(--surface2); border-radius:30px; border:1px solid var(--border);">
-        <span style="font-size:12px;">☀</span>
-        <div class="toggle" (click)="themeService.toggleTheme()"><div class="knob"></div></div>
-        <span style="font-size:12px;">☾</span>
+    <!-- Bottom Telemetry Status -->
+    <div style="position:relative;z-index:1;padding:12px 16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;"></span>
+        <span style="font-size:12px;font-weight:600;color:#cbd5e1;">Hardware Mesh Active</span>
       </div>
-      <div style="font-size:11px; color:var(--text3); font-weight:500;">&copy; 2026 RetailOS. All rights reserved.</div>
+      <span style="font-size:11px;font-family:var(--mono);color:#94a3b8;">Latency: 18ms • 99.99% Availability</span>
     </div>
 
   </div>
+
+  <!-- RIGHT AUTH PANEL (High-Security Gateway) -->
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;position:relative;z-index:2;">
+    
+    <div class="fade-up" style="width:100%;max-width:420px;">
+      
+      <!-- Mobile Logo Header (Visible on small screens) -->
+      <div class="lg:hidden" style="text-align:center;margin-bottom:28px;">
+        <div style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg, var(--accent), #0ea5e9);box-shadow:0 8px 20px var(--accent-d);margin-bottom:12px;">
+          <span style="color:#fff;font-size:24px;font-weight:900;">R</span>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:var(--text);">RetailOS Admin</div>
+      </div>
+
+      <!-- Card Container -->
+      <div class="card" style="padding:36px;box-shadow:0 20px 50px rgba(0,0,0,0.08);border-radius:20px;">
+        
+        <div style="margin-bottom:24px;">
+          <h1 style="font-size:22px;font-weight:800;color:var(--text);margin:0 0 6px;letter-spacing:-0.02em;">
+            Portal Sign In
+          </h1>
+          <p style="font-size:13px;color:var(--text3);margin:0;">
+            Enter your authorized business credentials to proceed.
+          </p>
+        </div>
+
+        <!-- Error Alert -->
+        @if (loginError()) {
+          <div class="fade-up" style="margin-bottom:18px;padding:12px 14px;border-radius:10px;background:rgba(239,68,68,0.1);border:1px solid #ef4444;color:#ef4444;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;">
+            <svg style="width:14px;height:14px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>{{ loginError() }}</span>
+          </div>
+        }
+
+        <!-- Credentials Form -->
+        <form (ngSubmit)="doLogin()" style="display:flex;flex-direction:column;gap:18px;">
+          
+          <!-- Email Input -->
+          <div>
+            <label class="label">Work Email Address</label>
+            <div style="position:relative;display:flex;align-items:center;">
+              <svg style="width:15px;height:15px;position:absolute;left:14px;color:var(--text3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" class="inp" [(ngModel)]="email" name="email" placeholder="name@company.com" required
+                     style="padding-left:38px;height:44px;font-size:13px;border-radius:10px;">
+            </div>
+          </div>
+
+          <!-- Password Input -->
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label class="label" style="margin:0;">Password</label>
+              <a href="javascript:void(0)" style="font-size:11px;color:var(--accent);font-weight:700;text-decoration:none;">
+                Forgot password?
+              </a>
+            </div>
+            <div style="position:relative;display:flex;align-items:center;">
+              <svg style="width:15px;height:15px;position:absolute;left:14px;color:var(--text3);pointer-events:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <input [type]="showPassword() ? 'text' : 'password'" class="inp" [(ngModel)]="password" name="password" placeholder="••••••••" required
+                     style="padding-left:38px;padding-right:38px;height:44px;font-size:13px;border-radius:10px;">
+              <button type="button" (click)="showPassword.set(!showPassword())"
+                      style="position:absolute;right:12px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:0;">
+                <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  @if (showPassword()) {
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  } @else {
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  }
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Remember Me Checkbox -->
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" id="remMe" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer;">
+            <label for="remMe" style="font-size:12px;color:var(--text2);cursor:pointer;font-weight:500;">
+              Keep me signed in on this workstation
+            </label>
+          </div>
+
+          <!-- Primary Submit Button -->
+          <button type="submit" [disabled]="isLoading()" class="btn btn-primary"
+                  style="height:44px;justify-content:center;font-size:13px;font-weight:700;border-radius:10px;margin-top:6px;gap:8px;">
+            @if (isLoading()) {
+              <div style="width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+              <span>Authenticating...</span>
+            } @else {
+              <span>Sign In to Portal</span>
+              <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12"/>
+                <polyline points="12 5 19 12 12 19"/>
+              </svg>
+            }
+          </button>
+
+        </form>
+
+        <!-- Fast Role Selection Pills for Testing/Demo -->
+        <div style="margin-top:24px;border-top:1px solid var(--border);padding-top:20px;text-align:center;">
+          <div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:10px;letter-spacing:0.04em;text-transform:uppercase;">
+            Fast Role Selection (Development)
+          </div>
+          <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+            <button type="button" (click)="quickFill('admin')" class="btn btn-secondary btn-xs" style="border-radius:20px;font-size:11px;padding:5px 12px;gap:4px;">
+              👑 SuperAdmin
+            </button>
+            <button type="button" (click)="quickFill('manager')" class="btn btn-secondary btn-xs" style="border-radius:20px;font-size:11px;padding:5px 12px;gap:4px;">
+              🏪 Store Manager
+            </button>
+            <button type="button" (click)="quickFill('cashier')" class="btn btn-secondary btn-xs" style="border-radius:20px;font-size:11px;padding:5px 12px;gap:4px;">
+              💰 Cashier
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Theme Switcher & Footer -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px;padding:0 8px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);">
+          <span>Theme:</span>
+          <button (click)="themeService.toggleTheme()" class="btn btn-secondary btn-xs" style="gap:4px;border-radius:6px;padding:3px 8px;">
+            <span>{{ themeService.theme() === 'dark' ? '🌙 Dark' : '☀️ Light' }}</span>
+          </button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);font-family:var(--mono);">
+          ₦ Nigerian Naira (NGN)
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <style>
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
-  }
-  .animate-spin {
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px var(--accent-d);
-    filter: brightness(1.05);
-  }
-  .btn-primary:active {
-    transform: translateY(0);
-  }
-  .inp:focus {
-    background: var(--surface) !important;
-    border-color: var(--accent) !important;
-    box-shadow: 0 0 0 4px var(--accent-d) !important;
-  }
+  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 </style>

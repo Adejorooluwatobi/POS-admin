@@ -74,6 +74,14 @@ export class TillSessionDetailComponent implements OnInit {
     return status === 'OPEN' || status === 'Open' || status === 0;
   }
 
+  getStaffName(staffId?: string): string {
+    const s = this.staffMember();
+    if (s?.fullName) return s.fullName;
+    if (s?.firstName || s?.lastName) return `${s.firstName || ''} ${s.lastName || ''}`.trim();
+    if (this.session()?.staffName) return this.session().staffName;
+    return 'Frontline Cashier';
+  }
+
   printReport() {
     window.print();
   }

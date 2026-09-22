@@ -1,325 +1,345 @@
-<div class="page-container" style="padding: 24px; max-width: 1300px; margin: 0 auto;">
+<div class="page-container fade-up" style="max-width:1300px;margin:0 auto;padding-bottom:40px;">
   <!-- Header / Breadcrumb -->
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:24px;">
     <div>
-      <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
-        <a (click)="goBack()" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-          ← Back to Stock Levels
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:8px;">
+        <a (click)="goBack()" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-weight:600;">
+          <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Inventory Ledger</span>
         </a>
         <span>/</span>
-        <span>Stock Details</span>
+        <span style="color:var(--text2);">Stock Breakdown</span>
       </div>
-      <div style="display:flex; align-items:center; gap: 12px;">
-        <div style="width:48px; height:48px; border-radius:12px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:24px;">
-          📦
+
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(79,70,229,0.1);color:var(--accent);border:1px solid rgba(79,70,229,0.2);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
         </div>
         <div>
-          <h1 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--text1);">
+          <h1 style="font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin:0;">
             {{ productInfo()?.variantName || 'Product Stock Details' }}
           </h1>
-          <div style="font-size: 12px; color: var(--text3); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px;">
-            SKU: <span class="mono" style="color:var(--text2);">{{ productInfo()?.sku || 'N/A' }}</span>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">
+            SKU: <span class="mono" style="color:var(--accent);font-weight:700;">{{ productInfo()?.sku || 'N/A' }}</span> &bull; Multi-Store Logistics Breakdown
           </div>
         </div>
       </div>
     </div>
 
-    <div style="display:flex; gap: 10px;">
-      <button *ngIf="isGeneral()" (click)="openAddStoreModal()" class="btn btn-secondary" style="display:flex; align-items:center; gap:6px;">
-        <span>+</span> Assign to Another Store
-      </button>
-      <button (click)="loadData()" class="btn btn-secondary" [disabled]="isLoading()">
-        🔄 Refresh
+    <div style="display:flex;gap:10px;">
+      @if (isGeneral()) {
+        <button (click)="openAddStoreModal()" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:9px 16px;font-size:12px;border-radius:10px;">
+          <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Assign to Another Store</span>
+        </button>
+      }
+      <button (click)="loadData()" class="btn btn-secondary" [disabled]="isLoading()" style="display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:12px;border-radius:10px;">
+        <svg [class.animate-spin]="isLoading()" style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh</span>
       </button>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading()" style="text-align:center; padding: 60px 0;">
-    <div class="spinner" style="margin: 0 auto 16px;"></div>
-    <div style="color: var(--text3); font-size: 14px;">Loading store inventory breakdown...</div>
-  </div>
-
-  <div *ngIf="!isLoading()">
-    <!-- Quick Stats Cards -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+  @if (isLoading()) {
+    <div class="card" style="padding:80px;text-align:center;border-radius:16px;background:var(--surface);border:1px solid var(--border);">
+      <div class="spinner" style="width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Loading multi-store inventory breakdown...</div>
+    </div>
+  } @else {
+    <!-- Quick Stats Bento Row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:24px;">
       <!-- Total Stock -->
-      <div class="card" style="padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); font-weight: 700; margin-bottom: 6px;">
-          {{ isGeneral() ? 'Total Stock (All Stores)' : 'Store Stock' }}
+      <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:700;">
+            {{ isGeneral() ? 'Total Stock (All Stores)' : 'Store Stock' }}
+          </div>
+          <div class="mono" style="font-size:26px;font-weight:900;color:var(--text);margin-top:6px;">
+            {{ totals().onHand | number }} <span style="font-size:13px;font-weight:500;color:var(--text3);">Units</span>
+          </div>
         </div>
-        <div style="font-size: 26px; font-weight: 800; color: var(--text1);">
-          {{ totals().onHand | number }}
-        </div>
-        <div style="font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 4px;">
+        <div style="font-size:11px;color:var(--accent);font-weight:700;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
           {{ totals().formatted }}
         </div>
       </div>
 
-      <!-- Available to Sell / Move -->
-      <div class="card" style="padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); font-weight: 700; margin-bottom: 6px;">
-          Available Stock
+      <!-- Available Stock -->
+      <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:700;">
+            Available to Sell
+          </div>
+          <div class="mono" style="font-size:26px;font-weight:900;color:#10b981;margin-top:6px;">
+            {{ totals().available | number }} <span style="font-size:13px;font-weight:500;color:var(--text3);">Units</span>
+          </div>
         </div>
-        <div style="font-size: 26px; font-weight: 800; color: var(--green);">
-          {{ totals().available | number }}
-        </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-          On Hand minus Reserved
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          On Hand minus active orders
         </div>
       </div>
 
       <!-- Reserved Stock -->
-      <div class="card" style="padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); font-weight: 700; margin-bottom: 6px;">
-          Reserved Stock
+      <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:700;">
+            Reserved Stock
+          </div>
+          <div class="mono" style="font-size:26px;font-weight:900;color:#f59e0b;margin-top:6px;">
+            {{ totals().reserved | number }} <span style="font-size:13px;font-weight:500;color:var(--text3);">Units</span>
+          </div>
         </div>
-        <div style="font-size: 26px; font-weight: 800; color: var(--amber);">
-          {{ totals().reserved | number }}
-        </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-          Locked in pending orders / layaways
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          Locked in pending checkout carts
         </div>
       </div>
 
-      <!-- Combined Reorder Threshold -->
-      <div class="card" style="padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); font-weight: 700; margin-bottom: 6px;">
-          {{ isGeneral() ? 'Combined Reorder Point' : 'Store Reorder Point' }}
+      <!-- Reorder Threshold -->
+      <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:700;">
+            {{ isGeneral() ? 'Combined Reorder Point' : 'Store Reorder Point' }}
+          </div>
+          <div class="mono" style="font-size:26px;font-weight:900;color:var(--text2);margin-top:6px;">
+            {{ totals().reorderPoint | number }} <span style="font-size:13px;font-weight:500;color:var(--text3);">Units</span>
+          </div>
         </div>
-        <div style="font-size: 26px; font-weight: 800; color: var(--text2);">
-          {{ totals().reorderPoint | number }}
-        </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-          {{ isGeneral() ? 'Sum of all store thresholds' : 'Threshold for this store' }}
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+          Replenishment trigger target
         </div>
       </div>
     </div>
 
     <!-- Store Breakdown Table Card -->
-    <div class="card" style="border: 1px solid var(--border); border-radius: 16px; background: var(--surface); overflow: hidden; box-shadow: var(--shadow-sm);">
-      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+    <div class="card" style="border:1px solid var(--border);border-radius:16px;background:var(--surface);overflow:hidden;">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: var(--text1);">
-            {{ isGeneral() ? 'Store Stock Levels' : 'Store Stock Level' }}
+          <div style="font-size:14px;font-weight:800;color:var(--text);">
+            {{ isGeneral() ? 'Store Stock Distribution' : 'Store Stock Level' }}
           </div>
-          <div style="font-size: 12px; color: var(--text3); margin-top: 2px;">
-            {{ isGeneral() ? 'Detailed breakdown across each retail branch and warehouse.' : 'Current inventory level and replenishment threshold.' }}
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+            {{ isGeneral() ? 'Granular inventory balance across retail outlets and fulfillment nodes.' : 'Current inventory balance and replenishment threshold.' }}
           </div>
         </div>
-        <div style="font-size: 12px; font-weight: 700; color: var(--text3);">
+        <span class="badge" style="background:var(--surface2);font-size:11px;padding:4px 10px;border-radius:8px;">
           {{ isGeneral() ? storesStock().length + ' Active Store Location(s)' : (storesStock()[0]?.storeName || 'Assigned Store') }}
-        </div>
+        </span>
       </div>
 
-      <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+      <div style="overflow-x:auto;">
+        <table class="tbl" style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
-            <tr style="border-bottom: 1px solid var(--border); background: var(--surface2); font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px;">
-              <th style="padding: 14px 24px; text-align: left;">Store / Outlet</th>
-              <th style="padding: 14px 16px; text-align: right;">On Hand</th>
-              <th style="padding: 14px 16px; text-align: right;">Reserved</th>
-              <th style="padding: 14px 16px; text-align: right;">Available</th>
-              <th style="padding: 14px 16px; text-align: right;">Reorder Point</th>
-              <th style="padding: 14px 16px; text-align: right;">Reorder Qty</th>
-              <th style="padding: 14px 16px; text-align: center;">Status</th>
-              <th style="padding: 14px 24px; text-align: right;">Actions</th>
+            <tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
+              <th style="padding:12px 18px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">STORE / OUTLET</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">ON HAND</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">RESERVED</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">AVAILABLE</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">REORDER POINT</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">REORDER QTY</th>
+              <th style="padding:12px 16px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">STATUS</th>
+              <th style="padding:12px 18px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of storesStock()" class="hover-row" style="border-bottom: 1px solid var(--border);">
-              <!-- Store Name -->
-              <td style="padding: 16px 24px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                  <div style="font-size: 18px;">🏪</div>
-                  <div>
-                    <div style="font-weight: 700; font-size: 14px; color: var(--text1);">
-                      {{ s.storeName || 'Branch' }}
+            @for (s of storesStock(); track s.storeId) {
+              <tr style="border-bottom:1px solid var(--border);">
+                <!-- Store Name -->
+                <td style="padding:14px 18px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);">
+                      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                      </svg>
                     </div>
-                    <div style="font-size: 11px; color: var(--text3);">
-                      Store ID: {{ s.storeId | slice:0:8 }}
+                    <div>
+                      <div style="font-weight:700;color:var(--text);">{{ s.storeName || 'Branch' }}</div>
+                      <div class="mono" style="font-size:10px;color:var(--text3);">Store ID: {{ (s.storeId || '').substring(0, 8) }}</div>
                     </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- On Hand -->
-              <td style="padding: 16px 16px; text-align: right;">
-                <div style="font-weight: 800; font-size: 14px; color: var(--text1);">
-                  {{ s.quantityOnHand | number }}
-                </div>
-                <div style="font-size: 10px; color: var(--accent); font-weight: 700;">
-                  {{ s.formatted }}
-                </div>
-              </td>
+                <!-- On Hand -->
+                <td style="padding:14px 16px;text-align:right;">
+                  <div class="mono" style="font-weight:800;font-size:13px;color:var(--text);">
+                    {{ s.quantityOnHand | number }}
+                  </div>
+                  <div class="badge" style="background:rgba(79,70,229,0.08);color:var(--accent);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;display:inline-block;margin-top:2px;">
+                    {{ s.formatted }}
+                  </div>
+                </td>
 
-              <!-- Reserved -->
-              <td style="padding: 16px 16px; text-align: right; color: var(--text3);" class="mono">
-                {{ s.quantityReserved | number }}
-              </td>
+                <!-- Reserved -->
+                <td class="mono" style="padding:14px 16px;text-align:right;color:var(--text3);">
+                  {{ s.quantityReserved | number }}
+                </td>
 
-              <!-- Available -->
-              <td style="padding: 16px 16px; text-align: right;" class="mono">
-                <span [style.color]="s.available <= s.reorderPoint ? 'var(--red)' : 'var(--green)'" style="font-weight: 800; font-size: 14px;">
+                <!-- Available -->
+                <td class="mono" style="padding:14px 16px;text-align:right;font-weight:800;font-size:13px;"
+                    [style.color]="s.available <= s.reorderPoint ? 'var(--red)' : '#10b981'">
                   {{ s.available | number }}
-                </span>
-              </td>
+                </td>
 
-              <!-- Reorder Point -->
-              <td style="padding: 16px 16px; text-align: right; color: var(--text2);" class="mono">
-                {{ s.reorderPoint | number }}
-              </td>
+                <!-- Reorder Point -->
+                <td class="mono" style="padding:14px 16px;text-align:right;color:var(--text2);">
+                  {{ s.reorderPoint | number }}
+                </td>
 
-              <!-- Reorder Qty -->
-              <td style="padding: 16px 16px; text-align: right; color: var(--text3);" class="mono">
-                {{ s.reorderQty | number }}
-              </td>
+                <!-- Reorder Qty -->
+                <td class="mono" style="padding:14px 16px;text-align:right;color:var(--text3);">
+                  {{ s.reorderQty | number }}
+                </td>
 
-              <!-- Status Badge -->
-              <td style="padding: 16px 16px; text-align: center;">
-                <span class="badge" [ngClass]="{
-                  'badge-green': s.status === 'OK',
-                  'badge-amber': s.status === 'LOW',
-                  'badge-red': s.status === 'OUT'
-                }" style="font-size: 10px; padding: 4px 10px;">
-                  {{ s.status }}
-                </span>
-              </td>
+                <!-- Status Badge -->
+                <td style="padding:14px 16px;text-align:center;">
+                  @if (s.status === 'OK') {
+                    <span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      IN STOCK
+                    </span>
+                  } @else if (s.status === 'LOW') {
+                    <span class="badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      LOW STOCK
+                    </span>
+                  } @else {
+                    <span class="badge" style="background:rgba(239,68,68,0.1);color:var(--red);font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      OUT OF STOCK
+                    </span>
+                  }
+                </td>
 
-              <!-- Action: Adjust -->
-              <td style="padding: 16px 24px; text-align: right;">
-                <button *ngIf="canAdjust() && (isGeneral() || s.storeId === userStoreId())" class="btn btn-secondary btn-xs" (click)="openAdjust(s)">
-                  ✏️ Adjust Stock
-                </button>
-              </td>
-            </tr>
+                <!-- Actions -->
+                <td style="padding:14px 18px;text-align:right;">
+                  @if (canAdjust() && (isGeneral() || s.storeId === userStoreId())) {
+                    <button class="btn btn-secondary" (click)="openAdjust(s)" style="padding:4px 10px;font-size:11px;border-radius:6px;">
+                      ✏️ Adjust
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
 
-            <!-- Empty State -->
-            <tr *ngIf="storesStock().length === 0">
-              <td colspan="8" style="text-align: center; padding: 60px 24px;">
-                <div style="font-size: 40px; margin-bottom: 12px; opacity: 0.6;">📦</div>
-                <div style="font-size: 16px; font-weight: 700; color: var(--text1);">No Stock Records Found</div>
-                <div style="font-size: 13px; color: var(--text3); margin-top: 4px; margin-bottom: 16px;">
-                  This product has not yet been initialized in any store inventory.
-                </div>
-                <button (click)="openAddStoreModal()" class="btn btn-primary btn-sm">
-                  Initialize in a Store
-                </button>
-              </td>
-            </tr>
+            @if (storesStock().length === 0) {
+              <tr>
+                <td colspan="8" style="text-align:center;padding:50px 20px;color:var(--text3);">
+                  This product has not been provisioned to any store inventory yet.
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
     </div>
-  </div>
+  }
 
-  <!-- ADJUST STOCK MODAL -->
-  <div *ngIf="isAdjustModalOpen()" class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
-    <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;">
-      <!-- Modal Header -->
-      <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
-        <div>
-          <div style="font-size:18px;font-weight:800;color:var(--text1);">Adjust Stock</div>
-          <div style="font-size:12px;color:var(--accent);font-weight:600;">
-            🏪 {{ selectedStoreStock()?.storeName }} — {{ productInfo()?.variantName }}
-          </div>
-        </div>
-        <button (click)="closeAdjustModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-      </div>
-
-      <!-- Modal Body -->
-      <div style="padding:24px;">
-        <div style="display:grid;gap:16px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div>
-              <label class="label">Quantity On Hand</label>
-              <input type="number" class="inp" [(ngModel)]="adjForm.oh" style="font-weight:700;font-size:15px;">
-              <div style="font-size:11px;color:var(--accent);margin-top:4px;font-weight:600;">
-                {{ formatStock(adjForm.oh, productInfo()?.singlesPerRoll, productInfo()?.rollsPerPack, productInfo()?.singlesPerPack) }}
-              </div>
-            </div>
-            <div>
-              <label class="label">Quantity Reserved</label>
-              <input type="number" class="inp" [(ngModel)]="adjForm.res" style="font-weight:700;font-size:15px;">
-              <div style="font-size:10px;color:var(--text3);margin-top:4px;">Committed to orders</div>
-            </div>
-          </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div>
-              <label class="label">Store Reorder Point</label>
-              <input type="number" class="inp" [(ngModel)]="adjForm.ro">
-              <div style="font-size:10px;color:var(--text3);margin-top:4px;">Threshold for LOW stock</div>
-            </div>
-            <div>
-              <label class="label">Store Reorder Qty</label>
-              <input type="number" class="inp" [(ngModel)]="adjForm.roQty">
-              <div style="font-size:10px;color:var(--text3);margin-top:4px;">Recommended order size</div>
-            </div>
-          </div>
-
+  <!-- Adjust Stock Modal -->
+  @if (isAdjustModalOpen()) {
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+      <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:460px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
           <div>
-            <label class="label">Reason / Notes for Adjustment</label>
-            <input type="text" class="inp" [(ngModel)]="adjForm.reason" placeholder="e.g. Physical stock count discrepancy, shrinkage, etc.">
+            <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;">Store Level Adjustment</div>
+            <h3 style="margin:2px 0 0;font-size:17px;font-weight:800;color:var(--text);">{{ selectedStoreStock()?.storeName }}</h3>
           </div>
+          <button (click)="closeAdjustModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">×</button>
         </div>
-      </div>
 
-      <!-- Modal Footer -->
-      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:var(--surface);">
-        <button (click)="closeAdjustModal()" class="btn btn-secondary" [disabled]="isSaving()">Cancel</button>
-        <button (click)="saveAdjustment()" class="btn btn-primary" [disabled]="isSaving()">
-          {{ isSaving() ? 'Saving...' : 'Save Adjustment' }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ADD STORE STOCK MODAL -->
-  <div *ngIf="isAddStoreModalOpen()" class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
-    <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:480px;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden;">
-      <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
-        <div>
-          <div style="font-size:18px;font-weight:800;color:var(--text1);">Initialize Store Stock</div>
-          <div style="font-size:12px;color:var(--text3);">Assign this product to another location</div>
-        </div>
-        <button (click)="closeAddStoreModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-      </div>
-
-      <div style="padding:24px;">
-        <div style="display:grid;gap:16px;">
+        <div style="display:grid;gap:14px;">
           <div>
-            <label class="label">Target Store</label>
-            <select class="inp" [(ngModel)]="addStoreForm.storeId">
-              <option value="" disabled>Select Store Location...</option>
-              <option *ngFor="let st of allStores()" [value]="st.id">{{ st.name }} ({{ st.code }})</option>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Physical Quantity On Hand</label>
+            <input type="number" class="inp mono" [(ngModel)]="adjForm.oh" style="font-size:16px;font-weight:700;">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reserved Units</label>
+            <input type="number" class="inp mono" [(ngModel)]="adjForm.res">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Point</label>
+              <input type="number" class="inp mono" [(ngModel)]="adjForm.ro">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Qty</label>
+              <input type="number" class="inp mono" [(ngModel)]="adjForm.roQty">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Adjustment Reason</label>
+            <select class="inp" [(ngModel)]="adjForm.reason" style="font-size:12px;">
+              <option value="Physical Recount / Cycle Count">Physical Recount / Cycle Count</option>
+              <option value="Damaged Goods / Spoilage">Damaged Goods / Spoilage</option>
+              <option value="Inventory Shrinkage / Theft">Inventory Shrinkage / Theft</option>
+              <option value="Internal Store Consumption">Internal Store Consumption</option>
             </select>
           </div>
+        </div>
 
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+          <button (click)="closeAdjustModal()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;border-radius:8px;">Cancel</button>
+          <button (click)="saveAdjustment()" [disabled]="isSaving()" class="btn btn-primary" style="padding:8px 18px;font-size:12px;border-radius:8px;font-weight:700;">
+            {{ isSaving() ? 'Saving...' : 'Save Adjustment' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add to Store Modal -->
+  @if (isAddStoreModalOpen()) {
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+      <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 style="margin:0;font-size:18px;font-weight:800;color:var(--text);">Assign Product to Store</h3>
+          <button (click)="closeAddStoreModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">×</button>
+        </div>
+
+        <div style="display:grid;gap:14px;">
           <div>
-            <label class="label">Initial Quantity On Hand</label>
-            <input type="number" class="inp" [(ngModel)]="addStoreForm.quantityOnHand">
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Target Store Branch</label>
+            <select class="inp" [(ngModel)]="addStoreForm.storeId" style="font-size:12px;">
+              @for (st of allStores(); track st.id) {
+                <option [value]="st.id">{{ st.name }}</option>
+              }
+            </select>
           </div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Initial Stock On Hand</label>
+            <input type="number" class="inp mono" [(ngModel)]="addStoreForm.quantityOnHand">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-              <label class="label">Reorder Point</label>
-              <input type="number" class="inp" [(ngModel)]="addStoreForm.reorderPoint">
+              <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Point</label>
+              <input type="number" class="inp mono" [(ngModel)]="addStoreForm.reorderPoint">
             </div>
             <div>
-              <label class="label">Reorder Qty</label>
-              <input type="number" class="inp" [(ngModel)]="addStoreForm.reorderQty">
+              <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Qty</label>
+              <input type="number" class="inp mono" [(ngModel)]="addStoreForm.reorderQty">
             </div>
           </div>
         </div>
-      </div>
 
-      <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:var(--surface);">
-        <button (click)="closeAddStoreModal()" class="btn btn-secondary" [disabled]="isSaving()">Cancel</button>
-        <button (click)="saveAddStore()" class="btn btn-primary" [disabled]="isSaving()">
-          {{ isSaving() ? 'Adding...' : 'Initialize Stock' }}
-        </button>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+          <button (click)="closeAddStoreModal()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;border-radius:8px;">Cancel</button>
+          <button (click)="saveAddStore()" [disabled]="isSaving()" class="btn btn-primary" style="padding:8px 18px;font-size:12px;border-radius:8px;font-weight:700;">
+            {{ isSaving() ? 'Saving...' : 'Assign to Store' }}
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .animate-spin { animation: spin 0.8s linear infinite; }
+</style>

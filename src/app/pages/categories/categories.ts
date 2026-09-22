@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -16,6 +16,34 @@ export class CategoriesComponent implements OnInit {
   public categories = signal<Category[]>([]);
   public isLoading = signal<boolean>(false);
   public isOwner = signal<boolean>(false);
+
+  public totalCount = computed(() => this.categories().length);
+  public activeCount = computed(() => this.categories().filter(c => c.isActive).length);
+  public inactiveCount = computed(() => this.categories().filter(c => !c.isActive).length);
+
+  public searchQuery = signal<string>('');
+  public statusFilter = signal<string>('All');
+
+  public filteredCategories = computed(() => {
+    let list = this.categories();
+    const q = this.searchQuery().toLowerCase().trim();
+    const status = this.statusFilter();
+
+    if (status === 'Active') {
+      list = list.filter(c => c.isActive);
+    } else if (status === 'Inactive') {
+      list = list.filter(c => !c.isActive);
+    }
+
+    if (q) {
+      list = list.filter(c => 
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.slug && c.slug.toLowerCase().includes(q))
+      );
+    }
+
+    return list;
+  });
 
   constructor(
     private categoryService: CategoryService,

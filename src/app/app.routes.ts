@@ -36,6 +36,7 @@ import { PromotionsComponent } from './pages/promotions/promotions';
 import { PromotionFormComponent } from './pages/promotions/form/promotion-form';
 import { PromotionDetailComponent } from './pages/promotions/detail/promotion-detail';
 import { TerminalsComponent } from './pages/terminals/terminals';
+import { TerminalFormComponent } from './pages/terminals/form/terminal-form';
 import { TillSessionsComponent } from './pages/till-sessions/till-sessions';
 import { TillSessionDetailComponent } from './pages/till-sessions/detail/till-session-detail';
 import { CategoriesComponent } from './pages/categories/categories';
@@ -135,8 +136,10 @@ export const routes: Routes = [
       { path: 'audit', title: 'Audit Logs — RetailOS', component: AuditComponent },
       { path: 'audit/:id', title: 'Audit Entry Details — RetailOS', component: AuditDetailComponent },
 
-      // System
+      // Terminals & Hardware
       { path: 'terminals', title: 'Terminals — RetailOS', component: TerminalsComponent },
+      { path: 'terminals/new', title: 'Register Terminal — RetailOS', component: TerminalFormComponent },
+      { path: 'terminals/:id/edit', title: 'Edit Terminal — RetailOS', component: TerminalFormComponent },
       { path: 'settings', title: 'Settings — RetailOS', component: SettingsComponent },
       { path: 'reports', title: 'Reports — RetailOS', component: ReportsComponent },
       { path: 'profile', title: 'My Profile — RetailOS', component: ProfileComponent },

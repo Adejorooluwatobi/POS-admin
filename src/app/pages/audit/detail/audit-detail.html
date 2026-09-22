@@ -1,31 +1,32 @@
-<div class="page-container" style="padding: 24px; max-width: 950px; margin: 0 auto;">
+<div class="page-container" style="padding:24px;max-width:950px;margin:0 auto;">
   <!-- Breadcrumbs & Header -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/audit" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Audit Logs
+  <div style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);margin-bottom:8px;">
+      <a routerLink="/app/audit" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Audit Logs
       </a>
       <span>/</span>
-      <span>Audit Record</span>
+      <span>Forensic Inspection</span>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <h1 style="font-size:24px;font-weight:800;margin:0;color:var(--text1);letter-spacing:-0.02em;">
             Audit Event Inspection
           </h1>
-          <span [class]="'badge ' + getActionClass()" style="padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;">
+          <span [class]="'badge ' + getActionClass()" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">
             {{ log()?.action }}
           </span>
         </div>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Event ID: <span class="mono" style="font-weight:700; color:var(--text2);">{{ log()?.id }}</span>
+        <div style="font-size:13px;color:var(--text3);margin-top:4px;">
+          Event ID: <span class="mono" style="font-weight:700;color:var(--text1);">{{ log()?.id }}</span>
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
-        <a routerLink="/app/audit" class="btn btn-secondary">
+      <div style="display:flex;gap:10px;">
+        <a routerLink="/app/audit" class="btn btn-secondary" style="font-size:12px;">
           Back to Audit Trail
         </a>
       </div>
@@ -33,68 +34,69 @@
   </div>
 
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
+    <div style="text-align:center;padding:80px 0;">
       <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading audit entry...</div>
+      <div style="color:var(--text3);font-size:14px;font-weight:600;">Loading audit entry details...</div>
     </div>
   } @else if (errorMessage()) {
-    <div style="padding: 24px; text-align:center; background:rgba(255,60,60,0.08); border-radius:12px; border:1px solid rgba(255,60,60,0.2);">
-      <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">Audit Entry Not Found</div>
-      <div style="color: var(--text2); font-size: 13px;">{{ errorMessage() }}</div>
+    <div style="padding:24px;text-align:center;background:rgba(239,68,68,0.08);border-radius:14px;border:1px solid rgba(239,68,68,0.2);">
+      <div style="color:var(--red);font-weight:700;margin-bottom:8px;">Audit Entry Not Found</div>
+      <div style="color:var(--text2);font-size:13px;">{{ errorMessage() }}</div>
     </div>
   } @else {
     <!-- Overview Strip -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Target Entity</div>
-        <div style="font-size: 16px; font-weight: 800; color: var(--text1); margin-top: 4px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:24px;">
+      <div class="card" style="padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Target Entity</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text1);margin-top:6px;">
           {{ log()?.entityType }}
         </div>
-        <div class="mono" style="font-size: 11px; color: var(--text3); margin-top: 2px;">ID: {{ log()?.entityId }}</div>
+        <div class="mono" style="font-size:11px;color:var(--text3);margin-top:2px;">ID: {{ log()?.entityId }}</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Operator / Staff</div>
-        <div style="font-size: 16px; font-weight: 800; color: var(--accent); margin-top: 4px;">
+      <div class="card" style="padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Operator / Staff</div>
+        <div style="font-size:16px;font-weight:800;color:var(--accent);margin-top:6px;">
           {{ log()?.staffName || 'System Service' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">{{ log()?.storeName || 'Cross-Store' }}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">{{ log()?.storeName || 'Cross-Store' }}</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Device & IP Address</div>
-        <div class="mono" style="font-size: 15px; font-weight: 800; color: var(--text1); margin-top: 4px;">
+      <div class="card" style="padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Device & IP Address</div>
+        <div class="mono" style="font-size:15px;font-weight:800;color:var(--text1);margin-top:6px;">
           {{ log()?.ipAddress || '127.0.0.1' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">{{ log()?.terminalName || 'Web Management Portal' }}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">{{ log()?.terminalName || 'Web Management Portal' }}</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Timestamp</div>
-        <div style="font-size: 14px; font-weight: 700; color: var(--text1); margin-top: 6px;">
+      <div class="card" style="padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Timestamp</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text1);margin-top:8px;">
           {{ log()?.createdAt | date:'medium' }}
         </div>
       </div>
     </div>
 
-    <div style="display:grid; gap: 24px;">
+    <div style="display:grid;gap:20px;">
       <!-- Metadata Context -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🌐 Network & Execution Context
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Network & Execution Context
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
-            <span style="font-size: 11px; color: var(--text3); text-transform:uppercase; font-weight:700; display:block; margin-bottom:4px;">Request URI Path</span>
-            <div class="mono" style="font-size: 12px; font-weight:600; color:var(--text1); padding: 8px 12px; background:var(--surface2); border-radius:8px; border:1px solid var(--border);">
+            <span style="font-size:11px;color:var(--text3);text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px;">Request URI Path</span>
+            <div class="mono" style="font-size:12px;font-weight:600;color:var(--text1);padding:10px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
               {{ log()?.requestPath || 'N/A' }}
             </div>
           </div>
 
           <div>
-            <span style="font-size: 11px; color: var(--text3); text-transform:uppercase; font-weight:700; display:block; margin-bottom:4px;">Store Location</span>
-            <div style="font-size: 13px; font-weight:600; color:var(--text1); padding: 8px 12px; background:var(--surface2); border-radius:8px; border:1px solid var(--border);">
+            <span style="font-size:11px;color:var(--text3);text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px;">Store Location</span>
+            <div style="font-size:13px;font-weight:600;color:var(--text1);padding:10px 14px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
               {{ log()?.storeName || 'All Stores / Headquarters' }}
             </div>
           </div>
@@ -102,32 +104,33 @@
       </div>
 
       <!-- State Changes & Field Diffs -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🔍 Data Changes & Differential Audit
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Data Differential & Property Audit
         </div>
 
         @if (parsedChanges()) {
           @if (isUpdateAction()) {
             <div style="overflow-x:auto;">
-              <table class="tbl" style="width:100%; border-collapse: collapse;">
+              <table class="tbl" style="width:100%;border-collapse:collapse;">
                 <thead>
-                  <tr style="border-bottom: 1.5px solid var(--border); font-size: 11px; text-transform:uppercase; color:var(--text3);">
-                    <th style="padding: 10px 12px; text-align:left;">Field / Property</th>
-                    <th style="padding: 10px 12px; text-align:left;">Previous Value</th>
-                    <th style="padding: 10px 12px; text-align:left;">New Value</th>
+                  <tr style="border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text3);">
+                    <th style="padding:10px 12px;text-align:left;">Field / Property</th>
+                    <th style="padding:10px 12px;text-align:left;">Previous Value</th>
+                    <th style="padding:10px 12px;text-align:left;">New Value</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (entry of parsedChanges() | keyvalue; track entry.key) {
-                    <tr style="border-bottom: 1px solid var(--border); font-size: 12px;">
-                      <td class="mono" style="padding: 10px 12px; font-weight: 700; color: var(--accent);">
+                    <tr style="border-bottom:1px solid var(--border);font-size:12px;">
+                      <td class="mono" style="padding:10px 12px;font-weight:700;color:var(--accent);">
                         {{ entry.key }}
                       </td>
-                      <td class="mono" style="padding: 10px 12px; color: var(--text3); background: rgba(239,68,68,0.03);">
-                        <span style="text-decoration: line-through;">{{ formatValue($any(entry.value).Old) }}</span>
+                      <td class="mono" style="padding:10px 12px;color:var(--text3);background:rgba(239,68,68,0.03);">
+                        <span style="text-decoration:line-through;">{{ formatValue($any(entry.value).Old) }}</span>
                       </td>
-                      <td class="mono" style="padding: 10px 12px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.04);">
+                      <td class="mono" style="padding:10px 12px;font-weight:700;color:#10b981;background:rgba(16,185,129,0.04);">
                         {{ formatValue($any(entry.value).New) }}
                       </td>
                     </tr>
@@ -137,20 +140,20 @@
             </div>
           } @else {
             <div style="overflow-x:auto;">
-              <table class="tbl" style="width:100%; border-collapse: collapse;">
+              <table class="tbl" style="width:100%;border-collapse:collapse;">
                 <thead>
-                  <tr style="border-bottom: 1.5px solid var(--border); font-size: 11px; text-transform:uppercase; color:var(--text3);">
-                    <th style="padding: 10px 12px; text-align:left;">Field / Property</th>
-                    <th style="padding: 10px 12px; text-align:left;">Recorded Value</th>
+                  <tr style="border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;color:var(--text3);">
+                    <th style="padding:10px 12px;text-align:left;">Field / Property</th>
+                    <th style="padding:10px 12px;text-align:left;">Recorded Value</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (entry of parsedChanges() | keyvalue; track entry.key) {
-                    <tr style="border-bottom: 1px solid var(--border); font-size: 12px;">
-                      <td class="mono" style="padding: 10px 12px; font-weight: 700; color: var(--accent);">
+                    <tr style="border-bottom:1px solid var(--border);font-size:12px;">
+                      <td class="mono" style="padding:10px 12px;font-weight:700;color:var(--accent);">
                         {{ entry.key }}
                       </td>
-                      <td class="mono" style="padding: 10px 12px; color: var(--text1); font-weight: 600;">
+                      <td class="mono" style="padding:10px 12px;color:var(--text1);font-weight:600;">
                         {{ formatValue(entry.value) }}
                       </td>
                     </tr>
@@ -160,8 +163,8 @@
             </div>
           }
         } @else {
-          <div style="padding: 32px; text-align:center; color:var(--text3); font-size:13px; background:var(--surface2); border-radius:12px;">
-            No structured entity field delta was captured for this action.
+          <div style="padding:32px;text-align:center;color:var(--text3);font-size:13px;background:var(--surface2);border-radius:12px;border:1px dashed var(--border);">
+            No structured entity field delta was captured for this action event.
           </div>
         }
       </div>
@@ -173,5 +176,6 @@
   .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
   .badge-warning { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
   .badge-danger { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-info { background: rgba(99,102,241,0.12); color: #6366f1; border: 1px solid rgba(99,102,241,0.3); }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
