@@ -1,79 +1,217 @@
-<div class="fade-up">
-  <!-- Header -->
-  <div style="margin-bottom:20px;">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Audit Logs</div>
-    <div style="font-size:12px;color:var(--text3);">Complete trail of administrative and operational actions</div>
+<div class="fade-up" style="display:flex;flex-direction:column;gap:20px;">
+  <!-- Header with Actions -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0;color:var(--text1);">Compliance Audit Trail</h1>
+        <span class="badge badge-accent" style="font-size:11px;font-weight:700;">Non-Repudiation</span>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;">Immutable forensic log of operational events, price overrides, cash drawer kicks, and data mutations</div>
+    </div>
+
+    <button (click)="loadLogs()" class="btn btn-secondary" style="padding:8px 14px;border-radius:10px;font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;" [style.animation]="isLoading() ? 'spin 1s linear infinite' : 'none'"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Refresh Trail
+    </button>
   </div>
 
-  <div class="card" style="margin-bottom:20px;padding:12px;">
-    <div style="display:flex;gap:12px;">
-      <div style="flex:1;position:relative;">
-        <input type="text" class="inp" 
-               [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
-               placeholder="Search by staff, action or entity..." style="padding-left:36px;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);">🔍</span>
+  <!-- Bento Stats Row -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Total Audit Events</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
       </div>
-      <select class="inp" style="width:180px;" [ngModel]="filterAction()" (ngModelChange)="filterAction.set($event)">
-        <option value="">All Actions</option>
-        <option value="Insert">Create</option>
-        <option value="Update">Update</option>
-        <option value="Delete">Delete</option>
-      </select>
+      <div style="font-size:24px;font-weight:900;color:var(--text1);" class="mono">{{ totalEvents().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Tracked immutable actions</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Security / Deletions</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;color:var(--red);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:var(--red);" class="mono">{{ criticalActions().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Deletions, voids, and deactivations</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Data Mutations</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:#f59e0b;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:#f59e0b;" class="mono">{{ mutationActions().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Updates and inventory adjustments</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Record Creates</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;color:#10b981;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:#10b981;" class="mono">{{ creationActions().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Newly provisioned entities</div>
     </div>
   </div>
 
+  <!-- Filter & Search Control Bar -->
+  <div class="card" style="padding:14px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <!-- Search Bar -->
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:280px;background:var(--surface2);padding:8px 14px;border-radius:10px;border:1px solid var(--border);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:var(--text3);flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input 
+        type="text" 
+        [ngModel]="searchTerm()" 
+        (ngModelChange)="searchTerm.set($event)" 
+        placeholder="Search audit trail by staff, action, entity, store, or client IP..." 
+        style="background:none;border:none;outline:none;font-size:13px;color:var(--text1);width:100%;font-family:inherit;">
+      @if (searchTerm()) {
+        <button (click)="searchTerm.set('')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0;">✕</button>
+      }
+    </div>
+
+    <!-- Filter Pills -->
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button 
+        (click)="setActionFilter('ALL')" 
+        [class.btn-primary]="filterAction() === 'ALL'" 
+        [class.btn-secondary]="filterAction() !== 'ALL'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        All Events ({{ totalEvents() }})
+      </button>
+      <button 
+        (click)="setActionFilter('CREATE')" 
+        [class.btn-primary]="filterAction() === 'CREATE'" 
+        [class.btn-secondary]="filterAction() !== 'CREATE'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Creates ({{ creationActions() }})
+      </button>
+      <button 
+        (click)="setActionFilter('UPDATE')" 
+        [class.btn-primary]="filterAction() === 'UPDATE'" 
+        [class.btn-secondary]="filterAction() !== 'UPDATE'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Updates ({{ mutationActions() }})
+      </button>
+      <button 
+        (click)="setActionFilter('CRITICAL')" 
+        [class.btn-primary]="filterAction() === 'CRITICAL'" 
+        [class.btn-secondary]="filterAction() !== 'CRITICAL'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Critical / Deletions ({{ criticalActions() }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading audit logs...</span>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text3);">
+      <div class="spinner" style="width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
+      <div style="font-size:13px;font-weight:600;">Loading compliance audit stream...</div>
     </div>
   } @else {
-    <div class="card">
+    <!-- Audit Table Card -->
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table class="tbl">
+        <table class="tbl" style="width:100%;border-collapse:collapse;">
           <thead>
             <tr>
-              <th>TIMESTAMP</th>
-              <th>STAFF</th>
-              <th>ACTION</th>
-              <th>ENTITY</th>
-              <th>STORE</th>
-              <th>IP ADDRESS</th>
-              <th>TERMINAL</th>
-              <th style="text-align:right;">ACTIONS</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Timestamp</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Operator / Staff</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Security Action</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Entity</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Branch / Outlet</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Client IP</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Terminal</th>
+              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Inspect</th>
             </tr>
           </thead>
           <tbody>
             @for (l of filteredLogs(); track l.id) {
-              <tr class="row-hover">
-                <td class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</td>
-                <td style="font-weight:600;font-size:13px;">{{ l.staff }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-red': l.action?.includes('VOID') || l.action?.includes('DELETE') || l.action?.includes('DEACTIVATE'),
-                    'badge-amber': l.action?.includes('UPDATE') || l.action?.includes('ADJUST'),
-                    'badge-green': l.action?.includes('CREATE') || l.action?.includes('OPEN') || l.action?.includes('Insert'),
-                    'badge-dim': !l.action
-                  }">{{ l.action }}</span>
+              <tr style="border-top:1px solid var(--border);transition:background .15s ease;">
+                <td style="padding:12px 16px;">
+                  <span class="mono" style="font-size:11px;color:var(--text2);">{{ l.ts }}</span>
                 </td>
-                <td class="mono" style="font-size:11px;color:var(--text3);">{{ l.entity }}</td>
-                <td style="color:var(--text2);font-size:12px;">{{ l.store }}</td>
-                <td class="mono" style="font-size:11px;color:var(--text3);">{{ l.ip }}</td>
-                <td style="font-size:12px;color:var(--text2);">{{ l.terminal }}</td>
-                <td style="text-align:right;">
-                  <a [routerLink]="['/app/audit', l.id]" class="btn btn-dim btn-sm" style="text-decoration:none;">View Detail</a>
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:26px;height:26px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--text1);border:1px solid var(--border);flex-shrink:0;">
+                      {{ l.staff ? l.staff[0].toUpperCase() : 'S' }}
+                    </div>
+                    <span style="font-weight:700;font-size:13px;color:var(--text1);">{{ l.staff }}</span>
+                  </div>
+                </td>
+                <td style="padding:12px 16px;">
+                  @if (l.action?.toUpperCase().includes('DELETE') || l.action?.toUpperCase().includes('VOID') || l.action?.toUpperCase().includes('DEACTIVATE')) {
+                    <span class="badge badge-red" style="font-size:10px;font-weight:700;">{{ l.action }}</span>
+                  } @else if (l.action?.toUpperCase().includes('UPDATE') || l.action?.toUpperCase().includes('ADJUST') || l.action?.toUpperCase().includes('PATCH')) {
+                    <span class="badge badge-amber" style="font-size:10px;font-weight:700;">{{ l.action }}</span>
+                  } @else if (l.action?.toUpperCase().includes('CREATE') || l.action?.toUpperCase().includes('INSERT') || l.action?.toUpperCase().includes('OPEN')) {
+                    <span class="badge badge-green" style="font-size:10px;font-weight:700;">{{ l.action }}</span>
+                  } @else {
+                    <span class="badge badge-dim" style="font-size:10px;font-weight:700;">{{ l.action }}</span>
+                  }
+                </td>
+                <td style="padding:12px 16px;">
+                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);background:rgba(99,102,241,0.08);padding:3px 8px;border-radius:6px;border:1px solid rgba(99,102,241,0.2);">
+                    {{ l.entity }}
+                  </span>
+                </td>
+                <td style="padding:12px 16px;">
+                  <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    {{ l.store }}
+                  </div>
+                </td>
+                <td style="padding:12px 16px;">
+                  <span class="mono" style="font-size:11px;color:var(--text3);">{{ l.ip }}</span>
+                </td>
+                <td style="padding:12px 16px;">
+                  <span style="font-size:12px;color:var(--text2);">{{ l.terminal }}</span>
+                </td>
+                <td style="padding:12px 16px;text-align:right;">
+                  <a [routerLink]="['/app/audit', l.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;font-size:11px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    Inspect
+                  </a>
                 </td>
               </tr>
             }
           </tbody>
         </table>
       </div>
+
+      <!-- Empty State -->
+      @if (filteredLogs().length === 0) {
+        <div style="padding:60px 20px;text-align:center;color:var(--text3);">
+          <div style="width:52px;height:52px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid var(--border);color:var(--text3);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:24px;height:24px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;">No Audit Events Recorded</div>
+          <div style="font-size:12px;color:var(--text3);max-width:380px;margin:0 auto 16px;">
+            @if (searchTerm()) {
+              No audit events matched "{{ searchTerm() }}". Try adjusting your search query or filters.
+            } @else {
+              No operational audit entries logged yet for your tenant account.
+            }
+          </div>
+        </div>
+      }
     </div>
   }
 </div>
 
 <style>
   @keyframes spin { to { transform: rotate(360deg); } }
-  .row-hover { cursor: pointer; transition: background 0.2s; }
-  .row-hover:hover { background: var(--bg2) !important; }
 </style>

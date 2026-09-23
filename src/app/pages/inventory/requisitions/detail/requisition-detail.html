@@ -1,65 +1,91 @@
-<div class="fade-up" style="padding:24px;">
-  <div *ngIf="requisition()" style="max-width:1200px;margin:0 auto;">
+<div class="fade-up" style="padding: 24px; max-width: 1300px; margin: 0 auto;">
+  <div *ngIf="requisition()">
     <!-- Breadcrumbs -->
-    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:20px;">
-      <a href="/app/inventory/requisitions" style="color:inherit;text-decoration:none;">Requisitions</a>
-      <span>/</span>
-      <span style="font-weight:700;color:var(--text1);">{{ requisition().requisitionNumber }}</span>
+    <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text3); margin-bottom:20px;">
+      <a routerLink="/app/inventory/requisitions" style="color:var(--accent); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:600;">
+        <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Stock Requisitions</span>
+      </a>
+      <span style="color:var(--border2);">/</span>
+      <span class="mono" style="font-weight:700; color:var(--text1);">{{ requisition().requisitionNumber }}</span>
     </div>
 
     <!-- Header Card -->
-    <div class="card" style="padding:28px 32px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; background:var(--surface);">
+    <div class="card" style="padding:24px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; background:var(--surface); border:1px solid var(--border); border-radius:16px; flex-wrap:wrap; gap:16px;">
       <div>
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-          <h1 style="font-size:24px; font-weight:800; margin:0; letter-spacing:-0.03em;">{{ requisition().requisitionNumber }}</h1>
+          <h1 style="font-size:24px; font-weight:800; margin:0; letter-spacing:-0.03em; color:var(--text1);" class="mono">
+            {{ requisition().requisitionNumber }}
+          </h1>
           <span class="badge" [ngClass]="{
             'badge-amber': requisition().status === 'Pending',
             'badge-accent': requisition().status === 'Approved' || requisition().status === 'UnderReview',
-            'badge-green': requisition().status === 'FullyFulfilled' || requisition().status === 'PartiallyFulfilled',
+            'badge-green': requisition().status === 'FullyFulfilled',
+            'badge-dim': requisition().status === 'PartiallyFulfilled',
             'badge-red': requisition().status === 'Rejected' || requisition().status === 'Cancelled'
-          }" style="padding:4px 10px; font-size:11px;">{{ requisition().status }}</span>
+          }" style="padding:4px 10px; font-size:11px; font-weight:700;">
+            {{ requisition().status }}
+          </span>
         </div>
-        <div style="font-size:12px; color:var(--text2); font-weight:500;">
-          Requested by <span style="color:var(--text1); font-weight:700;">{{ requisition().requestingStoreName }}</span> 
-          <span style="color:var(--text3); margin:0 6px;">•</span> 
-          {{ requisition().createdAt | date:'MMM d, y, h:mm a' }}
+        <div style="font-size:13px; color:var(--text2); display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span>Requested by <strong style="color:var(--text1);">{{ requisition().requestingStoreName }}</strong></span>
+          <span style="color:var(--border2);">•</span>
+          <span style="color:var(--text3);">{{ requisition().createdAt | date:'MMM d, y, h:mm a' }}</span>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;align-items:center;">
-        <button *ngIf="canCancel()" (click)="cancelRequisition()" class="btn btn-secondary" style="padding:10px 18px;border-radius:10px;">
+      <!-- Action Buttons -->
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <button *ngIf="canCancel()" (click)="cancelRequisition()" class="btn btn-secondary" style="height:38px; padding:0 16px; border-radius:10px; font-size:13px; color:var(--red); border-color:rgba(239,68,68,0.3);">
           Cancel Request
         </button>
-        <button *ngIf="canApproveOrReject()" (click)="openRejectModal()" class="btn btn-danger" style="padding:10px 18px;border-radius:10px;">
+        <button *ngIf="canApproveOrReject()" (click)="openRejectModal()" class="btn btn-danger" style="height:38px; padding:0 18px; border-radius:10px; font-size:13px; font-weight:700;">
           Reject
         </button>
-        <button *ngIf="canApproveOrReject()" (click)="showPlanner.set(true)" class="btn btn-primary" style="padding:10px 22px;border-radius:10px;">
-          🛠️ Fulfillment Planner
+        <button *ngIf="canApproveOrReject()" (click)="showPlanner.set(true)" class="btn btn-primary" style="height:38px; padding:0 20px; border-radius:10px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>Fulfillment Planner</span>
         </button>
       </div>
     </div>
 
     <!-- Rejection Notice Banner -->
-    <div *ngIf="requisition().status === 'Rejected'" class="card" style="padding:20px 24px;margin-bottom:24px;background:rgba(239,68,68,0.08);border:1px solid var(--red);display:flex;align-items:center;gap:16px;">
-      <span style="font-size:28px;">❌</span>
+    <div *ngIf="requisition().status === 'Rejected'" class="card" style="padding:18px 24px; margin-bottom:24px; background:rgba(239,68,68,0.06); border:1px solid var(--red); border-radius:14px; display:flex; align-items:center; gap:16px;">
+      <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center; color:var(--red); flex-shrink:0;">
+        <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
       <div>
-        <div style="font-size:16px;font-weight:800;color:var(--red);">Requisition Rejected</div>
-        <div style="font-size:13px;color:var(--text1);margin-top:2px;">Reason: {{ requisition().rejectionReason || 'No reason provided.' }}</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Reviewed on {{ requisition().reviewedAt | date:'medium' }}</div>
+        <div style="font-size:15px; font-weight:800; color:var(--red);">Requisition Rejected</div>
+        <div style="font-size:13px; color:var(--text1); margin-top:2px;">Reason: {{ requisition().rejectionReason || 'No detailed reason provided.' }}</div>
+        <div style="font-size:11px; color:var(--text3); margin-top:4px;">Reviewed on {{ requisition().reviewedAt | date:'medium' }}</div>
       </div>
     </div>
 
     <!-- Cancelled Notice Banner -->
-    <div *ngIf="requisition().status === 'Cancelled'" class="card" style="padding:16px 24px;margin-bottom:24px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;gap:12px;">
-      <span style="font-size:24px;">⚪</span>
+    <div *ngIf="requisition().status === 'Cancelled'" class="card" style="padding:16px 24px; margin-bottom:24px; background:var(--surface2); border:1px solid var(--border); border-radius:14px; display:flex; align-items:center; gap:14px;">
+      <div style="width:32px; height:32px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--text3);">
+        <svg style="width:16px; height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+        </svg>
+      </div>
       <div>
-        <div style="font-size:14px;font-weight:700;color:var(--text2);">Request Cancelled</div>
-        <div style="font-size:11px;color:var(--text3);">This stock requisition was cancelled by the store manager.</div>
+        <div style="font-size:14px; font-weight:700; color:var(--text2);">Request Cancelled</div>
+        <div style="font-size:11px; color:var(--text3);">This stock requisition was cancelled by the store administrator.</div>
       </div>
     </div>
 
     <!-- Status Stepper -->
-    <div class="card" style="padding:16px;margin-bottom:30px;">
+    <div class="card" style="padding:18px 24px; margin-bottom:24px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
       <app-status-stepper 
         [steps]="['Pending', 'UnderReview', 'Approved', 'PartiallyFulfilled', 'FullyFulfilled']" 
         [currentStatus]="requisition().status"
@@ -67,47 +93,53 @@
       </app-status-stepper>
     </div>
 
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:30px;">
-      <!-- Requested Items -->
-      <div>
-        <div class="card" style="overflow:hidden; margin-bottom:30px;">
-          <div style="padding:18px 24px; border-bottom:1px solid var(--border); background:var(--surface2);">
-            <div style="font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em;">Requested Items</div>
+    <!-- Content Grid -->
+    <div style="display:grid; grid-template-columns:2fr 1fr; gap:24px;">
+      <!-- Main Column: Requested Items & Fulfillment Orders -->
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        <!-- Requested Items Table Card -->
+        <div class="card" style="border-radius:16px; background:var(--surface); border:1px solid var(--border); overflow:hidden;">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border); background:var(--surface2); display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:12px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em;">
+              Requested Line Items ({{ requisition().items?.length || 0 }})
+            </div>
           </div>
-          <table class="tbl">
+          <table class="tbl" style="width:100%; border-collapse:collapse;">
             <thead>
-              <tr>
-                <th style="padding-left:24px;">ITEM / SKU</th>
-                <th style="text-align:center;">REQUESTED</th>
-                <th style="text-align:center;">FULFILLED</th>
-                <th style="text-align:right; padding-right:24px;">STATUS</th>
+              <tr style="border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text3); background:var(--surface);">
+                <th style="padding:12px 20px; text-align:left;">PRODUCT / SKU</th>
+                <th style="padding:12px 16px; text-align:center;">REQUESTED</th>
+                <th style="padding:12px 16px; text-align:center;">FULFILLED</th>
+                <th style="padding:12px 20px; text-align:right;">FULFILLMENT STATUS</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let item of requisition().items" class="hover-row">
-                <td style="padding-left:24px; padding-top:14px; padding-bottom:14px;">
-                  <div style="font-weight:700; color:var(--text1); font-size:14px;">{{ item.variantName }}</div>
-                  <div style="font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-top:2px;">{{ item.sku }}</div>
+              <tr *ngFor="let item of requisition().items" class="hover-row" style="border-bottom:1px solid var(--border); transition:background .15s ease;">
+                <td style="padding:14px 20px;">
+                  <div style="font-weight:700; color:var(--text1); font-size:13px;">{{ item.variantName || item.sku }}</div>
+                  <div class="mono" style="font-size:11px; color:var(--text3); margin-top:2px;">{{ item.sku }}</div>
                 </td>
-                <td style="text-align:center;">
-                  <div style="font-weight:700; font-size:14px; color:var(--text2);">
+                <td style="padding:14px 16px; text-align:center;">
+                  <div style="font-weight:700; font-size:13px; color:var(--text2);">
                     {{ formatQuantity(item.quantityRequested, item) }}
                   </div>
+                  <div class="mono" style="font-size:10px; color:var(--text3);">{{ item.quantityRequested }} Units</div>
                 </td>
-                <td style="text-align:center;">
+                <td style="padding:14px 16px; text-align:center;">
                   <div style="font-weight:800; font-size:14px; color:var(--accent);">
                     {{ formatQuantity(item.quantityFulfilled, item) }}
                   </div>
+                  <div class="mono" style="font-size:10px; color:var(--text3);">{{ item.quantityFulfilled || 0 }} Units</div>
                 </td>
-                <td style="text-align:right; padding-right:24px;">
+                <td style="padding:14px 20px; text-align:right;">
                   <span *ngIf="item.quantityFulfilled >= item.quantityRequested || requisition().status === 'FullyFulfilled'" 
-                        class="badge badge-green" style="font-size:9px; padding:3px 8px;">COMPLETED</span>
+                        class="badge badge-green" style="font-size:10px; padding:3px 8px; font-weight:700;">COMPLETED</span>
                   <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status === 'PartiallyFulfilled'" 
-                        class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PARTIAL</span>
+                        class="badge badge-amber" style="font-size:10px; padding:3px 8px; font-weight:700;">PARTIAL</span>
                   <span *ngIf="(requisition().status === 'Cancelled' || requisition().status === 'Rejected') && item.quantityFulfilled < item.quantityRequested" 
-                        class="badge" style="font-size:9px; padding:3px 8px; background:var(--surface2); color:var(--text3); border:1px solid var(--border);">CANCELLED</span>
+                        class="badge" style="font-size:10px; padding:3px 8px; background:var(--surface2); color:var(--text3); border:1px solid var(--border);">CANCELLED</span>
                   <span *ngIf="item.quantityFulfilled < item.quantityRequested && requisition().status !== 'PartiallyFulfilled' && requisition().status !== 'FullyFulfilled' && requisition().status !== 'Cancelled' && requisition().status !== 'Rejected'" 
-                        class="badge badge-amber" style="font-size:9px; padding:3px 8px;">PENDING</span>
+                        class="badge badge-amber" style="font-size:10px; padding:3px 8px; font-weight:700;">PENDING</span>
                 </td>
               </tr>
             </tbody>
@@ -116,40 +148,72 @@
 
         <!-- Fulfillment Orders (If Approved) -->
         <div *ngIf="requisition().fulfillmentOrders?.length > 0">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:12px;margin-left:4px;">Fulfillment Orders</div>
-          <div style="display:grid;gap:12px;">
-            <div *ngFor="let order of requisition().fulfillmentOrders" class="card" style="padding:20px;display:flex;justify-content:space-between;align-items:center;">
-              <div style="display:flex;align-items:center;gap:16px;">
-                <div style="width:40px;height:40px;background:var(--surface2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;">🚚</div>
+          <div style="font-size:12px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">
+            Generated Movement Orders ({{ requisition().fulfillmentOrders.length }})
+          </div>
+          <div style="display:grid; gap:12px;">
+            <div *ngFor="let order of requisition().fulfillmentOrders" class="card" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <div style="width:38px; height:38px; background:var(--surface2); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--accent);">
+                  <svg style="width:18px; height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                  </svg>
+                </div>
                 <div>
-                  <div style="font-weight:800;color:var(--text1);">{{ order.orderNumber }}</div>
-                  <div style="font-size:11px;color:var(--text3);">From: {{ order.sourceStoreName || 'HQ' }}</div>
+                  <div class="mono" style="font-weight:800; color:var(--text1); font-size:14px;">{{ order.orderNumber }}</div>
+                  <div style="font-size:12px; color:var(--text3); margin-top:2px;">Origin: {{ order.sourceStoreName || 'Central HQ Warehouse' }}</div>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:20px;">
-                <span class="badge badge-dim">{{ order.status }}</span>
-                <a [routerLink]="['/app/inventory/orders', order.id]" style="color:var(--accent);font-weight:700;text-decoration:none;font-size:12px;">View Details →</a>
+              <div style="display:flex; align-items:center; gap:16px;">
+                <span class="badge badge-dim" style="font-size:11px; padding:3px 8px; font-weight:700;">{{ order.status }}</span>
+                <a [routerLink]="['/app/inventory/orders', order.id]" class="btn btn-secondary btn-xs" style="height:28px; padding:0 10px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px; color:var(--accent);">
+                  <span>View Shipment</span>
+                  <svg style="width:11px; height:11px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Sidebar Info -->
-      <div style="display:grid; gap:24px; align-content:start;">
-        <div class="card" style="padding:24px; background:var(--surface2);">
-          <div style="font-size:11px; font-weight:800; color:var(--text2); text-transform:uppercase; margin-bottom:18px; letter-spacing:0.05em; border-bottom:1px solid var(--border); padding-bottom:10px;">Request Details</div>
-          <div style="display:grid; gap:20px;">
+      <!-- Right Column: Requisition Metadata & Justification -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <div class="card" style="padding:22px; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
+          <div style="font-size:12px; font-weight:800; color:var(--text2); text-transform:uppercase; margin-bottom:16px; letter-spacing:0.05em; border-bottom:1px solid var(--border); padding-bottom:10px;">
+            Requisition Justification
+          </div>
+          <div style="display:grid; gap:16px;">
             <div>
-              <label class="label" style="font-size:10px; margin-bottom:6px; color:var(--text3);">NOTES FROM STORE</label>
-              <div style="font-size:13px; line-height:1.6; color:var(--text1); font-weight:500; background:var(--surface); padding:12px; border-radius:8px; border:1px solid var(--border);">
-                {{ requisition().notes || 'No notes provided.' }}
+              <label class="label" style="font-size:10px; margin-bottom:6px; color:var(--text3); text-transform:uppercase; font-weight:700;">Notes from Store Outlet</label>
+              <div style="font-size:13px; line-height:1.6; color:var(--text1); font-weight:500; background:var(--surface2); padding:12px 14px; border-radius:10px; border:1px solid var(--border);">
+                {{ requisition().notes || 'No specific notes provided for this requisition.' }}
               </div>
             </div>
+
             <div *ngIf="requisition().rejectionReason">
-              <label class="label" style="font-size:10px; margin-bottom:6px; color:var(--red);">REJECTION REASON</label>
-              <div style="font-size:13px; color:var(--red); font-weight:600; background:var(--red-d); padding:12px; border-radius:8px; border:1px solid rgba(220,38,38,0.1);">
+              <label class="label" style="font-size:10px; margin-bottom:6px; color:var(--red); text-transform:uppercase; font-weight:700;">Rejection Reason</label>
+              <div style="font-size:13px; color:var(--red); font-weight:600; background:rgba(239,68,68,0.06); padding:12px 14px; border-radius:10px; border:1px solid rgba(239,68,68,0.2);">
                 {{ requisition().rejectionReason }}
+              </div>
+            </div>
+
+            <div style="border-top:1px dashed var(--border); padding-top:14px; display:grid; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--text3);">Requesting Outlet:</span>
+                <span style="font-weight:700; color:var(--text1);">{{ requisition().requestingStoreName }}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--text3);">Total Items:</span>
+                <span style="font-weight:700; color:var(--text1);">{{ requisition().items?.length || 0 }} SKU(s)</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <span style="color:var(--text3);">Created At:</span>
+                <span style="font-weight:700; color:var(--text1);">{{ requisition().createdAt | date:'short' }}</span>
               </div>
             </div>
           </div>
@@ -160,93 +224,93 @@
 </div>
 
 <!-- FULFILLMENT PLANNER MODAL -->
-<div *ngIf="showPlanner()" class="modal-bg">
-  <div class="modal-box fade-up" style="max-width:1100px;height:90vh;display:flex;flex-direction:column;">
+<div *ngIf="showPlanner()" class="modal-bg" style="display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); position:fixed; inset:0; z-index:100; padding:20px;">
+  <div class="modal-box fade-up" style="max-width:1100px; width:100%; height:90vh; display:flex; flex-direction:column; border-radius:16px; background:var(--surface); border:1px solid var(--border); overflow:hidden; box-shadow:0 24px 48px rgba(0,0,0,0.35);">
     <!-- Modal Header -->
-    <div style="padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--surface);">
       <div>
-        <div style="font-size:20px;font-weight:800;">Fulfillment Planner</div>
-        <div style="font-size:12px;color:var(--text3);">Coordinate stock movement from multiple sources</div>
+        <div style="font-size:20px; font-weight:800; color:var(--text1);">Fulfillment Planner</div>
+        <div style="font-size:12px; color:var(--text3); margin-top:2px;">Coordinate stock movement across stores and dispatch fulfillment orders</div>
       </div>
-      <button (click)="showPlanner.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
+      <button (click)="showPlanner.set(false)" style="background:none; border:none; color:var(--text3); font-size:24px; cursor:pointer; line-height:1;">&times;</button>
     </div>
 
-    <!-- Modal Content -->
-    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">
-      <!-- Left: Availability -->
-      <div style="padding:24px;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface2);">
-        <div class="label" style="margin-bottom:20px;">Inventory Availability</div>
-        <div *ngFor="let item of requisition().items" class="card" style="padding:20px;margin-bottom:16px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+    <!-- Modal Content: 2-Pane Split -->
+    <div style="flex:1; display:grid; grid-template-columns:1fr 1.2fr; overflow:hidden;">
+      <!-- Left: Stock Availability -->
+      <div style="padding:20px 24px; border-right:1px solid var(--border); overflow-y:auto; background:var(--surface2);">
+        <div class="label" style="font-size:11px; margin-bottom:16px; text-transform:uppercase; color:var(--text3); font-weight:700;">Cross-Store Stock Availability</div>
+        <div *ngFor="let item of requisition().items" class="card" style="padding:16px; margin-bottom:16px; border-radius:12px; background:var(--surface); border:1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
             <div>
-              <div style="font-weight:700;">{{ item.variantName }}</div>
-              <div style="font-size:10px;color:var(--text3);">{{ item.sku }}</div>
+              <div style="font-weight:700; font-size:13px; color:var(--text1);">{{ item.variantName }}</div>
+              <div class="mono" style="font-size:11px; color:var(--text3);">SKU: {{ item.sku }}</div>
             </div>
             <div style="text-align:right;">
-              <div class="label" style="font-size:9px;">Requested</div>
-              <div style="font-size:18px;font-weight:900;color:var(--accent);">{{ formatQuantity(item.quantityRequested, item) }}</div>
+              <div class="label" style="font-size:9px; text-transform:uppercase;">Requested</div>
+              <div style="font-size:16px; font-weight:800; color:var(--accent);">{{ formatQuantity(item.quantityRequested, item) }}</div>
             </div>
           </div>
 
-          <div style="display:grid;gap:8px;">
-            <div *ngFor="let s of getCrossStockForItem(item.variantId)" style="display:flex;justify-content:space-between;font-size:12px;padding:8px;background:var(--bg);border-radius:8px;">
-              <span style="font-weight:600;">{{ s.storeName }}</span>
-              <div style="display:flex;gap:12px;">
-                <span style="color:var(--text3);">Stock: {{ s.quantityOnHand }}</span>
-                <span style="font-weight:700;color:var(--green);">Avail: {{ s.quantityOnHand - s.quantityReserved }}</span>
+          <div style="display:grid; gap:6px;">
+            <div *ngFor="let s of getCrossStockForItem(item.variantId)" style="display:flex; justify-content:space-between; font-size:12px; padding:8px 10px; background:var(--surface2); border-radius:8px;">
+              <span style="font-weight:600; color:var(--text1);">{{ s.storeName }}</span>
+              <div style="display:flex; gap:10px;">
+                <span style="color:var(--text3);">On Hand: {{ s.quantityOnHand }}</span>
+                <span style="font-weight:700; color:var(--green);">Avail: {{ s.quantityOnHand - s.quantityReserved }}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Right: Allocation -->
-      <div style="padding:24px;overflow-y:auto;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <div class="label">Allocation Strategy</div>
-          <button (click)="addSourceStore()" class="btn btn-secondary btn-xs" style="color:var(--accent);">+ Add Source Store</button>
+      <!-- Right: Allocation Strategy -->
+      <div style="padding:20px 24px; overflow-y:auto; background:var(--surface);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div class="label" style="font-size:11px; text-transform:uppercase; color:var(--text3); font-weight:700; margin:0;">Allocation Strategy</div>
+          <button (click)="addSourceStore()" class="btn btn-secondary btn-xs" style="color:var(--accent); font-weight:700; height:28px; padding:0 10px;">+ Add Source Store</button>
         </div>
 
-        <div style="display:grid;gap:16px;">
-          <div *ngFor="let plan of fulfillmentPlans(); let pIdx = index" class="card" style="padding:20px;position:relative;border-color:var(--accent);">
-            <button *ngIf="pIdx > 0" (click)="fulfillmentPlans().splice(pIdx, 1)" style="position:absolute;top:12px;right:12px;background:none;border:none;color:var(--red);cursor:pointer;">&times;</button>
+        <div style="display:grid; gap:16px;">
+          <div *ngFor="let plan of fulfillmentPlans(); let pIdx = index" class="card" style="padding:16px; position:relative; border-radius:12px; background:var(--surface2); border:1px solid var(--border);">
+            <button *ngIf="pIdx > 0" (click)="fulfillmentPlans().splice(pIdx, 1)" style="position:absolute; top:12px; right:12px; background:none; border:none; color:var(--red); cursor:pointer; font-weight:bold; font-size:16px;">&times;</button>
             
-            <div style="margin-bottom:16px;">
-              <label class="label" style="font-size:9px;">Source Store</label>
-              <select [(ngModel)]="plan.sourceStoreId" class="inp">
-                <option [ngValue]="null">Headquarters (Default)</option>
+            <div style="margin-bottom:14px;">
+              <label class="label" style="font-size:10px; text-transform:uppercase; margin-bottom:4px; font-weight:700;">Source Store {{ pIdx + 1 }}</label>
+              <select [(ngModel)]="plan.sourceStoreId" class="inp" style="background:var(--surface); height:36px; font-size:12px;">
+                <option [ngValue]="null">Headquarters Central Warehouse (Default)</option>
                 <option *ngFor="let s of stores()" [value]="s.id" [disabled]="s.id === requisition()?.requestingStoreId">
                   {{ s.name }} ({{ s.code }})
                 </option>
               </select>
             </div>
 
-            <div style="display:grid;gap:10px;">
-              <div *ngFor="let pItem of plan.items" style="padding:10px;background:var(--surface2);border-radius:10px;display:grid;gap:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:grid; gap:10px;">
+              <div *ngFor="let pItem of plan.items" style="padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; display:grid; gap:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
                   <div>
-                    <span style="font-size:12px;font-weight:700;color:var(--text1);">{{ pItem.variantName || pItem.sku }}</span>
-                    <div style="font-size:10px;color:var(--text3);">SKU: {{ pItem.sku }}</div>
+                    <span style="font-size:12px; font-weight:700; color:var(--text1);">{{ pItem.variantName || pItem.sku }}</span>
+                    <div class="mono" style="font-size:10px; color:var(--text3);">SKU: {{ pItem.sku }}</div>
                   </div>
-                  <div style="display:flex;align-items:center;gap:6px;">
-                    <label style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:700;">Qty:</label>
-                    <input type="number" min="0" [(ngModel)]="pItem.quantity" class="inp" style="width:70px;padding:4px;text-align:center;font-weight:700;background:var(--surface);">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <label style="font-size:10px; text-transform:uppercase; color:var(--text3); font-weight:700;">Qty:</label>
+                    <input type="number" min="0" [(ngModel)]="pItem.quantity" class="inp" style="width:75px; padding:3px 6px; text-align:center; font-weight:700; background:var(--surface2); height:30px; font-size:12px;">
                   </div>
                 </div>
 
                 <!-- Batch / Mfg / Exp date inputs when allocating stock -->
-                <div *ngIf="pItem.quantity > 0" style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;padding-top:6px;border-top:1px dashed var(--border);">
+                <div *ngIf="pItem.quantity > 0" style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:6px; padding-top:8px; border-top:1px dashed var(--border);">
                   <div>
-                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Batch / Lot #</label>
-                    <input type="text" [(ngModel)]="pItem.batchNumber" placeholder="LOT-..." class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                    <label style="font-size:9px; color:var(--text3); font-weight:700; text-transform:uppercase;">Batch / Lot #</label>
+                    <input type="text" [(ngModel)]="pItem.batchNumber" placeholder="LOT-..." class="inp" style="font-size:11px; padding:3px 6px; height:28px;">
                   </div>
                   <div>
-                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Prod Date</label>
-                    <input type="date" [(ngModel)]="pItem.productionDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                    <label style="font-size:9px; color:var(--text3); font-weight:700; text-transform:uppercase;">Mfg Date</label>
+                    <input type="date" [(ngModel)]="pItem.productionDate" class="inp" style="font-size:11px; padding:3px 6px; height:28px;">
                   </div>
                   <div>
-                    <label style="font-size:9px;color:var(--text3);font-weight:700;text-transform:uppercase;">Exp Date</label>
-                    <input type="date" [(ngModel)]="pItem.expiryDate" class="inp" style="font-size:11px;padding:3px 6px;height:28px;">
+                    <label style="font-size:9px; color:var(--text3); font-weight:700; text-transform:uppercase;">Exp Date</label>
+                    <input type="date" [(ngModel)]="pItem.expiryDate" class="inp" style="font-size:11px; padding:3px 6px; height:28px;">
                   </div>
                 </div>
               </div>
@@ -257,34 +321,38 @@
     </div>
 
     <!-- Modal Footer -->
-    <div style="padding:24px;border-top:1px solid var(--border);background:var(--surface2);display:flex;justify-content:flex-end;gap:12px;">
-      <button (click)="showPlanner.set(false)" class="btn btn-secondary">Cancel</button>
-      <button (click)="submitFulfillment()" class="btn btn-primary" style="padding:12px 32px;">Finalize & Create Orders</button>
+    <div style="padding:16px 24px; border-top:1px solid var(--border); background:var(--surface2); display:flex; justify-content:flex-end; gap:12px;">
+      <button (click)="showPlanner.set(false)" class="btn btn-secondary" style="height:36px; padding:0 16px; font-size:13px;">Cancel</button>
+      <button (click)="submitFulfillment()" class="btn btn-primary" style="height:36px; padding:0 24px; font-size:13px; font-weight:700;">
+        Finalize & Create Movement Orders
+      </button>
     </div>
   </div>
 </div>
 
-<!-- Rejection Modal -->
-<div *ngIf="isRejectModalOpen()" class="modal-bg">
-  <div class="modal-box fade-up" style="max-width: 500px;">
-    <div style="padding: 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+<!-- Rejection Reason Modal -->
+<div *ngIf="isRejectModalOpen()" class="modal-bg" style="display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); position:fixed; inset:0; z-index:100; padding:20px;">
+  <div class="modal-box fade-up" style="max-width: 520px; width:100%; border-radius:16px; background:var(--surface); border:1px solid var(--border); overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+    <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background:var(--surface);">
       <div>
         <div style="font-size: 18px; font-weight: 800; color: var(--red);">Reject Requisition</div>
-        <div style="font-size: 12px; color: var(--text3);">Provide a reason for denying this stock request</div>
+        <div style="font-size: 12px; color: var(--text3); margin-top:2px;">Provide a justification for denying this stock request</div>
       </div>
-      <button (click)="closeRejectModal()" style="background: none; border: none; color: var(--text3); font-size: 24px; cursor: pointer;">&times;</button>
+      <button (click)="closeRejectModal()" style="background: none; border: none; color: var(--text3); font-size: 24px; cursor: pointer; line-height:1;">&times;</button>
     </div>
 
     <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
       <div>
-        <label class="label">Rejection Reason <span style="color: var(--red);">*</span></label>
-        <textarea [(ngModel)]="rejectionReason" class="inp" rows="4" placeholder="Explain why this requisition is being rejected (e.g., Insufficient stock at HQ, duplicate request)..."></textarea>
+        <label class="label" style="font-size:11px; text-transform:uppercase; font-weight:700; margin-bottom:6px;">
+          Rejection Reason <span style="color: var(--red);">*</span>
+        </label>
+        <textarea [(ngModel)]="rejectionReason" class="inp" rows="4" placeholder="Explain why this requisition is being rejected (e.g. Insufficient stock at central warehouse, duplicate submission, upcoming inventory count)..." style="font-size:13px;"></textarea>
       </div>
     </div>
 
-    <div style="padding: 20px 24px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; justify-content: flex-end; gap: 12px;">
-      <button (click)="closeRejectModal()" class="btn btn-secondary" [disabled]="isRejecting()">Cancel</button>
-      <button (click)="submitReject()" class="btn btn-danger" [disabled]="isRejecting() || !rejectionReason.trim()">
+    <div style="padding: 16px 24px; border-top: 1px solid var(--border); background: var(--surface2); display: flex; justify-content: flex-end; gap: 12px;">
+      <button (click)="closeRejectModal()" class="btn btn-secondary" [disabled]="isRejecting()" style="height:36px; padding:0 16px; font-size:13px;">Cancel</button>
+      <button (click)="submitReject()" class="btn btn-danger" [disabled]="isRejecting() || !rejectionReason.trim()" style="height:36px; padding:0 20px; font-size:13px; font-weight:700;">
         {{ isRejecting() ? 'Rejecting...' : 'Confirm Rejection' }}
       </button>
     </div>

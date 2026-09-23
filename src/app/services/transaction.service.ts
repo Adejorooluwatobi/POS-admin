@@ -20,4 +20,8 @@ export class TransactionService {
   async getTransactionById(id: string): Promise<any> {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
   }
+
+  async updateTransaction(id: string, dto: { status: number; notes?: string }): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${this.apiUrl}/${id}`, dto));
+  }
 }

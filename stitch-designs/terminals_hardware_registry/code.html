@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#4d44e3", "primary-fixed": "#e2dfff", "on-tertiary-fixed": "#002113", "on-secondary-fixed-variant": "#3f465c", "tertiary-fixed-dim": "#4edea3", "surface-variant": "#d3e4fe", "tertiary-fixed": "#6ffbbe", "primary-container": "#4f46e5", "primary": "#3525cd", "on-primary-fixed": "#0f0069", "on-error-container": "#93000a", "surface-dim": "#cbdbf5", "primary-fixed-dim": "#c3c0ff", "outline-variant": "#c7c4d8", "secondary-fixed": "#dae2fd", "on-secondary-container": "#5c647a", "on-background": "#0b1c30", "tertiary": "#005338", "surface-container-low": "#eff4ff", "secondary-container": "#dae2fd", "outline": "#777587", "surface": "#f8f9ff", "surface-bright": "#f8f9ff", "tertiary-container": "#006e4b", "surface-container-highest": "#d3e4fe", "error-container": "#ffdad6", "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eaf1ff", "secondary": "#565e74", "on-surface-variant": "#464555", "on-primary": "#ffffff", "inverse-primary": "#c3c0ff", "on-tertiary-container": "#67f4b7", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "on-tertiary": "#ffffff", "on-primary-container": "#dad7ff", "background": "#f8f9ff", "surface-container-lowest": "#ffffff", "error": "#ba1a1a", "secondary-fixed-dim": "#bec6e0", "on-secondary-fixed": "#131b2e", "on-primary-fixed-variant": "#3323cc", "on-error": "#ffffff", "on-surface": "#0b1c30", "inverse-surface": "#213145" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin-mobile": "1rem", "space-xl": "2rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1.5rem", "space-sm": "0.5rem", "gutter": "1rem", "space-lg": "1.5rem", "gutter-compact": "0.75rem" }, "fontFamily": { "body-lg": [ "Inter" ], "display-hero": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "label-caps": [ "Inter" ], "body-medium": [ "Inter" ], "headline-md": [ "Plus Jakarta Sans" ], "body-base": [ "Inter" ], "mono-data": [ "Inter" ], "kpi-value": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ] }, "fontSize": { "body-lg": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "display-hero": [ "44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-caps": [ "11px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "body-medium": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-base": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "mono-data": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "kpi-value": [ "28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-sm": [ "18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-base text-body-base text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] overflow-y-auto"><div class="flex flex-col"><div class="px-space-md pt-space-md pb-space-sm"><div class="flex items-center gap-space-sm"><img alt="Apex POS Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQSQCJ_E1_GWM6JOokC-cOkSKIapGJYOQ8TAEeHZV3mLDeUm6ESP96uXPmehnoRlmBvy5iNhisqmu9Y9s8Yq7lj6X1O2M-NfYozFQ0fMJHCR3VSYwV4SAnfIsnBHZSW3XX0ktOoVCkomTMHTEBEHam6hzBJPdRGDElcovzuXPZcuxqJk8-JoLYAiH0QvNsJTjkzYqgfHU2IZKJammgHVuqBN1V4BlAZrXp6sZOkXMThvawy23xpEqz"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">Apex POS</span><span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mt-space-xs">Enterprise Portal</span></div></div><div class="mt-space-md"><button class="w-full flex items-center justify-between px-space-sm py-space-xs rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" type="button"><div class="flex items-center gap-space-xs text-left overflow-hidden"><span class="material-symbols-outlined text-primary text-base shrink-0">storefront</span><div class="truncate"><p class="font-body-sm text-body-sm font-semibold truncate leading-tight">Downtown Flagship #04</p><p class="font-label-caps text-label-caps text-on-surface-variant truncate">12 active registers</p></div></div><span class="material-symbols-outlined text-on-surface-variant text-sm shrink-0">unfold_more</span></button></div></div><nav class="px-space-sm py-space-xs flex flex-col gap-space-sm" data-active-classes="bg-primary-container text-on-primary font-body-medium text-body-medium rounded-xl"><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Main</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span class="material-symbols-outlined text-lg">dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="analytics-and-reports" href="#"><span class="material-symbols-outlined text-lg">query_stats</span><span>Analytics &amp; Reports</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Retail Operations</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="till-sessions" href="#"><span class="material-symbols-outlined text-lg">point_of_sale</span><span>Till Sessions</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary font-body-medium text-body-medium rounded-xl" data-path="terminals" href="#"><span class="material-symbols-outlined text-lg">devices</span><span>Terminals</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="transactions" href="#"><span class="material-symbols-outlined text-lg">receipt_long</span><span>Transactions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="card-management" href="#"><span class="material-symbols-outlined text-lg">credit_card</span><span>Card Management</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Catalog &amp; Stock</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="products-and-skus" href="#"><span class="material-symbols-outlined text-lg">inventory_2</span><span>Products &amp; SKUs</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="categories" href="#"><span class="material-symbols-outlined text-lg">category</span><span>Categories</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="inventory-levels" href="#"><span class="material-symbols-outlined text-lg">swap_vert</span><span>Inventory Levels</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="promotions" href="#"><span class="material-symbols-outlined text-lg">sell</span><span>Promotions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="loyalty-program" href="#"><span class="material-symbols-outlined text-lg">loyalty</span><span>Loyalty Program</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Organization &amp; Governance</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="customers" href="#"><span class="material-symbols-outlined text-lg">group</span><span>Customers</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="staff-members" href="#"><span class="material-symbols-outlined text-lg">badge</span><span>Staff Members</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="roles-and-permissions" href="#"><span class="material-symbols-outlined text-lg">shield_person</span><span>Roles &amp; Permissions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="stores-and-branches" href="#"><span class="material-symbols-outlined text-lg">apartment</span><span>Stores &amp; Branches</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tenants" href="#"><span class="material-symbols-outlined text-lg">domain</span><span>Tenants</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="audit-logs" href="#"><span class="material-symbols-outlined text-lg">history_toggle_off</span><span>Audit Logs</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">System</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="system-settings" href="#"><span class="material-symbols-outlined text-lg">settings</span><span>Settings</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-lg">person</span><span>Profile</span></a></div></nav></div><div class="p-space-sm flex flex-col gap-space-xs bg-surface-container-low"><div class="flex items-center justify-between px-space-xs py-space-xs"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-tertiary-container animate-pulse"></span><span class="font-mono-data text-mono-data text-on-surface-variant">All 8 Terminals Online</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">2m</span></div><div class="flex items-center justify-between px-space-xs pt-space-xs"><span class="font-body-sm text-body-sm text-on-surface-variant">v2.8.4 Enterprise</span><a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium flex items-center gap-space-xs" href="#"><span>Help Desk</span><span class="material-symbols-outlined text-sm">north_east</span></a></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md"><div class="flex items-center gap-space-md flex-1 max-w-xl"><div class="relative w-full flex items-center"><span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-12 rounded-xl bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-base text-body-base outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search transactions, SKUs, terminals or press ⌘K" type="text"/><kbd class="absolute right-3 px-space-xs py-0.5 rounded-lg bg-surface-container-high text-on-surface-variant font-mono-data text-mono-data">⌘K</kbd></div><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-surface-container-low whitespace-nowrap"><span class="h-2 w-2 rounded-full bg-tertiary-container"></span><span class="font-body-sm text-body-sm font-medium text-on-surface">Store #04 - Open</span><span class="font-body-sm text-body-sm text-on-surface-variant">• Reg A-D active</span></div></div><div class="flex items-center gap-space-sm"><div class="hidden md:flex items-center gap-space-xs"><button class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-body-medium text-body-medium" type="button"><span class="material-symbols-outlined text-base">swap_horiz</span><span>Cash In / Out</span></button><button class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-colors font-body-medium text-body-medium shadow-sm" type="button"><span class="material-symbols-outlined text-base">add</span><span>New Product</span></button></div><button class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 h-4 min-w-[16px] px-1 rounded-full bg-error text-on-error font-mono-data text-[10px] flex items-center justify-center leading-none">3</span></button><div class="flex items-center gap-space-sm pl-space-xs"><div class="hidden sm:flex flex-col text-right"><span class="font-body-medium text-body-medium text-on-surface leading-tight">Sarah Jenkins</span><span class="font-label-caps text-label-caps text-on-surface-variant">Store Operations Lead</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-surface-container-high" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANTlRUIfb7ebS2AWMx48PfTbpxmYcUkmmFWSIoQcK-U8KqKVOa0BpLMMzK_PEaTrFF9DBQ5mjZfT9hdo8v92lMw0k_Xf_jZOZTYN3vJKH0QGIRtUA9cRvN1qO9N5Ii-sizadnSTeo8mYYaX7deFGMHqqioM8gUz8rUUi5NCy1ocM3ehwR-UDxwHIecHumTqtchBwPtTo2bPki76WaIncggliJb_Ipx7WaL3ie1HIjwgG-0NZyGYk0"/></div></div></header><main class="w-full pt-16 px-space-md pb-space-xl bg-background min-h-screen"><div class="flex flex-col w-full">
+<section class="flex flex-col md:flex-row md:items-center md:justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm mb-1">
+<span class="font-label-caps text-label-caps text-primary tracking-widest uppercase bg-surface-container-low px-2 py-0.5 rounded-full">Fleet Infrastructure</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Downtown Flagship #04</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">POS Terminals &amp; Hardware Registry</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Real-time telemetry, peripheral pairing state, and lane-level diagnostic controls.</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="relative">
+<button class="flex items-center gap-space-xs px-3 py-2 rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-colors font-body-medium text-body-medium text-on-surface" id="storeSelectBtn">
+<span class="material-symbols-outlined text-primary text-lg">store</span>
+<span class="font-medium">Store #04 - Flagship</span>
+<span class="material-symbols-outlined text-on-surface-variant text-base">expand_more</span>
+</button>
+</div>
+<button class="flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-body-medium text-body-medium shadow-sm" onclick="triggerDiagnosticsModal()" type="button">
+<span class="material-symbols-outlined text-base">network_check</span>
+<span>Run Diagnostics</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all font-body-medium text-body-medium shadow-md shadow-primary/20 hover:scale-[0.99]" onclick="openPairingDrawer()" type="button">
+<span class="material-symbols-outlined text-base">add_to_queue</span>
+<span>Pair New Terminal</span>
+</button>
+</div>
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-md mb-space-lg">
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-md shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Fleet Operational Health</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-kpi-value text-kpi-value text-on-surface">7</span>
+<span class="font-body-medium text-body-medium text-on-surface-variant">/ 8 Online</span>
+</div>
+</div>
+<span class="flex h-3 w-3 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-tertiary-container"></span>
+</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2 mt-space-md overflow-hidden">
+<div class="bg-tertiary-container h-full rounded-full" style="width: 87.5%"></div>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant mt-2 pt-1">
+<span>7 Active Sessions</span>
+<span class="text-error font-medium">1 In Maintenance</span>
+</div>
+</div>
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Mesh Cloud Latency</span>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-kpi-value text-kpi-value text-on-surface">18<span class="font-headline-sm text-headline-sm text-on-surface-variant">ms</span></span>
+<span class="px-1.5 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed">Ultra-Low</span>
+</div>
+</div>
+<div class="p-2 rounded-xl bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-xl">bolt</span>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-space-sm text-body-sm font-body-sm text-on-surface-variant">
+<svg class="w-full h-8 text-primary overflow-visible" fill="none" viewbox="0 0 200 32">
+<path d="M0,20 Q20,12 40,18 T80,10 T120,22 T160,14 T200,16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<circle class="fill-primary" cx="200" cy="16" r="3.5"></circle>
+</svg>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant mt-1">
+<span>Websocket Protocol Sync</span>
+<span class="font-mono-data text-mono-data text-tertiary-container">Zero Divergence</span>
+</div>
+</div>
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Payment Terminals Gateway</span>
+<div class="flex items-center gap-2 mt-1">
+<span class="font-headline-md text-headline-md text-on-surface">Dual Rails</span>
+<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed">Active</span>
+</div>
+</div>
+<div class="p-2 rounded-xl bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-xl">credit_card_heart</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 mt-space-sm">
+<div class="p-2 rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">STRIPE TERMINAL</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="h-2 w-2 rounded-full bg-tertiary-container"></span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Nominal</span>
+</div>
+</div>
+<div class="p-2 rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">ADYEN CARD ENGINE</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="h-2 w-2 rounded-full bg-tertiary-container"></span>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Online 99.9%</span>
+</div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 truncate">Direct EMV chip &amp; NFC contact endpoints responsive.</p>
+</div>
+</section>
+<section class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-sm mb-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="bg-surface-container p-1 rounded-xl flex items-center gap-1">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest font-body-medium text-body-medium text-on-surface shadow-xs transition-all" id="viewGridBtn" onclick="toggleViewMode('grid')">
+<span class="material-symbols-outlined text-base">grid_view</span>
+<span class="text-xs font-semibold">Grid</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-medium text-body-medium text-on-surface-variant hover:text-on-surface transition-all" id="viewListBtn" onclick="toggleViewMode('list')">
+<span class="material-symbols-outlined text-base">format_list_bulleted</span>
+<span class="text-xs font-semibold">Dense List</span>
+</button>
+</div>
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-low text-on-surface-variant">
+<span class="font-body-sm text-body-sm">Filter Zone:</span>
+<select class="bg-transparent font-body-sm text-body-sm font-semibold text-on-surface outline-none cursor-pointer">
+<option>All Zones (8)</option>
+<option>Main Floor (4)</option>
+<option>Outdoor Patio (2)</option>
+<option>Bar &amp; Lounge (1)</option>
+<option>Express Zone (1)</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-on-surface-variant text-base">search</span>
+<input class="w-full h-9 pl-8 pr-3 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant font-body-sm text-body-sm outline-none shadow-xs focus:bg-surface-container-low transition-all" id="terminalSearchInput" oninput="filterTerminals(this.value)" placeholder="Filter by lane or serial..." type="text"/>
+</div>
+<button class="p-2 rounded-xl bg-surface-container-lowest shadow-xs text-on-surface-variant hover:text-primary transition-colors" onclick="refreshHardwareFeed()" title="Refresh telemetry" type="button">
+<span class="material-symbols-outlined text-lg" id="refreshIcon">sync</span>
+</button>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-md mb-space-xl" id="terminalsContainer">
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between" data-name="Register 01 - Main Counter" data-terminal="reg-01">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-2xl">point_of_sale</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-tertiary-container animate-pulse"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register 01</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-tertiary-fixed text-on-tertiary-fixed font-bold">Online</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Main Checkout Counter • Front A</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Register 01 - Main Counter', 'ApexStation Pro Max', 'APX-99823', '192.168.4.110', '00:1A:2B:3C:4D:5E', 'Elena R.', 'Connected', 'Paper 85%')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Staff profile photo portrait of Elena smiling professionally in retail uniform with soft store ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbW-qJUSR8Sa3vFRdQuEtNwloR5Spo3U4BpiKsXb2oT1g6tOBIhEjGIOiFHxBg2dW8thne58bpxkbunaqx1NIXNgOovtd8Yet0Szo20qz3e-4hxzkOMxHVifCwyCHB3ZJ4LllnJEUaWJy1MryxD_nJ5Thj67ksS7h-DKPUUnEIXVlQKyUQdgC6jGaELsF84ZZL_s7NnSusHgn3-__lHjcxaT8HGYxfwPl4oGhzfbyMBjhvLGBXaOs"/>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface leading-tight">Elena Rostova</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Shift: 4h 18m active</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: APX-99823</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Paired Peripherals (5/5 Online)</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">credit_card</span> WisePOS E
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">receipt_long</span> TM-T88VI (85%)
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">lock</span> Drawer Closed
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">barcode_scanner</span> Xenon BT
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">tv</span> CFD Active
+            </span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Register 01')" type="button">
+<span class="material-symbols-outlined text-xs">tap_and_play</span> Ping
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="lockTerminal('Register 01')" type="button">
+<span class="material-symbols-outlined text-xs">lock</span> Lock
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Register 01 - Main Counter', 'ApexStation Pro Max', 'APX-99823', '192.168.4.110', '00:1A:2B:3C:4D:5E', 'Elena R.', 'Connected', 'Paper 85%')" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between" data-name="Register 02 - Express Checkout" data-terminal="reg-02">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-2xl">flash_on</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-tertiary-container animate-pulse"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register 02</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-tertiary-fixed text-on-tertiary-fixed font-bold">Online</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Express Lane • Front Bayside</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Register 02 - Express Checkout', 'ApexStation Slim 12', 'APX-99841', '192.168.4.112', '00:1A:2B:3C:4D:7A', 'Marcus T.', 'Ready', 'Paper 42%')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Headshot of young cashier Marcus T. wearing black enterprise branded polo and lanyard against retail storefront background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCse5sgdvBmjbfXnBZR_2_ktxyvk23QFA0E--MyvDwBiuw0bgKdVebaWR_c64jaUnhDgnB5ewmdAHNwzguMXVKkOYQY3Y4uEoZon47h3ZfwvnOlp8NOaDpMGD0Oxa1XegyvVhAZ_pFh6EPEb8N1MMaUSQXxoGAcP7Yuu36zsPmSuBiWs6fp3jvzWS6lzCkhzXkiAYrlymteMMjlPTXfwliIWEaKOEn7U0XSWTT9xTvwh4jDTDCp_20"/>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface leading-tight">Marcus Thorne</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Shift: 1h 55m active</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: APX-99841</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Paired Peripherals (5/5 Online)</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">credit_card</span> WisePOS E
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">receipt_long</span> TM-T88VI (42%)
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">lock</span> Drawer Closed
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">barcode_scanner</span> Honeywell 2D
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">tv</span> CFD Touch
+            </span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Register 02')" type="button">
+<span class="material-symbols-outlined text-xs">tap_and_play</span> Ping
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="lockTerminal('Register 02')" type="button">
+<span class="material-symbols-outlined text-xs">lock</span> Lock
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Register 02 - Express Checkout', 'ApexStation Slim 12', 'APX-99841', '192.168.4.112', '00:1A:2B:3C:4D:7A', 'Marcus T.', 'Ready', 'Paper 42%')" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between" data-name="Register 03 - Bar Counter" data-terminal="reg-03">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-2xl">local_bar</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-error-container"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register 03</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-error-container text-on-error-container font-bold">Paper Low</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Bar &amp; Hospitality Station • East Lounge</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Register 03 - Bar Counter', 'ApexStation Pro Max', 'APX-99710', '192.168.4.115', '00:1A:2B:3C:4D:99', 'Chloe S.', 'Active', 'Paper 8% (Low)')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="Portrait of senior barista bartender Chloe smiling warmly at the modern stainless steel bar counter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAj3qd2FSwaJ8togy4nFoVyNIWTI7-tczmoHRXrN0swcPvjO8HofvZfNgo5g7AxIIDCYfiN0ieEYNbqeAu9SMFZHONs_Ps8jz6-roecpY1tad1BMzP2N2MLDabxYGMjjk8Wk-dEsaBs8ErHPwH4XdgpmvYWkP_zBJLKWT4seWESjrvCeR38d9ejNBcmGG8XJzjOtmUSLsg20L8ZGO2SDhT9PtcPY_lsOQdaUwITNZJFVN6_oBL-dyg"/>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface leading-tight">Chloe Simon</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Shift: 6h 10m active</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: APX-99710</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Paired Peripherals</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">credit_card</span> Adyen V400m
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold bg-error-container text-on-error-container">
+<span class="material-symbols-outlined text-xs">warning</span> TM-T88VI (8%)
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">lock</span> APG Vasario
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">kitchen</span> Kitchen KDS Link
+            </span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Register 03')" type="button">
+<span class="material-symbols-outlined text-xs">tap_and_play</span> Ping
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="lockTerminal('Register 03')" type="button">
+<span class="material-symbols-outlined text-xs">lock</span> Lock
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Register 03 - Bar Counter', 'ApexStation Pro Max', 'APX-99710', '192.168.4.115', '00:1A:2B:3C:4D:99', 'Chloe S.', 'Active', 'Paper 8% (Low)')" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between" data-name="Register 04 - Patio Handheld" data-terminal="reg-04">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-2xl">smartphone</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-tertiary-container animate-pulse"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register 04</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-tertiary-fixed text-on-tertiary-fixed font-bold">Mobile WiFi</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Patio Handheld • Outdoor Garden</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Register 04 - Patio Handheld', 'Apex Pocket Terminal v2', 'APX-MOB-104', '192.168.4.188', '00:1A:2B:44:EE:12', 'Jordan K.', 'Integrated Reader', 'Digital e-Receipt')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-secondary-container flex items-center justify-center text-xs font-bold text-on-secondary-container">JK</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface leading-tight">Jordan King</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Battery: 78% • 2h 40m</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: MOB-104</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Paired Peripherals</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">contactless</span> Built-in Tap-to-Pay
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">mail</span> SMS/Email Receipts
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">wifi</span> Mesh AP 5GHz
+            </span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Register 04')" type="button">
+<span class="material-symbols-outlined text-xs">tap_and_play</span> Ping
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="lockTerminal('Register 04')" type="button">
+<span class="material-symbols-outlined text-xs">lock</span> Lock
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Register 04 - Patio Handheld', 'Apex Pocket Terminal v2', 'APX-MOB-104', '192.168.4.188', '00:1A:2B:44:EE:12', 'Jordan K.', 'Integrated Reader', 'Digital e-Receipt')" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between" data-name="Self-Service Kiosk 01" data-terminal="kiosk-01">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container text-secondary">
+<span class="material-symbols-outlined text-2xl">desktop_mac</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-tertiary-container animate-pulse"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Self-Service Kiosk 01</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-tertiary-fixed text-on-tertiary-fixed font-bold">Unattended</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Entrance Lobby • Pedestal Unit A</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Self-Service Kiosk 01', 'Apex Totem 27 Touch', 'APX-TOT-019', '192.168.4.120', '00:1A:2B:88:99:AA', 'Public Consumer', 'WisePad 3 Embedded', 'Paper 94%')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+<span class="material-symbols-outlined text-sm">person_pin</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface leading-tight">Guest Auto-Session</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Card Only • Cashless</span>
+</div>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: TOT-019</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Paired Peripherals</span>
+<div class="flex flex-wrap gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">credit_card</span> WisePad 3 Enclosure
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">receipt_long</span> Heavy-Duty Kiosk Cut (94%)
+            </span>
+<span class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium bg-surface-container-low text-on-surface">
+<span class="material-symbols-outlined text-xs text-tertiary-container">qr_code_scanner</span> Fixed Optical Imager
+            </span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Kiosk 01')" type="button">
+<span class="material-symbols-outlined text-xs">tap_and_play</span> Ping
+          </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="restartKioskApp('Kiosk 01')" type="button">
+<span class="material-symbols-outlined text-xs">refresh</span> Restart App
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-primary/10 hover:bg-primary/20 text-xs font-semibold text-primary transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Self-Service Kiosk 01', 'Apex Totem 27 Touch', 'APX-TOT-019', '192.168.4.120', '00:1A:2B:88:99:AA', 'Public Consumer', 'WisePad 3 Embedded', 'Paper 94%')" type="button">
+<span>Inspect</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="terminal-card bg-surface-container-lowest rounded-xl p-space-md shadow-sm hover:shadow-md transition-all relative flex flex-col justify-between opacity-80" data-name="Register 05 - West Annex (Maintenance)" data-terminal="reg-05">
+<div>
+<div class="flex items-start justify-between gap-space-sm mb-3">
+<div class="flex items-center gap-3">
+<div class="relative flex items-center justify-center w-11 h-11 rounded-xl bg-surface-container-high text-on-surface-variant">
+<span class="material-symbols-outlined text-2xl">build</span>
+<span class="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-surface-container-lowest flex items-center justify-center">
+<span class="h-2.5 w-2.5 rounded-full bg-outline"></span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register 05</h3>
+<span class="px-2 py-0.5 rounded-full font-label-caps text-label-caps uppercase bg-surface-container-high text-on-surface-variant font-bold">Offline (Maint)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">West Annex Counter • Under Servicing</p>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary p-1 rounded-lg hover:bg-surface-container-low transition-colors" onclick="openHardwareDrawer('Register 05 - West Annex', 'ApexStation Pro Max', 'APX-98012', '192.168.4.135', '00:1A:2B:CC:DD:01', 'None (Logged Off)', 'Offline', 'Paper 0%')" type="button">
+<span class="material-symbols-outlined text-xl">tune</span>
+</button>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl mb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-base text-on-surface-variant">person_off</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">No active cashier session</span>
+</div>
+<span class="font-mono-data text-mono-data text-xs text-on-surface-variant bg-surface-container-lowest px-2 py-1 rounded-md">SN: APX-98012</span>
+</div>
+<div class="space-y-1.5 mb-space-md">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider block">Diagnostic Warning</span>
+<div class="p-2.5 rounded-lg bg-surface-container-low text-xs text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-on-surface-variant">power_off</span>
+<span>Ethernet interface disconnected. Pending hardware motherboard swap.</span>
+</div>
+</div>
+</div>
+<div class="pt-3 flex items-center justify-between gap-1 border-t-0 bg-surface-container-low/50 -mx-4 -mb-4 px-4 py-3 rounded-b-xl">
+<div class="flex items-center gap-1">
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-medium text-on-surface transition-colors flex items-center gap-1 shadow-xs" onclick="quickPingDevice('Register 05')" type="button">
+<span class="material-symbols-outlined text-xs">restart_alt</span> Wake on LAN
+          </button>
+</div>
+<button class="px-3 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-xs font-semibold text-on-surface transition-colors flex items-center gap-1" onclick="openHardwareDrawer('Register 05 - West Annex', 'ApexStation Pro Max', 'APX-98012', '192.168.4.135', '00:1A:2B:CC:DD:01', 'None (Logged Off)', 'Offline', 'Paper 0%')" type="button">
+<span>Diagnostics</span>
+<span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-xs z-50 transition-opacity opacity-0 pointer-events-none" id="hardwareDrawerBackdrop" onclick="closeHardwareDrawer()"></div>
+<aside class="fixed right-0 top-0 bottom-0 w-full max-w-lg bg-surface-container-lowest shadow-2xl z-50 translate-x-full transition-transform duration-300 ease-out flex flex-col justify-between overflow-y-auto" id="hardwareDrawer">
+<div class="flex flex-col p-space-lg">
+<div class="flex items-start justify-between pb-space-md border-b-0">
+<div>
+<div class="flex items-center gap-2">
+<span class="h-2.5 w-2.5 rounded-full bg-tertiary-container animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-tertiary font-bold uppercase tracking-wider" id="drawerStatusBadge">Device Online &amp; Paired</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mt-1" id="drawerTerminalTitle">Register 01 - Main Counter</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant" id="drawerDeviceSubtitle">ApexStation Pro Max • SN: APX-99823</p>
+</div>
+<button class="p-1.5 rounded-xl hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" onclick="closeHardwareDrawer()" type="button">
+<span class="material-symbols-outlined text-2xl">close</span>
+</button>
+</div>
+<div class="mt-space-md p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant">FIRMWARE PIPELINE</span>
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">v3.4.1 (Kernel Release 24.12)</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="material-symbols-outlined text-xs">verified</span> Up to date
+        </span>
+</div>
+<div class="mt-space-lg">
+<h4 class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider mb-2">Network &amp; Subnet Telemetry</h4>
+<div class="grid grid-cols-2 gap-2 bg-surface-container-low p-space-sm rounded-xl">
+<div>
+<span class="text-xs text-on-surface-variant font-body-sm">Local IPv4</span>
+<p class="font-mono-data text-mono-data font-semibold text-on-surface" id="drawerIP">192.168.4.110</p>
+</div>
+<div>
+<span class="text-xs text-on-surface-variant font-body-sm">MAC Hardware ID</span>
+<p class="font-mono-data text-mono-data font-semibold text-on-surface" id="drawerMAC">00:1A:2B:3C:4D:5E</p>
+</div>
+<div>
+<span class="text-xs text-on-surface-variant font-body-sm">Subnet Mask</span>
+<p class="font-mono-data text-mono-data font-semibold text-on-surface">255.255.255.0</p>
+</div>
+<div>
+<span class="text-xs text-on-surface-variant font-body-sm">Gateway Route</span>
+<p class="font-mono-data text-mono-data font-semibold text-on-surface">192.168.4.1</p>
+</div>
+</div>
+</div>
+<div class="mt-space-lg">
+<div class="flex items-center justify-between mb-2">
+<h4 class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Offline Contingency Mode</h4>
+<span class="text-xs text-primary font-medium">Auto-Sync Enabled</span>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Max Offline Limit</span>
+<span class="text-xs text-on-surface-variant">Store transactions locally during WAN drop</span>
+</div>
+<span class="font-mono-data text-mono-data font-semibold text-on-surface bg-surface-container-lowest px-2.5 py-1 rounded-lg">$500.00 / order</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Buffered Offline Queue</span>
+<span class="text-xs text-on-surface-variant">Pending background sync</span>
+</div>
+<span class="inline-flex items-center gap-1 font-mono-data text-mono-data text-xs text-tertiary-container bg-surface-container-lowest px-2 py-0.5 rounded-md font-semibold">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary-container"></span> 0 Records
+            </span>
+</div>
+</div>
+</div>
+<div class="mt-space-lg">
+<h4 class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider mb-2">Hardware Pulse &amp; Peripherals Diagnostic</h4>
+<div class="grid grid-cols-1 gap-2">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-surface-container-lowest text-primary">
+<span class="material-symbols-outlined text-lg">print</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface block">Thermal Slip Printer</span>
+<span class="text-xs text-on-surface-variant">Epson TM-T88VI • Serial COM 1</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors flex items-center gap-1 shadow-xs" id="testPrintBtn" onclick="runPeripheralTest('printSlip')" type="button">
+<span class="material-symbols-outlined text-xs">send</span> Test Slip
+            </button>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-surface-container-lowest text-primary">
+<span class="material-symbols-outlined text-lg">point_of_sale</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface block">Electronic Cash Drawer</span>
+<span class="text-xs text-on-surface-variant">APG Vasario • 24V RJ12 Solenoid</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors flex items-center gap-1 shadow-xs" id="kickDrawerBtn" onclick="runPeripheralTest('kickDrawer')" type="button">
+<span class="material-symbols-outlined text-xs">eject</span> Kick Drawer
+            </button>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-surface-container-lowest text-primary">
+<span class="material-symbols-outlined text-lg">credit_card</span>
+</div>
+<div>
+<span class="font-body-sm text-body-sm font-semibold text-on-surface block">EMV Card Reader</span>
+<span class="text-xs text-on-surface-variant">BBPOS WisePOS E • TLS 1.3 Key Handshake</span>
+</div>
+</div>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-xs font-semibold text-on-surface transition-colors flex items-center gap-1 shadow-xs" id="repairReaderBtn" onclick="runPeripheralTest('repairReader')" type="button">
+<span class="material-symbols-outlined text-xs">sync</span> Re-Pair
+            </button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-md bg-surface-container-low flex items-center justify-between gap-space-sm">
+<button class="flex-1 py-2 px-3 rounded-xl bg-surface-container-highest hover:bg-surface-dim text-on-surface text-xs font-semibold transition-colors flex items-center justify-center gap-1.5" onclick="endCurrentCashierShift()" type="button">
+<span class="material-symbols-outlined text-sm text-error">logout</span>
+<span>End Cashier Shift</span>
+</button>
+<button class="flex-1 py-2 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary text-xs font-semibold transition-colors shadow-sm text-center" onclick="closeHardwareDrawer()" type="button">
+        Done Inspecting
+      </button>
+</div>
+</aside>
+<div class="fixed bottom-6 right-6 z-50 bg-inverse-surface text-inverse-on-surface px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 translate-y-20 opacity-0 transition-all pointer-events-none" id="toastNotification">
+<span class="material-symbols-outlined text-tertiary-fixed" id="toastIcon">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-medium" id="toastMsg">Command dispatched successfully</span>
+<span class="font-label-caps text-label-caps opacity-75">Terminal Response: 200 OK</span>
+</div>
+</div>
+<script>
+    function toggleViewMode(mode) {
+      const container = document.getElementById('terminalsContainer');
+      const gridBtn = document.getElementById('viewGridBtn');
+      const listBtn = document.getElementById('viewListBtn');
+
+      if (mode === 'list') {
+        container.className = 'flex flex-col gap-2 mb-space-xl';
+        gridBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-medium text-body-medium text-on-surface-variant hover:text-on-surface transition-all';
+        listBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest font-body-medium text-body-medium text-on-surface shadow-xs transition-all';
+      } else {
+        container.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-md mb-space-xl';
+        gridBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest font-body-medium text-body-medium text-on-surface shadow-xs transition-all';
+        listBtn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-body-medium text-body-medium text-on-surface-variant hover:text-on-surface transition-all';
+      }
+    }
+
+    function openHardwareDrawer(name, model, sn, ip, mac, cashier, cardState, printerState) {
+      document.getElementById('drawerTerminalTitle').innerText = name;
+      document.getElementById('drawerDeviceSubtitle').innerText = model + ' • SN: ' + sn;
+      document.getElementById('drawerIP').innerText = ip;
+      document.getElementById('drawerMAC').innerText = mac;
+
+      const drawer = document.getElementById('hardwareDrawer');
+      const backdrop = document.getElementById('hardwareDrawerBackdrop');
+      backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      backdrop.classList.add('opacity-100');
+      drawer.classList.remove('translate-x-full');
+    }
+
+    function closeHardwareDrawer() {
+      const drawer = document.getElementById('hardwareDrawer');
+      const backdrop = document.getElementById('hardwareDrawerBackdrop');
+      backdrop.classList.add('opacity-0', 'pointer-events-none');
+      backdrop.classList.remove('opacity-100');
+      drawer.classList.add('translate-x-full');
+    }
+
+    function showToast(msg, icon) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+      toastMsg.innerText = msg;
+      if (icon) toastIcon.innerText = icon;
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3200);
+    }
+
+    function quickPingDevice(terminalName) {
+      showToast('ICMP Echo received from ' + terminalName + ' (12ms RTT)', 'network_ping');
+    }
+
+    function lockTerminal(terminalName) {
+      showToast(terminalName + ' screen lock active. PIN required.', 'lock');
+    }
+
+    function restartKioskApp(kioskName) {
+      showToast('Restart signal sent to ' + kioskName + ' Kiosk shell.', 'restart_alt');
+    }
+
+    function runPeripheralTest(type) {
+      if (type === 'printSlip') {
+        const btn = document.getElementById('testPrintBtn');
+        btn.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span> Printing...';
+        setTimeout(() => {
+          btn.innerHTML = '<span class="material-symbols-outlined text-xs">send</span> Test Slip';
+          showToast('Thermal diagnostic slip printed successfully.', 'receipt');
+        }, 800);
+      } else if (type === 'kickDrawer') {
+        const btn = document.getElementById('kickDrawerBtn');
+        btn.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span> Kicking...';
+        setTimeout(() => {
+          btn.innerHTML = '<span class="material-symbols-outlined text-xs">eject</span> Kick Drawer';
+          showToast('24V solenoid pulse triggered: Cash Drawer Opened.', 'inventory');
+        }, 500);
+      } else if (type === 'repairReader') {
+        const btn = document.getElementById('repairReaderBtn');
+        btn.innerHTML = '<span class="material-symbols-outlined text-xs animate-spin">sync</span> Handshake...';
+        setTimeout(() => {
+          btn.innerHTML = '<span class="material-symbols-outlined text-xs">sync</span> Re-Pair';
+          showToast('WisePOS E mutual TLS re-handshake verified 200 OK.', 'credit_card');
+        }, 1200);
+      }
+    }
+
+    function endCurrentCashierShift() {
+      if (confirm('Are you sure you want to forcibly close the active cashier till session? This requires end-of-day cash count.')) {
+        closeHardwareDrawer();
+        showToast('Shift session ended. Cashier logged off.', 'assignment_turned_in');
+      }
+    }
+
+    function triggerDiagnosticsModal() {
+      showToast('Running full network broadcast scan across 8 terminals...', 'network_check');
+    }
+
+    function openPairingDrawer() {
+      showToast('Listening for BLE/mDNS beacons from new Apex terminals...', 'add_to_queue');
+    }
+
+    function refreshHardwareFeed() {
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        showToast('Fleet telemetry refreshed. All peripheral states synchronized.', 'done_all');
+      }, 700);
+    }
+
+    function filterTerminals(query) {
+      const q = query.toLowerCase();
+      const cards = document.querySelectorAll('.terminal-card');
+      cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(q)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</div></main></div></body></html>

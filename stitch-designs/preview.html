@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Apex POS — Stitch Redesign Live Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .heading { font-family: 'Plus Jakarta Sans', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 flex flex-col h-screen overflow-hidden">
+  <!-- Top Switcher Bar -->
+  <header class="h-14 bg-slate-950 border-b border-slate-800 px-4 flex items-center justify-between shrink-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-sm heading">
+        A
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-white heading tracking-tight">Apex POS Prototype</span>
+          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Google Stitch Redesign</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Screen Tabs -->
+    <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+      <button onclick="loadFrame('pos_operations_dashboard/code.html', this)" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow transition-all">
+        📊 Operations Dashboard
+      </button>
+      <button onclick="loadFrame('products_inventory_management/code.html', this)" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">
+        📦 Products & Inventory
+      </button>
+      <button onclick="loadFrame('terminals_hardware_registry/code.html', this)" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">
+        🖥️ Terminals & Hardware
+      </button>
+      <button onclick="loadFrame('transactions_till_sessions/code.html', this)" class="tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all">
+        💳 Transactions & Tills
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-emerald-400 font-mono flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-800 px-2.5 py-1 rounded-lg">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        Live HTML Render
+      </span>
+    </div>
+  </header>
+
+  <!-- Content iFrame -->
+  <main class="flex-1 w-full h-full relative bg-slate-100">
+    <iframe id="stitchFrame" src="pos_operations_dashboard/code.html" class="w-full h-full border-none"></iframe>
+  </main>
+
+  <script>
+    function loadFrame(url, btn) {
+      document.getElementById('stitchFrame').src = url;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.className = 'tab-btn px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition-all';
+      });
+      btn.className = 'tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow transition-all';
+    }
+  </script>
+</body>
+</html>

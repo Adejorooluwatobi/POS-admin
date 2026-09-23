@@ -1,7 +1,7 @@
-import { Component, signal, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { Component, signal, OnInit, computed } from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
 import { StockMovementService } from '../../services/stock-movement.service';
 import { ProductService } from '../../services/product.service';
@@ -12,14 +12,23 @@ import { InventoryItem, Product, Store } from '../../models/pos.models';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, NgClass, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterModule, DecimalPipe],
   templateUrl: './inventory.html'
 })
 export class InventoryComponent implements OnInit {
-  public inventory = signal<InventoryItem[]>([]);
+  public inventory = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
+  public isGenerals = signal<boolean>(false);
+  public products = signal<Product[]>([]);
+  public stores = signal<Store[]>([]);
+  public lowStockAlerts = signal<any[]>([]);
 
-  // Adjustment Modal State
+  // Search & Filters
+  public searchTerm = signal<string>('');
+  public selectedStoreFilter = signal<string>('ALL');
+  public stockStatusFilter = signal<'ALL' | 'OPTIMAL' | 'LOW' | 'OUT'>('ALL');
+
+  // Adjustment Modal / Drawer State
   public isModalOpen = signal<boolean>(false);
   public selectedItem = signal<any>({
     n: '',
@@ -30,10 +39,8 @@ export class InventoryComponent implements OnInit {
     reason: ''
   });
 
-  // Add Modal State
+  // Add Inventory to Store Modal State
   public isAddModalOpen = signal<boolean>(false);
-  public products = signal<Product[]>([]);
-  public stores = signal<Store[]>([]);
   public newInventoryItem = {
     variantId: '',
     storeId: '',
@@ -42,10 +49,59 @@ export class InventoryComponent implements OnInit {
     reorderQty: 10
   };
 
-  public isGenerals = signal<boolean>(false);
-  public lowStockAlerts = signal<any[]>([]);
-  public crossStoreStock = signal<any[]>([]);
+  // Cross-Store Inspection Modal
   public isCrossStoreModalOpen = signal<boolean>(false);
+  public crossStoreStock = signal<any[]>([]);
+
+  // Computed Portfolio KPIs
+  public totalStockOnHand = computed(() => {
+    return this.inventory().reduce((sum, item) => sum + (item.oh || 0), 0);
+  });
+
+  public totalReservedUnits = computed(() => {
+    return this.inventory().reduce((sum, item) => sum + (item.res || 0), 0);
+  });
+
+  public totalAvailableUnits = computed(() => {
+    return this.totalStockOnHand() - this.totalReservedUnits();
+  });
+
+  public lowStockCount = computed(() => {
+    return this.inventory().filter(item => item.s === 'LOW').length;
+  });
+
+  public outOfStockCount = computed(() => {
+    return this.inventory().filter(item => item.s === 'OUT').length;
+  });
+
+  // Filtered Inventory Stream
+  public filteredInventory = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const store = this.selectedStoreFilter();
+    const status = this.stockStatusFilter();
+    let list = this.inventory();
+
+    if (store !== 'ALL') {
+      list = list.filter(item => item.storeId === store || item.storeName === store);
+    }
+
+    if (status === 'LOW') {
+      list = list.filter(item => item.s === 'LOW');
+    } else if (status === 'OUT') {
+      list = list.filter(item => item.s === 'OUT');
+    } else if (status === 'OPTIMAL') {
+      list = list.filter(item => item.s === 'OK');
+    }
+
+    if (!term) return list;
+
+    return list.filter(item => {
+      const nameMatch = (item.n || '').toLowerCase().includes(term);
+      const skuMatch = (item.sku || '').toLowerCase().includes(term);
+      const storeMatch = (item.storeName || '').toLowerCase().includes(term);
+      return nameMatch || skuMatch || storeMatch;
+    });
+  });
 
   constructor(
     private router: Router,
@@ -56,6 +112,84 @@ export class InventoryComponent implements OnInit {
     private authService: AuthService
   ) {}
 
+  ngOnInit() {
+    this.checkUserRole();
+    this.loadAll();
+  }
+
+  checkUserRole() {
+    const role = this.authService.getSystemRole();
+    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager' || role === 'StoreManager' || role === 'SuperAdmin');
+  }
+
+  async loadAll() {
+    this.isLoading.set(true);
+    try {
+      await Promise.all([
+        this.loadInventory(),
+        this.loadAlerts(),
+        this.loadInitialData()
+      ]);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  async loadInitialData() {
+    try {
+      const prodData = await this.productService.getProducts(1, 100);
+      const items = prodData.items || prodData || [];
+      this.products.set(items.map((p: any) => ({
+        ...p,
+        name: p.name || p.Name || p.n,
+        Name: p.name || p.Name || p.n
+      })));
+
+      const storeData = await this.storeService.getStores(1, 100);
+      this.stores.set(storeData.items || storeData || []);
+    } catch (error) {
+      console.warn('Failed to load initial products/stores', error);
+    }
+  }
+
+  async loadAlerts() {
+    const storeId = this.authService.getStoreId();
+    if (storeId) {
+      try {
+        const alerts = await this.stockService.getLowStockAlerts(storeId);
+        this.lowStockAlerts.set(alerts || []);
+      } catch (error) {
+        this.lowStockAlerts.set([]);
+      }
+    }
+  }
+
+  async loadInventory() {
+    try {
+      const data = await this.inventoryService.getInventory(1, 100);
+      const items = data.items || data || [];
+      this.inventory.set(items.map((i: any) => ({
+        ...i,
+        n: i.variantName || i.name || 'Unknown Product',
+        sku: i.sku || i.SKU || '—',
+        storeName: i.storeName || 'Primary Store',
+        storeId: i.storeId,
+        oh: i.quantityOnHand ?? 0,
+        res: i.quantityReserved ?? 0,
+        ro: i.reorderPoint ?? 5,
+        roQty: i.reorderQty ?? 10,
+        singlesPerRoll: i.singlesPerRoll || 1,
+        rollsPerPack: i.rollsPerPack || 1,
+        singlesPerPack: i.singlesPerPack || 1,
+        s: (i.quantityOnHand ?? 0) <= (i.reorderPoint ?? 5) ? ((i.quantityOnHand ?? 0) <= 0 ? 'OUT' : 'LOW') : 'OK',
+        formatted: this.formatStock(i.quantityOnHand ?? 0, i.singlesPerRoll, i.rollsPerPack, i.singlesPerPack)
+      })));
+    } catch (error) {
+      console.error('Failed to load inventory', error);
+      this.inventory.set([]);
+    }
+  }
+
   viewDetails(item: any) {
     const id = item.variantId || item.id;
     if (id) {
@@ -63,85 +197,23 @@ export class InventoryComponent implements OnInit {
     }
   }
 
-  ngOnInit() {
-    this.checkUserRole();
-    this.loadInventory();
-    this.loadAlerts();
-    this.loadInitialData();
-  }
-
-  async loadInitialData() {
-    try {
-      const prodData = await this.productService.getProducts(1, 100);
-      const items = prodData.items || prodData;
-      this.products.set(items.map((p: any) => ({
-        ...p,
-        name: p.name || p.Name || p.n,
-        Name: p.name || p.Name || p.n
-      })));
-
-      if (this.isGenerals()) {
-        const storeData = await this.storeService.getStores(1, 100);
-        this.stores.set(storeData.items || storeData);
-      }
-    } catch (error) {}
-  }
-
-  checkUserRole() {
-    const role = this.authService.getSystemRole();
-    this.isGenerals.set(role === 'TenantAdmin' || role === 'Manager' || role === 'StoreManager');
-  }
-
-  async loadAlerts() {
-    const storeId = this.authService.getStoreId();
-    if (storeId) {
-      try {
-        this.lowStockAlerts.set(await this.stockService.getLowStockAlerts(storeId));
-      } catch (error) {}
-    }
-  }
-
   async viewCrossStore(item: any) {
     if (!this.isGenerals()) return;
     try {
-      this.crossStoreStock.set(await this.stockService.getCrossStoreStock(item.variantId));
+      const id = item.variantId || item.id;
+      const data = await this.stockService.getCrossStoreStock(id);
+      this.crossStoreStock.set(data || []);
       this.selectedItem.set(item);
       this.isCrossStoreModalOpen.set(true);
-    } catch (error) {}
-  }
-
-  async loadInventory() {
-    this.isLoading.set(true);
-    try {
-      const data = await this.inventoryService.getInventory();
-      const items = data.items || data;
-      this.inventory.set(items.map((i: any) => ({
-        ...i,
-        n: i.variantName || 'Unknown Product',
-        sku: i.sku || i.SKU,
-        e: '📦',
-        storeName: i.storeName,
-        oh: i.quantityOnHand,
-        res: i.quantityReserved,
-        ro: i.reorderPoint,
-        roQty: i.reorderQty,
-        singlesPerRoll: i.singlesPerRoll || 1,
-        rollsPerPack: i.rollsPerPack || 1,
-        singlesPerPack: i.singlesPerPack || 1,
-        s: i.quantityOnHand <= i.reorderPoint ? (i.quantityOnHand <= 0 ? 'OUT' : 'LOW') : 'OK',
-        formatted: this.formatStock(i.quantityOnHand, i.singlesPerRoll, i.rollsPerPack, i.singlesPerPack)
-      })));
     } catch (error) {
-      console.error('Failed to load inventory', error);
-    } finally {
-      this.isLoading.set(false);
+      console.error('Failed to load cross-store stock', error);
     }
   }
 
   openAddModal() {
     this.newInventoryItem = {
-      variantId: '',
-      storeId: this.authService.getStoreId() || '',
+      variantId: this.products().length > 0 ? (this.products()[0].id || '') : '',
+      storeId: this.authService.getStoreId() || (this.stores().length > 0 ? (this.stores()[0].id || '') : ''),
       quantityOnHand: 0,
       reorderPoint: 5,
       reorderQty: 10
@@ -151,28 +223,29 @@ export class InventoryComponent implements OnInit {
 
   async saveNewInventory() {
     if (!this.newInventoryItem.variantId || !this.newInventoryItem.storeId) {
-      alert('Please select a product and store.');
+      alert('Please select both a product and store.');
       return;
     }
 
     try {
       await this.inventoryService.createInventory(this.newInventoryItem);
       this.isAddModalOpen.set(false);
-      this.loadInventory();
-    } catch (error) {
+      await this.loadInventory();
+    } catch (error: any) {
       console.error('Failed to add inventory', error);
-      alert('Failed to add product to inventory. It might already exist.');
+      alert(error?.error?.message || 'Failed to add product to inventory. It may already exist in this store.');
     }
   }
 
-  openStockAdj(item: InventoryItem) {
-    this.selectedItem.set({ ...item });
+  openStockAdj(item: any) {
+    this.selectedItem.set({ ...item, reason: 'Physical Recount / Cycle Count' });
     this.isModalOpen.set(true);
   }
 
   closeModal() {
     this.isModalOpen.set(false);
     this.isAddModalOpen.set(false);
+    this.isCrossStoreModalOpen.set(false);
   }
 
   async saveAdjustment() {
@@ -185,15 +258,16 @@ export class InventoryComponent implements OnInit {
       quantityReserved: item.res,
       reorderPoint: item.ro,
       reorderQty: item.roQty,
-      reason: item.reason
+      reason: item.reason || 'Inventory Adjustment'
     };
 
     try {
       await this.inventoryService.updateInventory(item.id, dto);
       this.closeModal();
-      this.loadInventory();
-    } catch (error) {
+      await this.loadInventory();
+    } catch (error: any) {
       console.error('Failed to adjust stock', error);
+      alert(error?.error?.message || 'Failed to save stock adjustment');
     }
   }
 

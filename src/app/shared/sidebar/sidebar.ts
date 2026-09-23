@@ -28,41 +28,50 @@ export class SidebarComponent {
     const role = user?.role;
 
     const allItems = [
-      { section: 'Overview', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
-      { id: 'dashboard', icon: 'grid', label: 'Dashboard', route: '/app/dashboard', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
-      { id: 'stores', icon: 'store', label: 'All Stores', route: '/app/stores', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
-      { id: 'transactions', icon: 'receipt', label: 'Transactions', route: '/app/transactions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'till-sessions', icon: 'stack', label: 'Till Sessions', route: '/app/till-sessions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      
-      { section: 'Commerce', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'products', icon: 'box', label: 'Products', route: '/app/products', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'categories', icon: 'grid', label: 'Categories', route: '/app/categories', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'inventory', icon: 'stack', label: 'Inventory', route: '/app/inventory', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'],
+      // 1. Main
+      { section: 'Main', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
+      { id: 'dashboard', icon: 'dashboard', label: 'Dashboard', route: '/app/dashboard', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
+      { id: 'reports', icon: 'query_stats', label: 'Analytics & Reports', route: '/app/reports', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+
+      // 2. Retail Operations
+      { section: 'Retail Operations', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'till-sessions', icon: 'point_of_sale', label: 'Till Sessions', route: '/app/till-sessions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'terminals', icon: 'devices', label: 'Terminals', route: '/app/terminals', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'transactions', icon: 'receipt_long', label: 'Transactions', route: '/app/transactions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'gift-cards', icon: 'credit_card', label: 'Card Management', route: '/app/gift-cards', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+
+      // 3. Catalog & Stock
+      { section: 'Catalog & Stock', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'products', icon: 'inventory_2', label: 'Products & SKUs', route: '/app/products', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'categories', icon: 'category', label: 'Categories', route: '/app/categories', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      {
+        id: 'inventory',
+        icon: 'swap_vert',
+        label: 'Inventory Levels',
+        route: '/app/inventory',
+        roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'],
         children: [
           { label: 'Stock Levels', route: '/app/inventory' },
           { label: 'Requisitions', route: '/app/inventory/requisitions' },
           { label: 'Movement Orders', route: '/app/inventory/orders' }
         ]
       },
-      { id: 'customers', icon: 'users', label: 'Customers', route: '/app/customers', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'promotions', icon: 'tag', label: 'Promotions', route: '/app/promotions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      
-      { section: 'Financials', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'gift-cards', icon: 'credit-card', label: 'Gift Cards', route: '/app/gift-cards', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'loyalty', icon: 'star', label: 'Loyalty Ledger', route: '/app/loyalty', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      
-      { section: 'Management', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
-      { id: 'profile', icon: 'person', label: 'My Profile', route: '/app/profile', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
-      { id: 'staff', icon: 'users', label: 'Staff Management', route: '/app/staff', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR'] },
-      { id: 'roles', icon: 'shield', label: 'Roles', route: '/app/roles', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
-      { id: 'reports', icon: 'chart', label: 'Reports', route: '/app/reports', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'tenants', icon: 'grid', label: 'Tenants', route: '/app/tenants', roles: ['SUPER_ADMIN'] },
-      { id: 'business-insights', icon: 'chart', label: 'Business Insights', route: `/app/tenants/${user?.tenantId}`, roles: ['TENANT_ADMIN'] },
-      { id: 'audit', icon: 'shield', label: 'Audit Logs', route: '/app/audit', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
-      { id: 'settings', icon: 'cog', label: 'Settings', route: '/app/settings', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
+      { id: 'promotions', icon: 'sell', label: 'Promotions', route: '/app/promotions', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'loyalty', icon: 'loyalty', label: 'Loyalty Program', route: '/app/loyalty', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
 
-      { section: 'Infrastructure', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
-      { id: 'terminals', icon: 'grid', label: 'Terminals', route: '/app/terminals', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      // 4. Organization & Governance
+      { section: 'Organization & Governance', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR'] },
+      { id: 'customers', icon: 'group', label: 'Customers', route: '/app/customers', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER'] },
+      { id: 'staff', icon: 'badge', label: 'Staff Members', route: '/app/staff', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR'] },
+      { id: 'roles', icon: 'shield_person', label: 'Roles & Permissions', route: '/app/roles', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
+      { id: 'stores', icon: 'apartment', label: 'Stores & Branches', route: '/app/stores', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER'] },
+      { id: 'tenants', icon: 'domain', label: 'Tenants', route: '/app/tenants', roles: ['SUPER_ADMIN'] },
+      { id: 'audit', icon: 'history_toggle_off', label: 'Audit Logs', route: '/app/audit', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
+
+      // 5. System
+      { section: 'System', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] },
+      { id: 'settings', icon: 'settings', label: 'Settings', route: '/app/settings', roles: ['SUPER_ADMIN', 'TENANT_ADMIN'] },
+      { id: 'profile', icon: 'person', label: 'Profile', route: '/app/profile', roles: ['SUPER_ADMIN', 'TENANT_ADMIN', 'MANAGER', 'STORE_MANAGER', 'SUPERVISOR', 'CASHIER'] }
     ];
 
     this.navItems = allItems.filter(item => {
@@ -71,16 +80,16 @@ export class SidebarComponent {
     });
   }
 
-  getStoreName() {
+  getStoreName(): string {
     const user = this.authService.currentUser();
     if (user && user.store) {
       return this.dataService.stores[user.store]?.name || 'Store Assigned';
     }
-    return '';
+    return 'Downtown Flagship #01';
   }
 
   logout() {
-    if (confirm('Logout?')) {
+    if (confirm('Logout of RetailOS?')) {
       this.authService.logout();
     }
   }

@@ -1,158 +1,167 @@
-<div class="page-container" style="padding: 24px; max-width: 1000px; margin: 0 auto;">
+<div class="page-container" style="padding:24px;max-width:950px;margin:0 auto;">
   <!-- Breadcrumbs & Header -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/staff" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Staff
+  <div style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);margin-bottom:8px;">
+      <a routerLink="/app/staff" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Staff
       </a>
       <span>/</span>
-      <span>Staff Profile</span>
+      <span>Staff Profile Dossier</span>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-      <div style="display:flex; align-items:center; gap:16px;">
-        <div style="width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #6366f1); display:flex; align-items:center; justify-content:center; color:#fff; font-size: 22px; font-weight: 800; text-transform:uppercase; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
-          {{ staff()?.firstName?.charAt(0) }}{{ staff()?.lastName?.charAt(0) }}
-        </div>
-        <div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
-              {{ staff()?.fullName || (staff()?.firstName + ' ' + staff()?.lastName) }}
-            </h1>
-            <span [class]="(staff()?.isActive ?? staff()?.active) ? 'badge badge-success' : 'badge badge-danger'" style="padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;">
-              {{ (staff()?.isActive ?? staff()?.active) ? 'Active' : 'Deactivated' }}
-            </span>
+    @if (staff()) {
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="width:54px;height:54px;border-radius:14px;background:var(--accent-d);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;border:1px solid rgba(99,102,241,0.25);flex-shrink:0;">
+            {{ staff()?.firstName?.charAt(0) }}{{ staff()?.lastName?.charAt(0) }}
           </div>
-          <div style="font-size: 13px; color: var(--text3); margin-top: 4px; display:flex; align-items:center; gap:12px;">
-            <span>Employee ID: <strong class="mono" style="color:var(--text2);">{{ staff()?.employeeNo || 'N/A' }}</strong></span>
-            <span>•</span>
-            <span>{{ staff()?.email }}</span>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <h1 style="font-size:24px;font-weight:800;margin:0;color:var(--text1);letter-spacing:-0.02em;">
+                {{ staff()?.fullName || (staff()?.firstName + ' ' + staff()?.lastName) }}
+              </h1>
+              @if (staff()?.isActive ?? staff()?.active) {
+                <span class="badge badge-green" style="font-size:11px;font-weight:700;">ACTIVE</span>
+              } @else {
+                <span class="badge badge-dim" style="font-size:11px;font-weight:700;">DEACTIVATED</span>
+              }
+            </div>
+            <div style="font-size:13px;color:var(--text3);margin-top:4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span>Employee ID: <strong class="mono" style="color:var(--text1);">{{ staff()?.employeeNo || 'N/A' }}</strong></span>
+              <span>•</span>
+              <span>{{ staff()?.email }}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div style="display:flex; gap:10px;">
-        <a [routerLink]="['/app/staff', staff()?.id, 'edit']" class="btn btn-primary" style="display:flex; align-items:center; gap:8px;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          Edit Profile
-        </a>
+        <div style="display:flex;gap:10px;">
+          <a [routerLink]="['/app/staff', staff()?.id, 'edit']" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Edit Profile
+          </a>
+        </div>
       </div>
-    </div>
+    }
   </div>
 
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
+    <div style="text-align:center;padding:80px 0;">
       <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading staff details...</div>
+      <div style="color:var(--text3);font-size:14px;font-weight:600;">Loading staff dossier...</div>
     </div>
   } @else if (errorMessage()) {
-    <div style="padding: 24px; text-align:center; background:rgba(255,60,60,0.08); border-radius:12px; border:1px solid rgba(255,60,60,0.2);">
-      <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">Failed to load staff</div>
-      <div style="color: var(--text2); font-size: 13px;">{{ errorMessage() }}</div>
+    <div style="padding:24px;text-align:center;background:rgba(239,68,68,0.08);border-radius:14px;border:1px solid rgba(239,68,68,0.2);">
+      <div style="color:var(--red);font-weight:700;margin-bottom:8px;">Failed to load staff</div>
+      <div style="color:var(--text2);font-size:13px;">{{ errorMessage() }}</div>
     </div>
   } @else {
-    <!-- Revenue Statistics Strip -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Today's Sales Processed</div>
-        <div style="font-size: 20px; font-weight: 800; color: var(--text1); margin-top: 4px;">
+    <!-- Revenue Statistics Bento Strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;margin-bottom:24px;">
+      <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Today's Shift Sales</div>
+        <div style="font-size:22px;font-weight:900;color:var(--green);margin-top:6px;" class="mono">
           ₦{{ (stats()?.daily ?? staff()?.todayRevenue ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">Shift transactions</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Current till shift throughput</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">This Month Sales</div>
-        <div style="font-size: 20px; font-weight: 800; color: var(--accent); margin-top: 4px;">
+      <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Month-to-Date Sales</div>
+        <div style="font-size:22px;font-weight:900;color:var(--accent);margin-top:6px;" class="mono">
           ₦{{ (stats()?.monthly ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">Month-to-date total</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Cumulative calendar month</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Lifetime Sales</div>
-        <div style="font-size: 20px; font-weight: 800; color: #10b981; margin-top: 4px;">
+      <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Lifetime Register Sales</div>
+        <div style="font-size:22px;font-weight:900;color:var(--text1);margin-top:6px;" class="mono">
           ₦{{ (stats()?.lifetime ?? staff()?.lifetimeRevenue ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">Cumulative register total</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Historical checkout total</div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">POS Till Access</div>
-        <div style="font-size: 14px; font-weight: 700; margin-top: 6px; display:flex; align-items:center; gap:6px;">
+      <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">POS Credentials</div>
+        <div style="font-size:13px;font-weight:700;margin-top:6px;display:flex;align-items:center;gap:6px;">
           @if (staff()?.hasPin) {
-            <span style="color:#10b981;">✓ PIN Configured</span>
+            <span class="badge badge-green" style="font-size:11px;padding:3px 8px;">✓ POS PIN Configured</span>
           } @else {
-            <span style="color:var(--text3);">No PIN Set</span>
+            <span class="badge badge-dim" style="font-size:11px;padding:3px 8px;">No PIN Configured</span>
           }
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">
           {{ staff()?.hasPassword ? 'Web portal access granted' : 'No web password set' }}
         </div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-      <!-- Personal Details -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          👤 Personal & Contact Info
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- Personal Details Card -->
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Personnel & Contact Info
         </div>
 
-        <div style="display:grid; gap: 14px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Full Name</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">{{ staff()?.firstName }} {{ staff()?.lastName }}</span>
+        <div style="display:grid;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Full Legal Name</span>
+            <span style="font-size:13px;font-weight:700;color:var(--text1);">{{ staff()?.firstName }} {{ staff()?.lastName }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Email Address</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">{{ staff()?.email }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Work Email</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text1);">{{ staff()?.email }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Employee Number</span>
-            <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--text1);">{{ staff()?.employeeNo || 'N/A' }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Employee ID</span>
+            <span class="mono" style="font-size:13px;font-weight:800;color:var(--accent);">{{ staff()?.employeeNo || 'N/A' }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Hire Date</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">{{ staff()?.hiredAt ? (staff()?.hiredAt | date:'mediumDate') : 'Not specified' }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Hire Date</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text1);">{{ staff()?.hiredAt ? (staff()?.hiredAt | date:'mediumDate') : 'Not specified' }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="font-size: 13px; color: var(--text3);">Registered In System</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">{{ staff()?.createdAt | date:'mediumDate' }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:var(--text3);">System Registration</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text1);">{{ staff()?.createdAt | date:'mediumDate' }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Organizational Placement -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🏢 Assignment & Permissions
+      <!-- Organizational Placement Card -->
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Assignment & Security Role
         </div>
 
-        <div style="display:grid; gap: 14px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Security Role</span>
-            <span style="font-size: 13px; font-weight: 700; color: var(--accent);">{{ role()?.name || getSystemRoleName(staff()?.systemRole) }}</span>
+        <div style="display:grid;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Assigned Role</span>
+            <span style="font-size:13px;font-weight:800;color:var(--accent);">{{ role()?.name || getSystemRoleName(staff()?.systemRole) }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Role Level</span>
-            <span class="badge badge-info" style="font-size: 11px; padding: 2px 8px; border-radius: 12px;">{{ getSystemRoleName(staff()?.systemRole) }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">System Level</span>
+            <span class="badge badge-accent" style="font-size:10px;font-weight:700;">{{ getSystemRoleName(staff()?.systemRole) }}</span>
           </div>
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Assigned Store</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--text3);">Assigned Branch</span>
+            <span style="font-size:13px;font-weight:700;color:var(--text1);">
               @if (store()) {
                 {{ store()?.name }} ({{ store()?.code }})
               } @else if (staff()?.systemRole === 5) {
-                <span>🌐 All Branches (HQ)</span>
+                <span>All Branches (HQ)</span>
               } @else {
                 <span style="color:var(--text3);">Unassigned</span>
               }
             </span>
           </div>
-          <div style="display:flex; justify-content:space-between;">
-            <span style="font-size: 13px; color: var(--text3);">Store Address</span>
-            <span style="font-size: 12px; color: var(--text2); text-align:right; max-width:60%;">{{ store()?.address || store()?.city || 'Headquarters / All Branches' }}</span>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <span style="font-size:12px;color:var(--text3);margin-top:2px;">Location Details</span>
+            <span style="font-size:12px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4;">
+              {{ store()?.address || store()?.city || 'Central Headquarters' }}
+            </span>
           </div>
         </div>
       </div>
@@ -161,8 +170,5 @@
 </div>
 
 <style>
-  .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-  .badge-danger { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
-  .badge-info { background: rgba(99,102,241,0.12); color: #6366f1; border: 1px solid rgba(99,102,241,0.3); }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>

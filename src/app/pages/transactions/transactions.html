@@ -1,67 +1,587 @@
-<div class="fade-up">
-  <!-- Header with Action -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-    <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Transactions</div>
-      <div style="font-size:12px;color:var(--text3);">History of all sales, refunds and voided transactions</div>
-    </div>
-    <button class="btn btn-secondary" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      ⬇ Export CSV
-    </button>
-  </div>
+<div class="fade-up" style="display:flex;flex-direction:column;gap:18px;">
 
-  @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading transactions...</span>
-    </div>
-  } @else {
-    <div class="card">
-      <div style="overflow-x:auto;">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>RECEIPT #</th>
-              <th>DATE/TIME</th>
-              <th>CASHIER</th>
-              <th>CUSTOMER</th>
-              <th>METHOD</th>
-              <th style="text-align:right;">AMOUNT</th>
-              <th>STATUS</th>
-              <th style="text-align:right;">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (tx of transactions(); track tx.id) {
-              <tr>
-                <td class="mono" style="color:var(--accent);font-weight:700;font-size:11px;">{{ tx.id }}</td>
-                <td>
-                  <div style="font-size:11px;font-weight:600;">{{ tx.date }}</div>
-                  <div style="font-size:10px;color:var(--text3);">{{ tx.time }}</div>
-                </td>
-                <td style="font-weight:600;font-size:13px;">{{ tx.cashier }}</td>
-                <td style="color:var(--text2);font-size:12px;">{{ tx.customer }}</td>
-                <td><span class="badge badge-dim">{{ tx.method }}</span></td>
-                <td class="mono" style="text-align:right;font-weight:700;">₦{{ (tx.amount || 0).toLocaleString() }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-green': tx.status === 'COMPLETED',
-                    'badge-red': tx.status === 'VOIDED',
-                    'badge-amber': tx.status === 'REFUNDED'
-                  }">{{ tx.status }}</span>
-                </td>
-                <td style="text-align:right;">
-                  <a [routerLink]="['/app/transactions', tx.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">Receipt</a>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <!-- Toast / Feedback Banner -->
+  @if (actionFeedback()) {
+    <div style="background:var(--accent);color:#fff;padding:10px 16px;border-radius:10px;font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 12px rgba(79,70,229,0.3);animation:fadeUp 0.15s ease;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>{{ actionFeedback() }}</span>
       </div>
+      <button (click)="actionFeedback.set(null)" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;line-height:1;">✕</button>
     </div>
   }
+
+  <!-- ═══════════════════════════════════════════════════
+       1. TOP TELEMETRY & BREADCRUMB
+  ════════════════════════════════════════════════════ -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+    <!-- Breadcrumb & Live Sync -->
+    <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text2);">
+      <span style="cursor:pointer;">Retail Operations</span>
+      <svg style="width:14px;height:14px;color:var(--text3);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+      <span style="font-weight:600;color:var(--text);">Transactions & Till Sessions</span>
+      <span class="mono" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--accent-d);color:var(--accent);margin-left:6px;">
+        <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);" class="animate-pulse"></span>
+        Live Backend Sync
+      </span>
+    </div>
+
+    <!-- Shift Volume & Till Discrepancy -->
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="mono" style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:600;">Gross Shift Sales:</span>
+        <span class="mono font-headline" style="font-size:16px;font-weight:800;color:var(--text);">₦{{ formatNum(shiftVolume()) }}</span>
+      </div>
+      <div style="width:1px;height:16px;background:var(--border);"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span class="mono" style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:600;">Discrepancy:</span>
+        <span class="mono" style="font-size:12px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:3px;">
+          ₦{{ formatNum(tillDiscrepancy()) }}
+          <svg style="width:13px;height:13px;color:var(--green);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       2. SUB-NAVIGATION PILL BAR
+  ════════════════════════════════════════════════════ -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;background:var(--surface2);padding:6px;border-radius:12px;border:1px solid var(--border);gap:8px;">
+    <!-- Sub-nav Tabs -->
+    <div style="display:flex;align-items:center;gap:4px;overflow-x:auto;">
+      <button (click)="setTab('all')"
+              class="btn"
+              [style.background]="activeTab() === 'all' ? 'var(--surface)' : 'transparent'"
+              [style.color]="activeTab() === 'all' ? 'var(--accent)' : 'var(--text2)'"
+              [style.boxShadow]="activeTab() === 'all' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none'"
+              style="padding:6px 12px;font-size:12px;border-radius:9px;gap:6px;">
+        <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span style="font-weight:600;">All Transactions</span>
+        <span class="mono" style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--accent-d);color:var(--accent);">
+          {{ totalCount() }}
+        </span>
+      </button>
+
+      <a [routerLink]="['/app/till-sessions']"
+         class="btn"
+         style="padding:6px 12px;font-size:12px;border-radius:9px;gap:6px;color:var(--text2);text-decoration:none;background:transparent;">
+        <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+        <span>Till Sessions</span>
+      </a>
+
+      <button (click)="setTab('refunds')"
+              class="btn"
+              [style.background]="activeTab() === 'refunds' ? 'var(--surface)' : 'transparent'"
+              [style.color]="activeTab() === 'refunds' ? 'var(--red)' : 'var(--text2)'"
+              [style.boxShadow]="activeTab() === 'refunds' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none'"
+              style="padding:6px 12px;font-size:12px;border-radius:9px;gap:6px;">
+        <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+        </svg>
+        <span>Refunds</span>
+        <span class="mono" style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;background:var(--red-d);color:var(--red);">
+          {{ refundedCount() }}
+        </span>
+      </button>
+
+      <button (click)="setTab('voided')"
+              class="btn"
+              [style.background]="activeTab() === 'voided' ? 'var(--surface)' : 'transparent'"
+              [style.color]="activeTab() === 'voided' ? 'var(--text)' : 'var(--text2)'"
+              [style.boxShadow]="activeTab() === 'voided' ? '0 1px 3px rgba(0,0,0,0.05)' : 'none'"
+              style="padding:6px 12px;font-size:12px;border-radius:9px;gap:6px;">
+        <svg style="width:15px;height:15px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+        <span>Voided / Declined</span>
+        <span class="mono" style="font-size:10px;padding:1px 6px;border-radius:10px;background:var(--surface3);color:var(--text3);">
+          {{ declinedCount() }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Batch Actions -->
+    <div style="display:flex;align-items:center;gap:6px;">
+      <button (click)="loadTransactions()" class="btn btn-secondary btn-sm" style="border-radius:8px;gap:5px;">
+        <svg [style.animation]="isLoading() ? 'spin 1s linear infinite' : 'none'" style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+        <span>Refresh</span>
+      </button>
+
+      <button (click)="exportCsv()" class="btn btn-primary btn-sm" style="border-radius:8px;gap:5px;">
+        <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       3. FILTER & CONTROLS TOOLBAR
+  ════════════════════════════════════════════════════ -->
+  <div class="card" style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+    <!-- Inputs Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:10px;">
+      <!-- Search Input -->
+      <div style="position:relative;display:flex;align-items:center;">
+        <svg style="position:absolute;left:10px;width:15px;height:15px;color:var(--text3);pointer-events:none;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text"
+               class="inp"
+               style="padding-left:32px;padding-right:36px;height:36px;border-radius:9px;font-size:12px;"
+               placeholder="Search TX#, Cashier, Customer..."
+               (input)="onSearch($event)" />
+        <span class="mono" style="position:absolute;right:8px;padding:1px 5px;border-radius:4px;background:var(--surface3);color:var(--text3);font-size:9.5px;border:1px solid var(--border);">⌘F</span>
+      </div>
+
+      <!-- Store Filter -->
+      <select class="inp" [(ngModel)]="selectedStore" style="height:36px;border-radius:9px;font-size:12px;">
+        <option value="all">All Chain Stores</option>
+        @for (s of stores(); track s.id) {
+          <option [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+        }
+      </select>
+
+      <!-- Payment Tender Filter -->
+      <select class="inp" [(ngModel)]="selectedTender" style="height:36px;border-radius:9px;font-size:12px;">
+        <option value="all">All Payment Tenders</option>
+        <option value="cash">Cash Tender</option>
+        <option value="card">POS Card Terminal</option>
+        <option value="mobile">Mobile Money / QR</option>
+        <option value="transfer">Bank Transfer</option>
+        <option value="gift">Gift Card</option>
+      </select>
+
+      <!-- Terminal Filter -->
+      <select class="inp" [(ngModel)]="selectedTerminal" style="height:36px;border-radius:9px;font-size:12px;">
+        <option value="all">All Terminals / Lanes</option>
+        @for (t of terminals(); track t.id) {
+          <option [value]="t.terminalCode || t.id">{{ t.terminalCode || t.name }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Status Pills Row -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;border-top:1px solid var(--border);padding-top:10px;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span class="mono" style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-right:2px;">Status:</span>
+        
+        <button (click)="setStatus('all')"
+                class="btn"
+                [style.background]="activeStatus() === 'all' ? 'var(--accent)' : 'var(--surface2)'"
+                [style.color]="activeStatus() === 'all' ? '#fff' : 'var(--text2)'"
+                style="padding:3px 10px;font-size:11px;border-radius:20px;border:1px solid var(--border);">
+          All Statuses
+        </button>
+
+        <button (click)="setStatus('COMPLETED')"
+                class="btn"
+                [style.background]="activeStatus() === 'COMPLETED' ? 'var(--green)' : 'var(--green-d)'"
+                [style.color]="activeStatus() === 'COMPLETED' ? '#fff' : 'var(--green)'"
+                style="padding:3px 10px;font-size:11px;border-radius:20px;gap:4px;">
+          <span style="width:6px;height:6px;border-radius:50%;" [style.background]="activeStatus() === 'COMPLETED' ? '#fff' : 'var(--green)'"></span>
+          <span>Completed ({{ completedCount() }})</span>
+        </button>
+
+        <button (click)="setStatus('REFUNDED')"
+                class="btn"
+                [style.background]="activeStatus() === 'REFUNDED' ? 'var(--red)' : 'var(--red-d)'"
+                [style.color]="activeStatus() === 'REFUNDED' ? '#fff' : 'var(--red)'"
+                style="padding:3px 10px;font-size:11px;border-radius:20px;gap:4px;">
+          <span style="width:6px;height:6px;border-radius:50%;" [style.background]="activeStatus() === 'REFUNDED' ? '#fff' : 'var(--red)'"></span>
+          <span>Refunded ({{ refundedCount() }})</span>
+        </button>
+
+        <button (click)="setStatus('PENDING')"
+                class="btn"
+                [style.background]="activeStatus() === 'PENDING' ? 'var(--text2)' : 'var(--surface2)'"
+                [style.color]="activeStatus() === 'PENDING' ? '#fff' : 'var(--text3)'"
+                style="padding:3px 10px;font-size:11px;border-radius:20px;gap:4px;">
+          <span style="width:6px;height:6px;border-radius:50%;" [style.background]="activeStatus() === 'PENDING' ? '#fff' : 'var(--text3)'"></span>
+          <span>Pending ({{ pendingCount() }})</span>
+        </button>
+
+        <button (click)="setStatus('DECLINED')"
+                class="btn"
+                [style.background]="activeStatus() === 'DECLINED' ? 'var(--red)' : 'var(--red-d)'"
+                [style.color]="activeStatus() === 'DECLINED' ? '#fff' : 'var(--red)'"
+                style="padding:3px 10px;font-size:11px;border-radius:20px;gap:4px;">
+          <span style="width:6px;height:6px;border-radius:50%;" [style.background]="activeStatus() === 'DECLINED' ? '#fff' : 'var(--red)'"></span>
+          <span>Declined ({{ declinedCount() }})</span>
+        </button>
+      </div>
+
+      <div style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;">
+        <span>Showing <strong>{{ filteredTransactions().length }}</strong> of {{ totalCount() }} live records</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       4. MAIN WORKSPACE: STREAM LIST + LIVE INSPECT DRAWER
+  ════════════════════════════════════════════════════ -->
+  <div style="display:grid;grid-template-columns:7fr 5fr;gap:20px;" class="dashboard-main-grid">
+
+    <!-- ─── LEFT: TRANSACTIONS STREAM ────────────────── -->
+    <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
+      <!-- Table Header Bar -->
+      <div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="mono" style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);">
+            Transactions Stream
+          </span>
+        </div>
+        <div class="mono" style="font-size:11px;color:var(--text2);display:flex;align-items:center;gap:5px;">
+          <svg style="width:13px;height:13px;color:var(--green);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span>Live POS Audit Connected</span>
+        </div>
+      </div>
+
+      <!-- Transaction Rows -->
+      <div style="display:flex;flex-direction:column;overflow-y:auto;max-height:720px;">
+        @if (isLoading()) {
+          <div style="display:flex;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);">
+            <div style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+            <span style="margin-left:12px;font-size:13px;">Synchronizing transactions with backend ledger...</span>
+          </div>
+        } @else {
+          @for (tx of filteredTransactions(); track tx.rawId) {
+            <div (click)="selectTx(tx)"
+                 [style.background]="selectedTx()?.rawId === tx.rawId ? 'var(--surface3)' : 'transparent'"
+                 [style.borderLeft]="selectedTx()?.rawId === tx.rawId ? '4px solid var(--accent)' : '4px solid transparent'"
+                 style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.12s;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              
+              <!-- Left Info -->
+              <div style="display:flex;flex-direction:column;gap:3px;overflow:hidden;flex:1;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="mono" style="font-size:13.5px;font-weight:700;color:var(--accent);">
+                    {{ tx.id }}
+                  </span>
+                  <span style="font-size:10px;font-weight:700;padding:1px 7px;border-radius:12px;"
+                        [style.background]="tx.status === 'COMPLETED' ? 'var(--green-d)' : tx.status === 'REFUNDED' ? 'var(--red-d)' : 'var(--surface2)'"
+                        [style.color]="tx.status === 'COMPLETED' ? 'var(--green)' : tx.status === 'REFUNDED' ? 'var(--red)' : 'var(--text3)'"
+                        class="mono">
+                    {{ tx.status }}
+                  </span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text3);" class="mono">
+                  <span>{{ tx.date }} {{ tx.time }}</span>
+                  <span>•</span>
+                  <span style="color:var(--text);">{{ tx.terminal }}</span>
+                  <span>•</span>
+                  <span style="color:var(--text2);">{{ tx.store }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text2);margin-top:2px;">
+                  <div style="width:18px;height:18px;border-radius:50%;background:var(--accent-d);color:var(--accent);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+                    {{ tx.cashierInitials }}
+                  </div>
+                  <span style="font-weight:600;color:var(--text);">{{ tx.cashier }}</span>
+                  <span style="color:var(--text3);">→</span>
+                  <span>{{ tx.customer }}</span>
+                </div>
+              </div>
+
+              <!-- Right Amount & Tender -->
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+                <div class="mono font-headline"
+                     [style.color]="tx.status === 'REFUNDED' ? 'var(--red)' : 'var(--text)'"
+                     style="font-size:16px;font-weight:800;">
+                  ₦{{ formatNum(tx.amount) }}
+                </div>
+                <div class="mono" style="font-size:10.5px;color:var(--text3);display:flex;align-items:center;gap:4px;">
+                  <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  <span>{{ tx.method }}</span>
+                </div>
+                <a [routerLink]="['/app/transactions', tx.rawId]"
+                   (click)="$event.stopPropagation()"
+                   class="btn btn-secondary btn-xs"
+                   style="margin-top:4px;font-size:10px;padding:2px 8px;text-decoration:none;border-radius:6px;">
+                  Receipt →
+                </a>
+              </div>
+
+            </div>
+          } @empty {
+            <div style="padding:60px 20px;text-align:center;color:var(--text3);">
+              <div style="font-size:32px;margin-bottom:8px;">🧾</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);">No Transactions Recorded</div>
+              <div style="font-size:12px;margin-top:4px;max-width:320px;margin-left:auto;margin-right:auto;">
+                Live transactions will stream automatically as cashiers ring up sales on active POS registers.
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Pagination / Count Footer -->
+      <div style="padding:10px 16px;background:var(--surface2);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3);">
+        <span>{{ filteredTransactions().length }} active transactions visible</span>
+        <button (click)="loadTransactions()" class="btn btn-secondary btn-xs" style="gap:4px;">
+          <svg style="width:11px;height:11px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+          Sync Ledger
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── RIGHT: LIVE INSPECT DRAWER ───────────────── -->
+    @if (selectedTx()) {
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:16px;position:sticky;top:80px;box-shadow:0 4px 16px rgba(0,0,0,0.04);">
+        <!-- Drawer Header -->
+        <div style="background:var(--surface2);padding:14px;border-radius:12px;border:1px solid var(--border);display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="mono" style="font-size:10px;font-weight:800;letter-spacing:0.06em;background:var(--accent);color:#fff;padding:2px 7px;border-radius:4px;">
+                LIVE INSPECT
+              </span>
+              <span class="font-headline" style="font-size:18px;font-weight:800;color:var(--text);">
+                {{ selectedTx().id }}
+              </span>
+            </div>
+            <span class="mono" style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;"
+                  [style.background]="selectedTx().status === 'COMPLETED' ? 'var(--green-d)' : selectedTx().status === 'REFUNDED' ? 'var(--red-d)' : 'var(--surface3)'"
+                  [style.color]="selectedTx().status === 'COMPLETED' ? 'var(--green)' : selectedTx().status === 'REFUNDED' ? 'var(--red)' : 'var(--text)'"
+                  style="display:flex;align-items:center;gap:4px;">
+              <span style="width:6px;height:6px;border-radius:50%;"
+                    [style.background]="selectedTx().status === 'COMPLETED' ? 'var(--green)' : selectedTx().status === 'REFUNDED' ? 'var(--red)' : 'var(--text3)'"
+                    class="animate-pulse"></span>
+              {{ selectedTx().status }}
+            </span>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text3);" class="mono">
+            <span>Processed: {{ selectedTx().date }} {{ selectedTx().time }}</span>
+            <span>Batch: {{ selectedTx().batch }}</span>
+          </div>
+
+          <!-- Drawer Action Triggers -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:4px;">
+            <button (click)="printDuplicate()" class="btn btn-secondary" style="justify-content:center;padding:7px;font-size:11.5px;border-radius:8px;gap:5px;">
+              <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              <span>Print Slip</span>
+            </button>
+
+            @if (selectedTx().status !== 'REFUNDED') {
+              <button (click)="issueRefund()" [disabled]="isRefunding()" class="btn btn-danger" style="justify-content:center;padding:7px;font-size:11.5px;border-radius:8px;gap:5px;">
+                <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                </svg>
+                <span>{{ isRefunding() ? 'Processing...' : 'Issue Refund' }}</span>
+              </button>
+            } @else {
+              <div style="display:flex;align-items:center;justify-content:center;padding:7px;border-radius:8px;background:var(--red-d);color:var(--red);font-size:11px;font-weight:700;">
+                ✓ Refunded
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Itemized Cart Breakdown -->
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span class="mono" style="font-size:10.5px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:0.05em;">
+              Purchased Items ({{ selectedTx().items?.length || 0 }})
+            </span>
+            <span class="mono" style="font-size:10px;color:var(--text3);">
+              VAT Rate: 7.5% Standard
+            </span>
+          </div>
+
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:10px;">
+            @for (item of selectedTx().items; track item.sku) {
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;gap:8px;">
+                <div style="display:flex;flex-direction:column;gap:2px;">
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="mono" style="font-size:11.5px;font-weight:700;color:var(--accent);">{{ item.qty }}×</span>
+                    <span style="font-size:12.5px;font-weight:600;color:var(--text);">{{ item.name }}</span>
+                  </div>
+                  <div style="font-size:10px;color:var(--text3);padding-left:18px;" class="mono">
+                    SKU: {{ item.sku }}
+                    @if (item.note) {
+                      <span style="display:block;color:var(--red);">• {{ item.note }}</span>
+                    }
+                    @if (item.discount) {
+                      <span style="display:block;color:var(--green);">• {{ item.discount }}</span>
+                    }
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="mono" style="font-size:13px;font-weight:700;color:var(--text);">
+                    ₦{{ formatNum(item.price) }}
+                  </div>
+                  <div class="mono" style="font-size:9.5px;color:var(--text3);">
+                    ₦{{ formatNum(item.unitPrice) }} ea
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div style="padding:16px 8px;text-align:center;color:var(--text3);font-size:12px;">
+                No individual item lines recorded for this transaction.
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Tender Calculation Breakdown -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;" class="mono">
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text2);">
+            <span>Subtotal</span>
+            <span style="color:var(--text);font-weight:600;">₦{{ formatNum(selectedTx().subtotal) }}</span>
+          </div>
+          @if (selectedTx().discount > 0) {
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--green);">
+              <span>Discounts Applied</span>
+              <span style="font-weight:600;">-₦{{ formatNum(selectedTx().discount) }}</span>
+            </div>
+          }
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text2);">
+            <span>Sales Tax (7.5% VAT)</span>
+            <span style="color:var(--text);font-weight:600;">₦{{ formatNum(selectedTx().tax) }}</span>
+          </div>
+          <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <div>
+              <div style="font-size:13px;font-weight:800;color:var(--text);" class="font-headline">Total Settled</div>
+              <div style="font-size:10px;color:var(--text3);">{{ selectedTx().methodDetail }}</div>
+            </div>
+            <div class="font-headline" style="font-size:20px;font-weight:800;color:var(--accent);">
+              ₦{{ formatNum(selectedTx().amount) }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Operational Context (Staff & Customer) -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span class="mono" style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:0.05em;">
+              Operational Attribution
+            </span>
+            <span class="mono" style="font-size:11px;font-weight:600;color:var(--accent);">
+              {{ selectedTx().tillSessionId }}
+            </span>
+          </div>
+
+          <!-- Cashier Card -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--accent-d);color:var(--accent);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+                {{ selectedTx().cashierInitials }}
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--text);">{{ selectedTx().cashier }}</div>
+                <div style="font-size:10px;color:var(--text3);">Station: {{ selectedTx().terminalFull }}</div>
+              </div>
+            </div>
+            <span class="mono" style="font-size:9.5px;padding:2px 6px;border-radius:4px;background:var(--surface2);color:var(--text3);">
+              {{ selectedTx().shift }}
+            </span>
+          </div>
+
+          <!-- Customer Card -->
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--green-d);color:var(--green);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+                {{ selectedTx().customerInitials }}
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--text);">{{ selectedTx().customer }}</div>
+                <div style="font-size:10px;color:var(--text3);">{{ selectedTx().customerTier }}</div>
+              </div>
+            </div>
+            <span class="mono" style="font-size:10px;color:var(--accent);font-weight:600;">
+              +{{ selectedTx().earnedPts }} pts
+            </span>
+          </div>
+        </div>
+
+        <!-- Security & Hardware Verification -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+          <span class="mono" style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:0.05em;">
+            Fiscal Audit & Verification
+          </span>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;" class="mono">
+            <div>
+              <span style="font-size:9.5px;color:var(--text3);text-transform:uppercase;display:block;">Auth Reference</span>
+              <strong style="color:var(--text);">{{ selectedTx().authCode }}</strong>
+            </div>
+            <div>
+              <span style="font-size:9.5px;color:var(--text3);text-transform:uppercase;display:block;">Hardware ID</span>
+              <strong style="color:var(--text);">{{ selectedTx().terminalHwId }}</strong>
+            </div>
+            <div>
+              <span style="font-size:9.5px;color:var(--text3);text-transform:uppercase;display:block;">Gateway Trace</span>
+              <span style="color:var(--text2);word-break:break-all;">{{ selectedTx().gatewayTrace }}</span>
+            </div>
+            <div>
+              <span style="font-size:9.5px;color:var(--text3);text-transform:uppercase;display:block;">Tender Channel</span>
+              <span style="color:var(--text2);">{{ selectedTx().cardMethod }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:4px;">
+          <button (click)="sendEmailReceipt()" class="btn btn-secondary btn-xs" style="gap:4px;">
+            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <span>Email E-Receipt</span>
+          </button>
+          <button (click)="sendSmsReceipt()" class="btn btn-secondary btn-xs" style="gap:4px;">
+            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>SMS Receipt</span>
+          </button>
+          <a [routerLink]="['/app/transactions', selectedTx().rawId]" class="btn btn-primary btn-xs" style="gap:4px;text-decoration:none;">
+            <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span>Official Invoice</span>
+          </a>
+        </div>
+
+      </div>
+    } @else {
+      <!-- Right Placeholder when no transaction selected or empty -->
+      <div class="card" style="padding:40px 24px;text-align:center;color:var(--text3);display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:360px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text3);margin-bottom:12px;">
+          <svg style="width:24px;height:24px;" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">No Transaction Selected</div>
+        <div style="font-size:12px;max-width:260px;line-height:1.5;">
+          Click on any transaction from the stream on the left to inspect its line items, payment tender, and hardware audit context.
+        </div>
+      </div>
+    }
+
+  </div>
+
 </div>
 
 <style>
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 </style>

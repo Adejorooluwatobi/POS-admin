@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-tint": "#4d44e3", "primary-fixed": "#e2dfff", "on-tertiary-fixed": "#002113", "on-secondary-fixed-variant": "#3f465c", "tertiary-fixed-dim": "#4edea3", "surface-variant": "#d3e4fe", "tertiary-fixed": "#6ffbbe", "primary-container": "#4f46e5", "primary": "#3525cd", "on-primary-fixed": "#0f0069", "on-error-container": "#93000a", "surface-dim": "#cbdbf5", "primary-fixed-dim": "#c3c0ff", "outline-variant": "#c7c4d8", "secondary-fixed": "#dae2fd", "on-secondary-container": "#5c647a", "on-background": "#0b1c30", "tertiary": "#005338", "surface-container-low": "#eff4ff", "secondary-container": "#dae2fd", "outline": "#777587", "surface": "#f8f9ff", "surface-bright": "#f8f9ff", "tertiary-container": "#006e4b", "surface-container-highest": "#d3e4fe", "error-container": "#ffdad6", "on-secondary": "#ffffff", "on-tertiary-fixed-variant": "#005236", "inverse-on-surface": "#eaf1ff", "secondary": "#565e74", "on-surface-variant": "#464555", "on-primary": "#ffffff", "inverse-primary": "#c3c0ff", "on-tertiary-container": "#67f4b7", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "on-tertiary": "#ffffff", "on-primary-container": "#dad7ff", "background": "#f8f9ff", "surface-container-lowest": "#ffffff", "error": "#ba1a1a", "secondary-fixed-dim": "#bec6e0", "on-secondary-fixed": "#131b2e", "on-primary-fixed-variant": "#3323cc", "on-error": "#ffffff", "on-surface": "#0b1c30", "inverse-surface": "#213145" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin-mobile": "1rem", "space-xl": "2rem", "space-md": "1rem", "space-xs": "0.25rem", "margin": "1.5rem", "space-sm": "0.5rem", "gutter": "1rem", "space-lg": "1.5rem", "gutter-compact": "0.75rem" }, "fontFamily": { "body-lg": [ "Inter" ], "display-hero": [ "Plus Jakarta Sans" ], "body-sm": [ "Inter" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "headline-lg": [ "Plus Jakarta Sans" ], "label-caps": [ "Inter" ], "body-medium": [ "Inter" ], "headline-md": [ "Plus Jakarta Sans" ], "body-base": [ "Inter" ], "mono-data": [ "Inter" ], "kpi-value": [ "Plus Jakarta Sans" ], "headline-sm": [ "Plus Jakarta Sans" ] }, "fontSize": { "body-lg": [ "16px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "400" } ], "display-hero": [ "44px", { "lineHeight": "52px", "letterSpacing": "-0.03em", "fontWeight": "700" } ], "body-sm": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.005em", "fontWeight": "400" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-caps": [ "11px", { "lineHeight": "16px", "letterSpacing": "0.06em", "fontWeight": "600" } ], "body-medium": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "500" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-base": [ "14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" } ], "mono-data": [ "13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "500" } ], "kpi-value": [ "28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "headline-sm": [ "18px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" } ] } } } };</script></head><body class="bg-background font-body-base text-body-base text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] overflow-y-auto"><div class="flex flex-col"><div class="px-space-md pt-space-md pb-space-sm"><div class="flex items-center gap-space-sm"><img alt="Apex POS Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQSQCJ_E1_GWM6JOokC-cOkSKIapGJYOQ8TAEeHZV3mLDeUm6ESP96uXPmehnoRlmBvy5iNhisqmu9Y9s8Yq7lj6X1O2M-NfYozFQ0fMJHCR3VSYwV4SAnfIsnBHZSW3XX0ktOoVCkomTMHTEBEHam6hzBJPdRGDElcovzuXPZcuxqJk8-JoLYAiH0QvNsJTjkzYqgfHU2IZKJammgHVuqBN1V4BlAZrXp6sZOkXMThvawy23xpEqz"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight leading-none">Apex POS</span><span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mt-space-xs">Enterprise Portal</span></div></div><div class="mt-space-md"><button class="w-full flex items-center justify-between px-space-sm py-space-xs rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" type="button"><div class="flex items-center gap-space-xs text-left overflow-hidden"><span class="material-symbols-outlined text-primary text-base shrink-0">storefront</span><div class="truncate"><p class="font-body-sm text-body-sm font-semibold truncate leading-tight">Downtown Flagship #04</p><p class="font-label-caps text-label-caps text-on-surface-variant truncate">12 active registers</p></div></div><span class="material-symbols-outlined text-on-surface-variant text-sm shrink-0">unfold_more</span></button></div></div><nav class="px-space-sm py-space-xs flex flex-col gap-space-sm" data-active-classes="bg-primary-container text-on-primary font-body-medium text-body-medium rounded-xl"><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Main</span><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary font-body-medium text-body-medium rounded-xl" data-path="dashboard" href="#"><span class="material-symbols-outlined text-lg">dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="analytics-and-reports" href="#"><span class="material-symbols-outlined text-lg">query_stats</span><span>Analytics &amp; Reports</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Retail Operations</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="till-sessions" href="#"><span class="material-symbols-outlined text-lg">point_of_sale</span><span>Till Sessions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="terminals" href="#"><span class="material-symbols-outlined text-lg">devices</span><span>Terminals</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="transactions" href="#"><span class="material-symbols-outlined text-lg">receipt_long</span><span>Transactions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="card-management" href="#"><span class="material-symbols-outlined text-lg">credit_card</span><span>Card Management</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Catalog &amp; Stock</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="products-and-skus" href="#"><span class="material-symbols-outlined text-lg">inventory_2</span><span>Products &amp; SKUs</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="categories" href="#"><span class="material-symbols-outlined text-lg">category</span><span>Categories</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="inventory-levels" href="#"><span class="material-symbols-outlined text-lg">swap_vert</span><span>Inventory Levels</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="promotions" href="#"><span class="material-symbols-outlined text-lg">sell</span><span>Promotions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="loyalty-program" href="#"><span class="material-symbols-outlined text-lg">loyalty</span><span>Loyalty Program</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Organization &amp; Governance</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="customers" href="#"><span class="material-symbols-outlined text-lg">group</span><span>Customers</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="staff-members" href="#"><span class="material-symbols-outlined text-lg">badge</span><span>Staff Members</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="roles-and-permissions" href="#"><span class="material-symbols-outlined text-lg">shield_person</span><span>Roles &amp; Permissions</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="stores-and-branches" href="#"><span class="material-symbols-outlined text-lg">apartment</span><span>Stores &amp; Branches</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="tenants" href="#"><span class="material-symbols-outlined text-lg">domain</span><span>Tenants</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="audit-logs" href="#"><span class="material-symbols-outlined text-lg">history_toggle_off</span><span>Audit Logs</span></a></div><div class="flex flex-col gap-space-xs"><span class="px-space-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">System</span><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="system-settings" href="#"><span class="material-symbols-outlined text-lg">settings</span><span>Settings</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-body-medium text-body-medium text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="profile-settings" href="#"><span class="material-symbols-outlined text-lg">person</span><span>Profile</span></a></div></nav></div><div class="p-space-sm flex flex-col gap-space-xs bg-surface-container-low"><div class="flex items-center justify-between px-space-xs py-space-xs"><div class="flex items-center gap-space-xs"><span class="h-2 w-2 rounded-full bg-tertiary-container animate-pulse"></span><span class="font-mono-data text-mono-data text-on-surface-variant">All 8 Terminals Online</span></div><span class="font-body-sm text-body-sm text-on-surface-variant">2m</span></div><div class="flex items-center justify-between px-space-xs pt-space-xs"><span class="font-body-sm text-body-sm text-on-surface-variant">v2.8.4 Enterprise</span><a class="font-body-sm text-body-sm text-primary hover:text-primary-container font-medium flex items-center gap-space-xs" href="#"><span>Help Desk</span><span class="material-symbols-outlined text-sm">north_east</span></a></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-md"><div class="flex items-center gap-space-md flex-1 max-w-xl"><div class="relative w-full flex items-center"><span class="material-symbols-outlined absolute left-3 text-on-surface-variant text-lg pointer-events-none">search</span><input class="w-full h-10 pl-9 pr-12 rounded-xl bg-surface-container-low text-on-surface placeholder:text-on-surface-variant font-body-base text-body-base outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search transactions, SKUs, terminals or press ⌘K" type="text"/><kbd class="absolute right-3 px-space-xs py-0.5 rounded-lg bg-surface-container-high text-on-surface-variant font-mono-data text-mono-data">⌘K</kbd></div><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1.5 rounded-full bg-surface-container-low whitespace-nowrap"><span class="h-2 w-2 rounded-full bg-tertiary-container"></span><span class="font-body-sm text-body-sm font-medium text-on-surface">Store #04 - Open</span><span class="font-body-sm text-body-sm text-on-surface-variant">• Reg A-D active</span></div></div><div class="flex items-center gap-space-sm"><div class="hidden md:flex items-center gap-space-xs"><button class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-body-medium text-body-medium" type="button"><span class="material-symbols-outlined text-base">swap_horiz</span><span>Cash In / Out</span></button><button class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-colors font-body-medium text-body-medium shadow-sm" type="button"><span class="material-symbols-outlined text-base">add</span><span>New Product</span></button></div><button class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-xl">notifications</span><span class="absolute top-1.5 right-1.5 h-4 min-w-[16px] px-1 rounded-full bg-error text-on-error font-mono-data text-[10px] flex items-center justify-center leading-none">3</span></button><div class="flex items-center gap-space-sm pl-space-xs"><div class="hidden sm:flex flex-col text-right"><span class="font-body-medium text-body-medium text-on-surface leading-tight">Sarah Jenkins</span><span class="font-label-caps text-label-caps text-on-surface-variant">Store Operations Lead</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-surface-container-high" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANTlRUIfb7ebS2AWMx48PfTbpxmYcUkmmFWSIoQcK-U8KqKVOa0BpLMMzK_PEaTrFF9DBQ5mjZfT9hdo8v92lMw0k_Xf_jZOZTYN3vJKH0QGIRtUA9cRvN1qO9N5Ii-sizadnSTeo8mYYaX7deFGMHqqioM8gUz8rUUi5NCy1ocM3ehwR-UDxwHIecHumTqtchBwPtTo2bPki76WaIncggliJb_Ipx7WaL3ie1HIjwgG-0NZyGYk0"/></div></div></header><main class="w-full pt-16 px-space-md pb-space-xl bg-background min-h-screen"><div class="flex flex-col w-full gap-space-lg">
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-primary font-semibold px-space-xs py-0.5 rounded bg-primary-fixed text-on-primary-fixed">Executive Terminal Suite</span>
+<span class="flex items-center gap-1 font-mono-data text-mono-data text-tertiary font-semibold">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+          Live Feed Active
+        </span>
+</div>
+<div class="flex items-baseline gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">Downtown Flagship #04 Overview</h1>
+<span class="hidden sm:inline-block font-mono-data text-mono-data text-on-surface-variant font-medium">POS-NET ID: 884-DF04</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-surface-container-low text-on-surface shadow-sm hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-base">calendar_today</span>
+<span class="font-body-medium text-body-medium font-semibold text-on-surface">Today, Oct 24, 2024</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm">expand_more</span>
+</div>
+<button class="flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all active:scale-95 shadow-sm font-body-medium text-body-medium font-medium" id="syncButton" type="button">
+<span class="material-symbols-outlined text-base text-primary" id="syncIcon">sync</span>
+<span>Sync All Registers</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-primary-container text-on-primary hover:bg-primary transition-all active:scale-95 shadow-sm font-body-medium text-body-medium font-medium" type="button">
+<span class="material-symbols-outlined text-base">file_download</span>
+<span>Export Daily Summary</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Gross Revenue Today</span>
+<span class="font-kpi-value text-kpi-value text-on-surface font-bold tracking-tight leading-none">$28,490.50</span>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container text-primary">
+<span class="material-symbols-outlined text-xl">payments</span>
+</div>
+</div>
+<div class="mt-space-md flex items-end justify-between gap-space-sm">
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-body-sm font-semibold">
+<span class="material-symbols-outlined text-sm leading-none">trending_up</span>
+<span>+14.2%</span>
+<span class="text-on-tertiary-fixed-variant font-normal">vs yday</span>
+</div>
+<svg class="w-24 h-9 text-primary overflow-visible" fill="none" viewbox="0 0 96 36">
+<path d="M2 30 Q 18 26, 32 18 T 64 12 T 94 4" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M2 30 Q 18 26, 32 18 T 64 12 T 94 4 L 94 36 L 2 36 Z" fill="currentColor" fill-opacity="0.08"></path>
+</svg>
+</div>
+</div>
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Total Transactions</span>
+<span class="font-kpi-value text-kpi-value text-on-surface font-bold tracking-tight leading-none">1,428 orders</span>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container text-primary">
+<span class="material-symbols-outlined text-xl">receipt_long</span>
+</div>
+</div>
+<div class="mt-space-md flex items-end justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant font-semibold">Avg Basket Size</span>
+<span class="font-mono-data text-mono-data font-bold text-on-surface">$19.95 / order</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-mono-data text-body-sm font-semibold">
+<span class="material-symbols-outlined text-sm leading-none">arrow_upward</span>
+<span>+4.8%</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Active Tills &amp; Cash Flow</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-kpi-value text-kpi-value text-on-surface font-bold tracking-tight leading-none">4/4 Open</span>
+<span class="font-mono-data text-mono-data text-tertiary font-semibold text-xs">Balanced</span>
+</div>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container text-primary">
+<span class="material-symbols-outlined text-xl">point_of_sale</span>
+</div>
+</div>
+<div class="mt-space-md flex items-end justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Drawers: <strong class="text-on-surface font-mono-data font-semibold">$4,250.00</strong></span>
+<span class="font-label-caps text-label-caps text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">check_circle</span> $0.00 Discrepancy
+          </span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-body-sm font-semibold">100% Audit</span>
+</div>
+</div>
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-body-sm text-body-sm font-medium text-on-surface-variant">Real-time Terminal Health</span>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-kpi-value text-kpi-value text-on-surface font-bold tracking-tight leading-none">8/8 Online</span>
+<span class="font-mono-data text-mono-data text-tertiary font-semibold text-xs">0 Errors</span>
+</div>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container text-tertiary">
+<span class="material-symbols-outlined text-xl">wifi_tethering</span>
+</div>
+</div>
+<div class="mt-space-md flex items-end justify-between gap-space-sm">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Lane 1-4 &amp; Kiosk A-D</span>
+<span class="font-mono-data text-mono-data font-bold text-on-surface">100% Uptime</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+<span class="w-1.5 h-4 rounded-sm bg-tertiary-container"></span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant font-semibold">Tender Channel Breakdown</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Sales Velocity &amp; Payment Mix</h2>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest text-on-surface font-body-sm text-body-sm font-semibold shadow-xs" type="button">Today</button>
+<button class="px-space-sm py-1 rounded-lg text-on-surface-variant font-body-sm text-body-sm font-medium hover:text-on-surface" type="button">Peak Hours</button>
+<button class="px-space-sm py-1 rounded-lg text-on-surface-variant font-body-sm text-body-sm font-medium hover:text-on-surface" type="button">By Lane</button>
+</div>
+</div>
+<div class="w-full flex flex-col gap-space-xs">
+<div class="w-full h-3 rounded-full overflow-hidden flex bg-surface-container">
+<div class="bg-primary-container h-full transition-all" style="width: 72%;" title="Credit/Debit Card: 72%"></div>
+<div class="bg-tertiary h-full transition-all" style="width: 18%;" title="Cash Tender: 18%"></div>
+<div class="bg-primary-fixed-dim h-full transition-all" style="width: 8%;" title="Mobile &amp; NFC: 8%"></div>
+<div class="bg-secondary h-full transition-all" style="width: 2%;" title="Store Gift Card: 2%"></div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm pt-space-xs">
+<div class="flex flex-col p-space-xs rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Card (Chip/Swipe)</span>
+</div>
+<span class="font-kpi-value text-headline-sm text-on-surface font-bold mt-1">$20,513.16</span>
+<span class="font-mono-data text-body-sm text-on-surface-variant font-medium">72.0% • 1,028 tx</span>
+</div>
+<div class="flex flex-col p-space-xs rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Cash Tender</span>
+</div>
+<span class="font-kpi-value text-headline-sm text-on-surface font-bold mt-1">$5,128.29</span>
+<span class="font-mono-data text-body-sm text-on-surface-variant font-medium">18.0% • 257 tx</span>
+</div>
+<div class="flex flex-col p-space-xs rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-fixed-dim"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Mobile / NFC</span>
+</div>
+<span class="font-kpi-value text-headline-sm text-on-surface font-bold mt-1">$2,279.24</span>
+<span class="font-mono-data text-body-sm text-on-surface-variant font-medium">8.0% • 114 tx</span>
+</div>
+<div class="flex flex-col p-space-xs rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Gift Card</span>
+</div>
+<span class="font-kpi-value text-headline-sm text-on-surface font-bold mt-1">$569.81</span>
+<span class="font-mono-data text-body-sm text-on-surface-variant font-medium">2.0% • 29 tx</span>
+</div>
+</div>
+</div>
+<div class="w-full h-32 pt-space-xs flex flex-col justify-end">
+<div class="flex items-end justify-between gap-1 sm:gap-2 h-24 px-space-xs">
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 28%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">09:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 44%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">10:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 65%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">11:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-primary-container rounded-t-sm relative" style="height: 94%;">
+<span class="absolute -top-6 left-1/2 -translate-x-1/2 font-mono-data text-[10px] font-bold text-primary whitespace-nowrap bg-primary-fixed px-1 rounded">Peak $4.9k</span>
+</div>
+<span class="font-label-caps text-label-caps text-primary font-bold">12:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 82%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">13:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 58%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">14:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 70%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">15:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-surface-variant rounded-t-sm group-hover:bg-primary-container transition-colors" style="height: 88%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">16:00</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group">
+<div class="w-full max-w-[28px] bg-primary-fixed-dim rounded-t-sm animate-pulse" style="height: 52%;"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Now</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant font-semibold">Audit Stream</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Real-Time Live Orders &amp; Transactions</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-mono-data text-body-sm font-semibold">Auto-refresh 5s</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm font-medium hover:bg-surface-container" type="button">Filter Reg</button>
+<button class="px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm font-medium hover:bg-surface-container" type="button">View All</button>
+</div>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant">
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider rounded-l-lg">Order ID</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider">Time</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider">Terminal</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider">Cashier</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider text-center">Items</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider text-right">Total</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider">Method</th>
+<th class="py-2.5 px-space-sm font-label-caps text-label-caps uppercase tracking-wider text-right rounded-r-lg">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-primary">#TX-9842</td>
+<td class="py-3 px-space-sm font-body-sm text-body-sm text-on-surface-variant">2m ago</td>
+<td class="py-3 px-space-sm font-body-medium text-body-medium font-semibold text-on-surface">Reg-02 Main Counter</td>
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold flex items-center justify-center">ER</span>
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Elena R.</span>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data text-center">3</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-right text-on-surface">$64.20</td>
+<td class="py-3 px-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-body-sm text-xs font-semibold">
+<span class="material-symbols-outlined text-sm">phone_iphone</span> Apple Pay
+                  </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completed
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-primary">#TX-9841</td>
+<td class="py-3 px-space-sm font-body-sm text-body-sm text-on-surface-variant">5m ago</td>
+<td class="py-3 px-space-sm font-body-medium text-body-medium font-semibold text-on-surface">Reg-01 Express Bar</td>
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold flex items-center justify-center">MC</span>
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Marcus C.</span>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data text-center">1</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-right text-on-surface">$12.50</td>
+<td class="py-3 px-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-body-sm text-xs font-semibold">
+<span class="material-symbols-outlined text-sm">credit_card</span> Visa ****4921
+                  </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completed
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-primary">#TX-9840</td>
+<td class="py-3 px-space-sm font-body-sm text-body-sm text-on-surface-variant">8m ago</td>
+<td class="py-3 px-space-sm font-body-medium text-body-medium font-semibold text-on-surface">Reg-03 Bakery Lane</td>
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-surface-variant text-on-surface-variant text-[10px] font-bold flex items-center justify-center">AL</span>
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Aria L.</span>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data text-center">5</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-right text-on-surface">$48.75</td>
+<td class="py-3 px-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-body-sm text-xs font-semibold">
+<span class="material-symbols-outlined text-sm">attach_money</span> Cash Tender
+                  </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completed
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-primary">#TX-9839</td>
+<td class="py-3 px-space-sm font-body-sm text-body-sm text-on-surface-variant">11m ago</td>
+<td class="py-3 px-space-sm font-body-medium text-body-medium font-semibold text-on-surface">Reg-04 Drive-Thru</td>
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold flex items-center justify-center">DK</span>
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Devon K.</span>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data text-center">2</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-right text-on-surface">$29.10</td>
+<td class="py-3 px-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-body-sm text-xs font-semibold">
+<span class="material-symbols-outlined text-sm">credit_card</span> MasterC ****8112
+                  </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completed
+                  </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/70 transition-colors">
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-primary">#TX-9838</td>
+<td class="py-3 px-space-sm font-body-sm text-body-sm text-on-surface-variant">14m ago</td>
+<td class="py-3 px-space-sm font-body-medium text-body-medium font-semibold text-on-surface">Reg-02 Main Counter</td>
+<td class="py-3 px-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-5 h-5 rounded-full bg-primary-fixed text-on-primary-fixed text-[10px] font-bold flex items-center justify-center">ER</span>
+<span class="font-body-sm text-body-sm font-medium text-on-surface">Elena R.</span>
+</div>
+</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data text-center">4</td>
+<td class="py-3 px-space-sm font-mono-data text-mono-data font-bold text-right text-on-surface">$95.00</td>
+<td class="py-3 px-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-body-sm text-xs font-semibold">
+<span class="material-symbols-outlined text-sm">card_giftcard</span> Gift Card
+                  </span>
+</td>
+<td class="py-3 px-space-sm text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-mono-data text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completed
+                  </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant font-semibold">Cash Drawers</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Active Till Sessions</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-mono-data text-body-sm font-bold">4 Active</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-xs hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-base">radio_button_checked</span>
+<span class="font-body-medium text-body-medium font-bold text-on-surface">Register 1 • Front Counter</span>
+</div>
+<button class="text-xs font-mono-data px-2 py-1 rounded bg-surface-container-highest text-on-surface hover:bg-error-container hover:text-on-error-container transition-colors font-semibold" type="button">Close Till</button>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Cashier: <strong class="text-on-surface font-medium">Marcus C.</strong></span>
+<span>Float: <strong class="font-mono-data text-on-surface">$200.00</strong></span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Drawer Balance</span>
+<span class="font-mono-data text-body-medium font-bold text-on-surface">$1,480.00</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-xs hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-base">radio_button_checked</span>
+<span class="font-body-medium text-body-medium font-bold text-on-surface">Register 2 • Main Hub</span>
+</div>
+<button class="text-xs font-mono-data px-2 py-1 rounded bg-surface-container-highest text-on-surface hover:bg-error-container hover:text-on-error-container transition-colors font-semibold" type="button">Close Till</button>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Cashier: <strong class="text-on-surface font-medium">Elena R.</strong></span>
+<span>Float: <strong class="font-mono-data text-on-surface">$250.00</strong></span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Drawer Balance</span>
+<span class="font-mono-data text-body-medium font-bold text-on-surface">$1,210.50</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-xs hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-base">radio_button_checked</span>
+<span class="font-body-medium text-body-medium font-bold text-on-surface">Register 3 • Bakery Area</span>
+</div>
+<button class="text-xs font-mono-data px-2 py-1 rounded bg-surface-container-highest text-on-surface hover:bg-error-container hover:text-on-error-container transition-colors font-semibold" type="button">Close Till</button>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Cashier: <strong class="text-on-surface font-medium">Aria L.</strong></span>
+<span>Float: <strong class="font-mono-data text-on-surface">$150.00</strong></span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Drawer Balance</span>
+<span class="font-mono-data text-body-medium font-bold text-on-surface">$840.00</span>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-space-xs hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-base">radio_button_checked</span>
+<span class="font-body-medium text-body-medium font-bold text-on-surface">Register 4 • Drive-Thru</span>
+</div>
+<button class="text-xs font-mono-data px-2 py-1 rounded bg-surface-container-highest text-on-surface hover:bg-error-container hover:text-on-error-container transition-colors font-semibold" type="button">Close Till</button>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Cashier: <strong class="text-on-surface font-medium">Devon K.</strong></span>
+<span>Float: <strong class="font-mono-data text-on-surface">$200.00</strong></span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Drawer Balance</span>
+<span class="font-mono-data text-body-medium font-bold text-on-surface">$719.50</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-error font-semibold">Restock Priority</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Urgent Inventory Alerts</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-mono-data text-body-sm font-bold">3 Critical</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-lg object-cover bg-surface-container" data-alt="Close-up macro photo of premium dark roasted whole artisan coffee beans in a modern specialty retail bag" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpW5RNM1ChdhkmRcS83zoV5CBNQVHLsw3JABMR-wa0YYLaU_BQ5WlNrQ0jbTGQ3KNyjKT8rjcLYBRxR_155u9K06hmR5Yuh46k2rPFF1L9fPZ9tu1N8UVCi2AZbyRvajvvd0glHw89WzrPgggz4yTNT0xqd9BIiQRA883_kJKjw1YhAF7L8F0cF4QYTdGGtcmz7hQe37eYGOCITc4r1icetykq-6YuEa74RLXc8k-7DmR2AXviWS8"/>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface line-clamp-1">Artisan Roast Coffee Beans</span>
+<span class="font-mono-data text-body-sm font-bold text-error">4 units left</span>
+</div>
+</div>
+<button class="px-2.5 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-body-sm text-body-sm font-semibold transition-all active:scale-95 shadow-xs whitespace-nowrap" type="button">+ Reorder</button>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-lg object-cover bg-surface-container" data-alt="Clean minimalist packaging of organic barista oat milk 1 liter carton on a cafe counter" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDN4MQ9f2Ww1ewkzuOibdblmxKRglDTaod988UwZWitUgPl6A1scZyH6c6ykzxoGyRdHQA1eMvhX8SGllETrSXC3jsnRTIxbJemsJ1vy3RCsUVPfVySQrJZlkn9YC-L5BreII_LCU8KchrH_zFSaI3-wjTjavaAtdzVdm-7oCRwOulw8khFIDVZYr6bg26srLNPHrTuX0NyH1oVYQx92HBqW2r0ZZbOzurgUxO40bDBUlxoU0WXjQ4"/>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface line-clamp-1">Oat Milk Organic 1L</span>
+<span class="font-mono-data text-body-sm font-bold text-error">2 units left</span>
+</div>
+</div>
+<button class="px-2.5 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-body-sm text-body-sm font-semibold transition-all active:scale-95 shadow-xs whitespace-nowrap" type="button">+ Reorder</button>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<img class="w-10 h-10 rounded-lg object-cover bg-surface-container" data-alt="Stack of white thermal receipt paper rolls for enterprise point of sale register terminal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVHHxsBrbOOl5GUNcDOch8YtJTaHh_a882qs5r0u7uePGO5wyoKQqt-HrnivfRNj81MSr9LT4DzYp3cEZlDkKLYLhNiIhX7bvJxKBhLeqZE4M-lLoz6GJAjvEqiBIvss8iT6X_UeeVRvCv0VKJ0qeop_tpxgfxShwgFg42KsK98ipc_pXQaXjiGBVRHb6R3cpLxVVQi6BHnRtiO5maQJLV9sEWVol02cYu9AtG2UT0Ie222YjiadU"/>
+<div class="flex flex-col">
+<span class="font-body-medium text-body-medium font-semibold text-on-surface line-clamp-1">Thermal Receipt Paper Rolls</span>
+<span class="font-mono-data text-body-sm font-bold text-error">1 roll left</span>
+</div>
+</div>
+<button class="px-2.5 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-body-sm text-body-sm font-semibold transition-all active:scale-95 shadow-xs whitespace-nowrap" type="button">+ Reorder</button>
+</div>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant font-semibold">Security &amp; Compliance</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Recent Audit Events</h3>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">security</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="p-1.5 rounded-md bg-error-container text-on-error-container mt-0.5">
+<span class="material-symbols-outlined text-sm block">lock_open</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Cash drawer manual override</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Authorized by Sarah J. (Store Lead)</span>
+<span class="font-mono-data text-xs text-on-surface-variant mt-0.5">Reg-02 • 18m ago</span>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="p-1.5 rounded-md bg-secondary-container text-on-secondary-container mt-0.5">
+<span class="material-symbols-outlined text-sm block">percent</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Price adjustment discount (15%)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Applied by Elena R. on SKU #9042</span>
+<span class="font-mono-data text-xs text-on-surface-variant mt-0.5">Reg-02 • 42m ago</span>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-xs rounded-lg hover:bg-surface-container-low transition-colors">
+<div class="p-1.5 rounded-md bg-tertiary-fixed text-on-tertiary-fixed mt-0.5">
+<span class="material-symbols-outlined text-sm block">key</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">Till shift handoff signed</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Lane 04 transferred to Devon K.</span>
+<span class="font-mono-data text-xs text-on-surface-variant mt-0.5">Reg-04 • 1h 10m ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  const syncBtn = document.getElementById('syncButton');
+  const syncIcon = document.getElementById('syncIcon');
+  if (syncBtn && syncIcon) {
+    syncBtn.addEventListener('click', () => {
+      syncIcon.classList.add('animate-spin');
+      syncBtn.disabled = true;
+      setTimeout(() => {
+        syncIcon.classList.remove('animate-spin');
+        syncBtn.disabled = false;
+      }, 1200);
+    });
+  }
+</script></main></div></body></html>

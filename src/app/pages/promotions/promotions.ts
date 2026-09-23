@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -19,6 +19,34 @@ export class PromotionsComponent implements OnInit {
   public isLoading = signal<boolean>(false);
   public isOwner = signal<boolean>(false);
   public isAdmin = signal<boolean>(false);
+
+  public totalCount = computed(() => this.promotions().length);
+  public activeCount = computed(() => this.promotions().filter(p => p.isActive).length);
+  public inactiveCount = computed(() => this.promotions().filter(p => !p.isActive).length);
+
+  public searchQuery = signal<string>('');
+  public statusFilter = signal<string>('All');
+
+  public filteredPromotions = computed(() => {
+    let list = this.promotions();
+    const q = this.searchQuery().toLowerCase().trim();
+    const status = this.statusFilter();
+
+    if (status === 'Active') {
+      list = list.filter(p => p.isActive);
+    } else if (status === 'Inactive') {
+      list = list.filter(p => !p.isActive);
+    }
+
+    if (q) {
+      list = list.filter(p => 
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.code && p.code.toLowerCase().includes(q))
+      );
+    }
+
+    return list;
+  });
 
   constructor(
     private promotionService: PromotionService,

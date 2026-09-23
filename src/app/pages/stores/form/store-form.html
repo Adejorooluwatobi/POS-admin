@@ -1,36 +1,36 @@
-<div class="page-container" style="padding: 24px; max-width: 900px; margin: 0 auto;">
+<div class="page-container" style="padding:24px;max-width:850px;margin:0 auto;">
   <!-- Breadcrumb & Header Bar -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/stores" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Stores
+  <div style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);margin-bottom:8px;">
+      <a routerLink="/app/stores" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Stores
       </a>
       <span>/</span>
       <span>{{ isEditMode() ? 'Edit Store' : 'New Store' }}</span>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
-          {{ isEditMode() ? 'Edit Store Location' : 'Add New Store Location' }}
+        <h1 style="font-size:24px;font-weight:800;margin:0;color:var(--text1);letter-spacing:-0.02em;">
+          {{ isEditMode() ? 'Edit Store Location' : 'Register New Store Outlet' }}
         </h1>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          {{ isEditMode() ? 'Update store branch details, address, contact and operational status.' : 'Register a new retail branch or outlet in your organization.' }}
+        <div style="font-size:13px;color:var(--text3);margin-top:4px;">
+          Configure retail branch parameters, terminal routing, and physical address
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex;gap:10px;">
         <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">
           Cancel
         </button>
-        <button (click)="saveStore()" class="btn btn-primary" [disabled]="isSaving()" style="min-width: 140px;">
+        <button (click)="saveStore()" class="btn btn-primary" [disabled]="isSaving()" style="min-width:140px;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
           @if (isSaving()) {
-            <span style="display:flex; align-items:center; gap:8px; justify-content:center;">
-              <span class="spinner-sm"></span>
-              Saving...
-            </span>
+            <span class="spinner-sm"></span>
+            <span>Saving...</span>
           } @else {
-            {{ isEditMode() ? 'Save Changes' : 'Create Store' }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>{{ isEditMode() ? 'Save Changes' : 'Create Store' }}</span>
           }
         </button>
       </div>
@@ -39,33 +39,34 @@
 
   <!-- Loading State -->
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
+    <div style="text-align:center;padding:80px 0;">
       <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading store details...</div>
+      <div style="color:var(--text3);font-size:14px;font-weight:600;">Loading store profile...</div>
     </div>
   } @else {
     <!-- Error Banner -->
     @if (errorMessage()) {
-      <div style="margin-bottom:20px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1.5px solid rgba(255,60,60,0.3); border-radius:12px; display:flex; align-items:flex-start; gap:12px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="margin-bottom:20px;padding:14px 16px;background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.3);border-radius:12px;display:flex;align-items:flex-start;gap:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Required</div>
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:2px;">Action Required</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
         </div>
         <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
       </div>
     }
 
-    <div style="display:grid; gap: 24px;">
+    <div style="display:grid;gap:20px;">
       <!-- Card 1: Store Identification -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🏢 Store Identification
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Store Identification
         </div>
 
         @if (authService.isSuperAdmin() && !isEditMode()) {
-          <div style="margin-bottom: 16px;">
-            <label class="label">Assign to Business / Tenant</label>
+          <div style="margin-bottom:16px;">
+            <label class="label">Assign to Business Organization</label>
             <select class="inp" [(ngModel)]="selectedTenantId">
               <option [ngValue]="null">Select a Business...</option>
               @for (t of tenants(); track t.id) {
@@ -75,79 +76,78 @@
           </div>
         }
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <label class="label">Store Name <span style="color:var(--red);">*</span></label>
-            <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Ikeja Branch">
+            <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Ikeja Mall Branch">
           </div>
           <div>
             <label class="label">Store Code <span style="color:var(--red);">*</span></label>
-            <input class="inp mono" [(ngModel)]="store().code" [disabled]="isEditMode()" placeholder="e.g. IKJ-01">
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-              {{ isEditMode() ? 'Store code cannot be changed once created.' : 'Unique identifier for terminals and inventory routing.' }}
+            <input class="inp mono" [(ngModel)]="store().code" [disabled]="isEditMode()" placeholder="e.g. IKJ-01" style="font-weight:700;">
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+              {{ isEditMode() ? 'Store code cannot be modified once provisioned.' : 'Unique hardware & requisition routing code.' }}
             </div>
           </div>
         </div>
       </div>
 
       <!-- Card 2: Contact & Location -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          📍 Location & Contact Details
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Location & Contact Details
         </div>
 
-        <div style="display:grid; gap: 16px;">
+        <div style="display:grid;gap:16px;">
           <div>
-            <label class="label">Physical Address</label>
-            <input class="inp" [(ngModel)]="store().address" placeholder="e.g. 14 Allen Avenue, Ikeja">
+            <label class="label">Physical Street Address</label>
+            <input class="inp" [(ngModel)]="store().address" placeholder="e.g. Plot 14, Obafemi Awolowo Way">
           </div>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
             <div>
               <label class="label">City</label>
-              <input class="inp" [(ngModel)]="store().city" placeholder="Lagos">
+              <input class="inp" [(ngModel)]="store().city" placeholder="e.g. Ikeja">
             </div>
             <div>
-              <label class="label">State / Province</label>
-              <input class="inp" [(ngModel)]="store().state" placeholder="Lagos State">
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <label class="label">Phone Contact</label>
-              <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 123 4567">
+              <label class="label">State / Region</label>
+              <input class="inp" [(ngModel)]="store().state" placeholder="e.g. Lagos">
             </div>
             <div>
               <label class="label">Country</label>
-              <input class="inp" [(ngModel)]="store().country" placeholder="Nigeria">
+              <input class="inp" [(ngModel)]="store().country" placeholder="e.g. Nigeria">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label class="label">Store Contact Phone</label>
+              <input class="inp" [(ngModel)]="store().phone" placeholder="e.g. +234 800 000 0000">
+            </div>
+            <div>
+              <label class="label">Timezone</label>
+              <select class="inp" [(ngModel)]="store().timezone">
+                <option value="Africa/Lagos">Africa/Lagos (GMT+1 / WAT)</option>
+                <option value="UTC">UTC Universal Time</option>
+                <option value="Africa/Accra">Africa/Accra (GMT+0)</option>
+                <option value="Europe/London">Europe/London (GMT/BST)</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Card 3: Regional & Operational Settings -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          ⚙️ Operational Settings
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items:center;">
+      <!-- Card 3: Status -->
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <input type="checkbox" id="storeActive" [(ngModel)]="store().active" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
           <div>
-            <label class="label">Timezone</label>
-            <select class="inp" [(ngModel)]="store().timezone">
-              <option value="Africa/Lagos">Africa/Lagos (GMT+1)</option>
-              <option value="UTC">UTC</option>
-              <option value="Africa/Accra">Africa/Accra (GMT)</option>
-              <option value="Africa/Johannesburg">Africa/Johannesburg (GMT+2)</option>
-            </select>
-          </div>
-
-          <div style="display:flex; align-items:center; gap: 12px; padding-top: 14px;">
-            <input type="checkbox" id="storeActive" [(ngModel)]="store().active" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
-            <label for="storeActive" style="font-size: 13px; font-weight: 700; cursor:pointer; user-select:none;">
-              Active & Open for Trading
+            <label for="storeActive" style="font-size:13px;font-weight:700;color:var(--text1);cursor:pointer;">
+              Store Active & Authorized for Terminal Checkout
             </label>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+              Deactivating this store will temporarily prevent cashiers from opening new till shifts.
+            </div>
           </div>
         </div>
       </div>

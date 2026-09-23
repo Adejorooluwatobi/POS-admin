@@ -1,69 +1,87 @@
-<div class="page-container" style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+<div class="fade-up" style="padding: 24px; max-width: 1200px; margin: 0 auto;">
   <!-- Header / Breadcrumb -->
   <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
-      <a (click)="goBack()" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Stock Requisitions
+    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
+      <a (click)="goBack()" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:6px; font-weight:600;">
+        <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Stock Requisitions</span>
       </a>
-      <span>/</span>
-      <span>New Requisition</span>
+      <span style="color:var(--border2);">/</span>
+      <span style="color:var(--text1); font-weight:700;">New Request</span>
     </div>
-    <div style="display:flex; align-items:center; justify-content:space-between;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1);">
+        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing:-0.02em;">
           Create Stock Requisition
         </h1>
         <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Request stock replenish from Headquarters warehouse or other retail outlets.
+          Submit an internal stock replenishment order from Headquarters Central Warehouse or branch stores.
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
-        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSubmitting()">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSubmitting()" style="height:38px; padding:0 16px; font-size:13px;">
           Cancel
         </button>
-        <button (click)="submitRequisition()" class="btn btn-primary" [disabled]="isSubmitting()" style="min-width: 160px;">
-          {{ isSubmitting() ? 'Submitting...' : 'Submit Requisition' }}
+        <button (click)="submitRequisition()" class="btn btn-primary" [disabled]="isSubmitting()" style="height:38px; padding:0 22px; font-size:13px; font-weight:700; min-width: 170px; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+          <svg *ngIf="!isSubmitting()" style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>{{ isSubmitting() ? 'Submitting Request...' : 'Submit Requisition' }}</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading()" style="text-align:center; padding: 60px 0;">
+  <div *ngIf="isLoading()" style="text-align:center; padding: 70px 0;">
     <div class="spinner" style="margin: 0 auto 16px;"></div>
-    <div style="color: var(--text3); font-size: 14px;">Loading store locations & product catalog...</div>
+    <div style="color: var(--text3); font-size: 13px;">Loading store locations & product catalog...</div>
   </div>
 
   <div *ngIf="!isLoading()" style="display:flex; flex-direction:column; gap:24px;">
     <!-- 1. Request Info Card -->
     <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-      <div style="font-size: 16px; font-weight: 800; color: var(--text1); margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
-        <span>🏢</span> Requesting Store & Reason
+      <div style="font-size: 15px; font-weight: 800; color: var(--text1); margin-bottom: 18px; display:flex; align-items:center; gap:8px;">
+        <div style="width:28px; height:28px; border-radius:8px; background:var(--accent-d); display:flex; align-items:center; justify-content:center; color:var(--accent);">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </div>
+        <span>Requesting Store & Justification</span>
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
         <!-- Requesting Store -->
         <div>
-          <label class="label" style="margin-bottom: 6px;">Requesting Store <span style="color:var(--red);">*</span></label>
-          <div *ngIf="!isGeneral() && userStoreId()" class="inp" style="background:var(--surface2); color:var(--text1); font-weight:600;">
+          <label class="label" style="margin-bottom: 6px; font-size:11px; text-transform:uppercase; font-weight:700;">
+            Requesting Store Outlet <span style="color:var(--red);">*</span>
+          </label>
+          <div *ngIf="!isGeneral() && userStoreId()" class="inp" style="background:var(--surface2); color:var(--text1); font-weight:700; height:40px; display:flex; align-items:center;">
             {{ stores()[0]?.name || 'My Store' }}
           </div>
-          <select *ngIf="isGeneral() || !userStoreId()" class="inp" [(ngModel)]="requestingStoreId">
+          <select *ngIf="isGeneral() || !userStoreId()" class="inp" [(ngModel)]="requestingStoreId" style="height:40px; font-size:13px; font-weight:600;">
             <option value="" disabled>Select Requesting Location...</option>
             <option *ngFor="let s of stores()" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
           </select>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-            The store outlet that will receive the requested items.
+          <div style="font-size: 11px; color: var(--text3); margin-top: 5px;">
+            The store branch that will physically receive and intake these replenishment units.
           </div>
         </div>
 
         <!-- Notes / Reason -->
         <div>
-          <label class="label" style="margin-bottom: 6px;">Requisition Notes / Justification</label>
-          <input type="text" class="inp" [(ngModel)]="notes" placeholder="e.g. Weekend restock, urgent shortage for customer orders, promotional campaign...">
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-            Optional notes for the warehouse manager or review team.
+          <label class="label" style="margin-bottom: 6px; font-size:11px; text-transform:uppercase; font-weight:700;">
+            Requisition Notes / Urgency Justification
+          </label>
+          <input type="text" class="inp" [(ngModel)]="notes" placeholder="e.g. Weekend restock, running low on top sellers, urgent replenishment..." style="height:40px; font-size:13px;">
+          <div style="font-size: 11px; color: var(--text3); margin-top: 5px;">
+            Optional notes displayed to the central warehouse review team.
           </div>
         </div>
       </div>
@@ -71,87 +89,100 @@
 
     <!-- 2. Requested Items Card -->
     <div class="card" style="border-radius: 16px; background: var(--surface); border: 1px solid var(--border); overflow: hidden;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <div style="padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background:var(--surface);">
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: var(--text1); display:flex; align-items:center; gap:8px;">
-            <span>📦</span> Requested Items List
+          <div style="font-size: 15px; font-weight: 800; color: var(--text1); display:flex; align-items:center; gap:8px;">
+            <div style="width:28px; height:28px; border-radius:8px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center; color:var(--green);">
+              <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+            </div>
+            <span>Requested Product Line Items</span>
           </div>
           <div style="font-size: 12px; color: var(--text3); margin-top: 2px;">
-            Specify the products and quantities required. You can enter quantities in Packs, Rolls, or Singles.
+            Select products and input quantities in Packs, Rolls, or Singles. Base units will compute automatically.
           </div>
         </div>
 
-        <button (click)="addItem()" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:6px; color:var(--accent); font-weight:700;">
-          <span>+</span> Add Another Product
+        <button (click)="addItem()" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:6px; color:var(--accent); font-weight:700; height:34px; padding:0 12px; font-size:12px;">
+          <svg style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Another Product</span>
         </button>
       </div>
 
       <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+        <table class="tbl" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px;">
-              <th style="padding: 14px 20px; width: 40px; text-align: center;">#</th>
-              <th style="padding: 14px 16px; text-align: left; min-width: 320px;">Product / Variant</th>
-              <th style="padding: 14px 16px; text-align: left; width: 140px;">Packaging</th>
-              <th style="padding: 14px 16px; text-align: left; min-width: 260px;">Quantity</th>
-              <th style="padding: 14px 16px; text-align: right; width: 140px;">Total Base Units</th>
-              <th style="padding: 14px 20px; width: 60px; text-align: center;">Action</th>
+            <tr style="background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em;">
+              <th style="padding: 14px 20px; width: 48px; text-align: center;">#</th>
+              <th style="padding: 14px 16px; text-align: left; min-width: 340px;">PRODUCT / VARIANT</th>
+              <th style="padding: 14px 16px; text-align: left; width: 150px;">PACKAGING SPEC</th>
+              <th style="padding: 14px 16px; text-align: left; min-width: 280px;">REQUEST QUANTITY</th>
+              <th style="padding: 14px 16px; text-align: right; width: 150px;">TOTAL BASE UNITS</th>
+              <th style="padding: 14px 20px; width: 60px; text-align: center;">ACTION</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of items; let idx = index" style="border-bottom: 1px solid var(--border);" class="hover-row">
+            <tr *ngFor="let item of items; let idx = index" style="border-bottom: 1px solid var(--border); transition:background .15s ease;" class="hover-row">
               <!-- # -->
-              <td style="padding: 16px 20px; text-align: center; color: var(--text3); font-weight: 700;">
+              <td style="padding: 16px 20px; text-align: center; color: var(--text3); font-weight: 700; font-size:12px;">
                 {{ idx + 1 }}
               </td>
 
               <!-- Product Selection -->
               <td style="padding: 16px 16px;">
-                <select class="inp" [(ngModel)]="item.variantId" (ngModelChange)="onProductSelect(item, $event)" style="font-weight: 600;">
-                  <option value="" disabled>Select a product to request...</option>
+                <select class="inp" [(ngModel)]="item.variantId" (ngModelChange)="onProductSelect(item, $event)" style="font-weight: 600; height:38px; font-size:13px;">
+                  <option value="" disabled>Select product to request...</option>
                   <option *ngFor="let v of variants()" [value]="v.id">
                     {{ v.productName || v.name }} (SKU: {{ v.sku }})
                   </option>
                 </select>
-                <div *ngIf="item.sku" style="font-size: 11px; color: var(--text3); margin-top: 4px; display:flex; align-items:center; gap:8px;">
-                  <span>SKU: <span class="mono" style="color:var(--text1); font-weight:700;">{{ item.sku }}</span></span>
+                <div *ngIf="item.sku" style="font-size: 11px; color: var(--text3); margin-top: 4px; display:flex; align-items:center; gap:6px;">
+                  <span>SKU:</span>
+                  <span class="mono" style="color:var(--text1); font-weight:700;">{{ item.sku }}</span>
                 </div>
               </td>
 
               <!-- Packaging Spec -->
               <td style="padding: 16px 16px; font-size: 12px; color: var(--text2);">
                 <ng-container *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1">
-                  <span class="badge" style="background:var(--surface2); color:var(--text1); border:1px solid var(--border); font-size:11px; padding:4px 8px; font-weight:600;">
+                  <span class="badge" style="background:var(--surface2); color:var(--accent); border:1px solid var(--border); font-size:11px; padding:3px 8px; font-weight:700;">
                     {{ item.conversionFactor }} Sgl / Pack
                   </span>
+                  <div *ngIf="item.singlesPerRoll > 1" style="font-size:10px; color:var(--text3); margin-top:3px;">
+                    {{ item.singlesPerRoll }} Sgl / Roll
+                  </div>
                 </ng-container>
                 <ng-container *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1">
-                  <span style="color:var(--text3);">Single Unit</span>
+                  <span style="color:var(--text3); font-size:11px; font-weight:500;">Single Unit Item</span>
                 </ng-container>
               </td>
 
               <!-- Quantity Input (Packs / Rolls / Singles) -->
               <td style="padding: 16px 16px;">
-                <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:8px; align-items:center;">
+                <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:8px; align-items:flex-end;">
                   <div style="width: 80px;" *ngIf="item.conversionFactor > 1">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Packs</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.packs" style="text-align:center; font-weight:700;">
+                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Packs</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.packs" style="text-align:center; font-weight:700; height:36px;">
                   </div>
 
-                  <div style="width: 70px;" *ngIf="item.singlesPerRoll > 1">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Rolls</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.rolls" style="text-align:center; font-weight:700;">
+                  <div style="width: 75px;" *ngIf="item.singlesPerRoll > 1">
+                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Rolls</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.rolls" style="text-align:center; font-weight:700; height:36px;">
                   </div>
 
                   <div style="width: 80px;">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Singles</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.singles" style="text-align:center; font-weight:700;">
+                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Singles</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.singles" style="text-align:center; font-weight:700; height:36px;">
                   </div>
                 </div>
 
                 <div *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1" style="width: 120px;">
-                  <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Quantity</label>
-                  <input type="number" min="1" class="inp" [(ngModel)]="item.quantityRequested" style="font-weight:700;">
+                  <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Quantity</label>
+                  <input type="number" min="1" class="inp" [(ngModel)]="item.quantityRequested" style="font-weight:700; height:36px; text-align:center;">
                 </div>
               </td>
 
@@ -160,13 +191,16 @@
                 <div style="font-size: 16px; font-weight: 800; color: var(--accent);" class="mono">
                   {{ calcItemTotal(item) | number }}
                 </div>
-                <div style="font-size: 10px; color: var(--text3);">Base Units</div>
+                <div style="font-size: 10px; color: var(--text3); text-transform:uppercase; font-weight:600;">Units</div>
               </td>
 
               <!-- Action: Remove -->
               <td style="padding: 16px 20px; text-align: center;">
-                <button (click)="removeItem(idx)" [disabled]="items.length === 1" class="btn btn-secondary btn-xs" style="color: var(--red); border-color: transparent; padding: 6px 10px;" title="Remove item">
-                  ✕
+                <button (click)="removeItem(idx)" [disabled]="items.length === 1" class="btn btn-secondary btn-xs" style="color: var(--red); border-color: transparent; width:30px; height:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;" title="Remove line item">
+                  <svg style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                 </button>
               </td>
             </tr>
@@ -175,25 +209,25 @@
       </div>
 
       <!-- Bottom Summary Bar -->
-      <div style="padding: 20px 24px; background: var(--surface2); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <div style="display:flex; gap: 24px;">
+      <div style="padding: 18px 24px; background: var(--surface2); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; gap: 28px; align-items:center;">
           <div>
-            <span style="font-size: 12px; color: var(--text3); font-weight: 600;">Total Line Items:</span>
+            <span style="font-size: 11px; color: var(--text3); font-weight: 700; text-transform:uppercase;">Line Items:</span>
             <span style="font-size: 14px; font-weight: 800; color: var(--text1); margin-left: 6px;">{{ items.length }}</span>
           </div>
           <div>
-            <span style="font-size: 12px; color: var(--text3); font-weight: 600;">Total Units Requested:</span>
-            <span style="font-size: 15px; font-weight: 800; color: var(--accent); margin-left: 6px;" class="mono">
+            <span style="font-size: 11px; color: var(--text3); font-weight: 700; text-transform:uppercase;">Total Base Units:</span>
+            <span style="font-size: 16px; font-weight: 800; color: var(--accent); margin-left: 6px;" class="mono">
               {{ getTotalRequestedUnits() | number }}
             </span>
           </div>
         </div>
 
-        <div style="display:flex; gap: 10px;">
-          <button (click)="addItem()" class="btn btn-secondary btn-sm" style="color:var(--accent);">
+        <div style="display:flex; gap: 10px; align-items:center;">
+          <button (click)="addItem()" class="btn btn-secondary btn-sm" style="color:var(--accent); font-weight:700; height:36px; padding:0 14px;">
             + Add Another Item
           </button>
-          <button (click)="submitRequisition()" class="btn btn-primary btn-sm" [disabled]="isSubmitting()" style="min-width: 140px;">
+          <button (click)="submitRequisition()" class="btn btn-primary btn-sm" [disabled]="isSubmitting()" style="min-width: 150px; font-weight:700; height:36px; padding:0 18px;">
             {{ isSubmitting() ? 'Submitting...' : 'Submit Requisition' }}
           </button>
         </div>

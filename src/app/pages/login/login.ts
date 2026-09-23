@@ -14,6 +14,8 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   public email = '';
   public password = '';
+  public showPassword = signal<boolean>(false);
+  public rememberMe = signal<boolean>(true);
   public loginError = signal<string | null>(null);
   public isLoading = signal<boolean>(false);
 
@@ -23,9 +25,23 @@ export class LoginComponent {
     private router: Router
   ) {}
 
+  quickFill(role: 'admin' | 'manager' | 'cashier') {
+    if (role === 'admin') {
+      this.email = 'owner@retailos.ng';
+      this.password = 'owner123';
+    } else if (role === 'manager') {
+      this.email = 'vi@retailos.ng';
+      this.password = 'store123';
+    } else if (role === 'cashier') {
+      this.email = 'cashier@retailos.ng';
+      this.password = 'pin123';
+    }
+    this.loginError.set(null);
+  }
+
   async doLogin() {
     if (!this.email || !this.password) {
-      this.loginError.set('Please enter both email and password.');
+      this.loginError.set('Please enter both your work email and password.');
       return;
     }
 
@@ -39,7 +55,7 @@ export class LoginComponent {
         this.router.navigate(['/app/dashboard']);
       }
     } catch (e) {
-      this.loginError.set('An unexpected error occurred during login.');
+      this.loginError.set('An unexpected error occurred during authentication.');
     } finally {
       this.isLoading.set(false);
     }

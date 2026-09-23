@@ -1,124 +1,338 @@
-<div class="fade-up">
-  <!-- Header with Action -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div class="fade-up" style="max-width:1480px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+  <!-- Header Bar -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
     <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Inventory Management</div>
-      <div style="font-size:12px;color:var(--text3);">Monitor stock levels, reorder points and adjustments</div>
-    </div>
-    <a *ngIf="isGenerals()" routerLink="/app/inventory/seed" class="btn btn-primary" style="padding:10px 20px;border-radius:12px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">+ Seed Product to Store</a>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px;">
-    <a href="/app/inventory/requisitions" style="text-decoration:none;">
-      <div class="card hover-scale" style="padding:24px;display:flex;align-items:center;gap:20px;background:var(--surface);">
-        <div style="width:50px;height:50px;border-radius:12px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center;font-size:24px;">📄</div>
-        <div>
-          <div style="font-weight:800;font-size:16px;color:var(--text1);">Stock Requisitions</div>
-          <div style="font-size:12px;color:var(--text3);">Request stock from HQ or other stores</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:38px;height:38px;border-radius:12px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;border:1px solid rgba(79,70,229,0.2);">
+          <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
         </div>
-      </div>
-    </a>
-    <a href="/app/inventory/orders" style="text-decoration:none;">
-      <div class="card hover-scale" style="padding:24px;display:flex;align-items:center;gap:20px;background:var(--surface);">
-        <div style="width:50px;height:50px;border-radius:12px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:24px;">🚚</div>
         <div>
-          <div style="font-weight:800;font-size:16px;color:var(--text1);">Movement Orders</div>
-          <div style="font-size:12px;color:var(--text3);">Track inbound and outbound shipments</div>
-        </div>
-      </div>
-    </a>
-  </div>
-
-  <!-- Low Stock Alerts -->
-  <div *ngIf="lowStockAlerts().length > 0" style="margin-bottom:30px;">
-    <div style="background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.2);border-radius:16px;padding:24px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <span style="font-size:24px;">⚠️</span>
-        <h3 style="font-weight:800;color:#9F1239;margin:0;">Low Stock Alerts</h3>
-        <span style="background:#FFE4E6;color:#E11D48;font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;">{{ lowStockAlerts().length }} ITEMS</span>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;">
-        <div *ngFor="let alert of lowStockAlerts()" style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-weight:700;font-size:13px;">{{ alert.variantName }}</div>
-            <div style="font-size:11px;color:var(--text3);">Only {{ alert.quantityOnHand }} left</div>
+          <h1 style="font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin:0;">Multi-Store Inventory Ledger</h1>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">
+            Real-time stock on hand, single/roll/pack hierarchy, automated reorder thresholds, and cross-store logistics
           </div>
-          <button *ngIf="isGenerals()" (click)="viewCrossStore(alert)" style="background:none;border:none;color:#E11D48;font-weight:800;font-size:11px;cursor:pointer;text-decoration:underline;">CHECK OTHERS</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Quick Navigation Hub -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <a routerLink="/app/inventory/requisitions" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:12px;border-radius:10px;text-decoration:none;">
+        <svg style="width:14px;height:14px;color:var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <span>Stock Requisitions</span>
+      </a>
+
+      <a routerLink="/app/inventory/orders" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:12px;border-radius:10px;text-decoration:none;">
+        <svg style="width:14px;height:14px;color:#10b981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="15" height="13"></rect>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <circle cx="5.5" cy="18.5" r="2.5"></circle>
+          <circle cx="18.5" cy="18.5" r="2.5"></circle>
+        </svg>
+        <span>Movement Orders</span>
+      </a>
+
+      @if (isGenerals()) {
+        <a routerLink="/app/inventory/seed" class="btn btn-primary" style="display:flex;align-items:center;gap:6px;padding:9px 16px;font-size:12px;border-radius:10px;text-decoration:none;font-weight:700;">
+          <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Seed Product to Store</span>
+        </a>
+      }
+    </div>
+  </div>
+
+  <!-- Bento KPI Row -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;">
+    <!-- Total Stock on Hand -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Physical Stock on Hand</div>
+          <div class="mono" style="font-size:24px;font-weight:900;color:var(--text);margin-top:6px;">
+            {{ totalStockOnHand() | number }} <span style="font-size:14px;font-weight:600;color:var(--text3);">Units</span>
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        Cumulative count across all store shelves and storerooms
+      </div>
+    </div>
+
+    <!-- Available Units for Sale -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Available for Checkout</div>
+          <div class="mono" style="font-size:24px;font-weight:900;color:#10b981;margin-top:6px;">
+            {{ totalAvailableUnits() | number }} <span style="font-size:14px;font-weight:600;color:var(--text3);">Units</span>
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        Excludes {{ totalReservedUnits() | number }} units reserved for active customer orders
+      </div>
+    </div>
+
+    <!-- Low Stock Trigger Alerts -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Low Stock Triggers</div>
+          <div style="font-size:24px;font-weight:900;margin-top:6px;" [style.color]="lowStockCount() > 0 ? '#f59e0b' : 'var(--text)'">
+            {{ lowStockCount() }} <span style="font-size:14px;font-weight:600;color:var(--text3);">SKUs</span>
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,0.1);color:#f59e0b;display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        {{ lowStockCount() === 0 ? 'All SKUs above reorder point' : 'Inventory below safe replenishment threshold' }}
+      </div>
+    </div>
+
+    <!-- Out of Stock Critical -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Out of Stock</div>
+          <div style="font-size:24px;font-weight:900;margin-top:6px;" [style.color]="outOfStockCount() > 0 ? 'var(--red)' : 'var(--text)'">
+            {{ outOfStockCount() }} <span style="font-size:14px;font-weight:600;color:var(--text3);">SKUs</span>
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(239,68,68,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        {{ outOfStockCount() === 0 ? 'Zero active stockouts' : 'Critical items with 0 stock requiring emergency requisition' }}
       </div>
     </div>
   </div>
 
+  <!-- Search & Store Controls -->
+  <div class="card" style="padding:12px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <!-- Search Input -->
+    <div style="position:relative;flex:1;min-width:240px;max-width:380px;">
+      <svg style="width:14px;height:14px;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by product name, SKU, or store..."
+             style="width:100%;padding:8px 12px 8px 34px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);outline:none;">
+    </div>
+
+    <!-- Store Filter Selector -->
+    @if (isGenerals() && stores().length > 0) {
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:11px;color:var(--text3);font-weight:600;">Store:</span>
+        <select [(ngModel)]="selectedStoreFilter" style="padding:7px 12px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:12px;color:var(--text);outline:none;">
+          <option value="ALL">All Store Locations</option>
+          @for (st of stores(); track st.id) {
+            <option [value]="st.name">{{ st.name }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <!-- Status Tabs -->
+    <div style="display:flex;align-items:center;gap:4px;background:var(--surface2);padding:3px;border-radius:9px;border:1px solid var(--border);">
+      <button (click)="stockStatusFilter.set('ALL')" [class.active-pill]="stockStatusFilter() === 'ALL'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        All Items ({{ inventory().length }})
+      </button>
+      <button (click)="stockStatusFilter.set('OPTIMAL')" [class.active-pill]="stockStatusFilter() === 'OPTIMAL'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Optimal
+      </button>
+      <button (click)="stockStatusFilter.set('LOW')" [class.active-pill]="stockStatusFilter() === 'LOW'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Low Stock ({{ lowStockCount() }})
+      </button>
+      <button (click)="stockStatusFilter.set('OUT')" [class.active-pill]="stockStatusFilter() === 'OUT'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Stockouts ({{ outOfStockCount() }})
+      </button>
+    </div>
+
+    <!-- Quick Action -->
+    <button (click)="openAddModal()" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:12px;border-radius:8px;">
+      <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>+ Add to Store</span>
+    </button>
+  </div>
+
+  <!-- Main Inventory Ledger Table -->
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading inventory...</span>
+    <div class="card" style="padding:80px;text-align:center;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div class="spinner" style="width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Loading multi-store stock ledger...</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Auditing singles, rolls, and packs</div>
+    </div>
+  } @else if (filteredInventory().length === 0) {
+    <div class="card" style="padding:60px 24px;text-align:center;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="width:48px;height:48px;border-radius:14px;background:var(--surface2);color:var(--text3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid var(--border);">
+        <svg style="width:24px;height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+        </svg>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);">No Inventory Items Found</div>
+      <div style="font-size:12px;color:var(--text3);margin:4px auto 0;max-width:440px;line-height:1.5;">
+        @if (searchTerm() || stockStatusFilter() !== 'ALL' || selectedStoreFilter() !== 'ALL') {
+          No stock records match your search or filter criteria. Try clearing filters.
+        } @else {
+          Your product catalog has not been allocated to any store branch inventory yet. Click below to seed products into store inventory.
+        }
+      </div>
+      <div style="margin-top:16px;display:flex;justify-content:center;gap:10px;">
+        @if (searchTerm() || stockStatusFilter() !== 'ALL' || selectedStoreFilter() !== 'ALL') {
+          <button (click)="searchTerm.set(''); stockStatusFilter.set('ALL'); selectedStoreFilter.set('ALL')" class="btn btn-secondary" style="font-size:12px;border-radius:8px;">
+            Clear Filters
+          </button>
+        } @else if (isGenerals()) {
+          <a routerLink="/app/inventory/seed" class="btn btn-primary" style="font-size:12px;border-radius:8px;text-decoration:none;">
+            + Seed Products to Store
+          </a>
+        }
+      </div>
     </div>
   } @else {
-    <div class="card" style="padding:0;overflow:hidden;">
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table class="tbl">
+        <table class="tbl" style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
-            <tr>
-              <th style="padding-left:24px;">PRODUCT / VARIANT</th>
-              <th *ngIf="isGenerals()">STORE</th>
-              <th style="text-align:right;">STOCK</th>
-              <th style="text-align:right;">RESERVED</th>
-              <th style="text-align:right;">AVAILABLE</th>
-              <th style="text-align:right;">REORDER</th>
-              <th>STATUS</th>
-              <th style="text-align:right;padding-right:24px;">ACTIONS</th>
+            <tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
+              <th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">PRODUCT / SKU</th>
+              @if (isGenerals()) {
+                <th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">STORE BRANCH</th>
+              }
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">ON HAND</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">RESERVED</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">AVAILABLE</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">REORDER AT</th>
+              <th style="padding:12px 16px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">STATUS</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            @for (item of inventory(); track item.id) {
-              <tr class="hover-row">
-                <td style="padding-left:24px;cursor:pointer;" (click)="viewDetails(item)">
-                  <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;">
-                      {{ item.e }}
+            @for (item of filteredInventory(); track item.id) {
+              <tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" class="table-row-hover">
+                <!-- Product / SKU -->
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" (click)="viewDetails(item)">
+                    <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);flex-shrink:0;">
+                      <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      </svg>
                     </div>
                     <div>
-                      <div style="font-weight:700;font-size:14px;color:var(--text1);">{{ item.n }}</div>
-                      <div style="font-size:11px;color:var(--text3);letter-spacing:0.5px;">{{ item.sku }}</div>
+                      <div style="font-weight:700;color:var(--text);">{{ item.n }}</div>
+                      <div class="mono" style="font-size:10px;color:var(--text3);">SKU: {{ item.sku }}</div>
                     </div>
                   </div>
                 </td>
-                <td *ngIf="isGenerals()" style="font-size:12px;">
-                  <span class="badge" style="background:var(--surface2);color:var(--text2);border:1px solid var(--border);font-size:11px;padding:3px 8px;font-weight:600;">
-                    {{ item.storeName || 'All Stores' }}
-                  </span>
+
+                <!-- Store -->
+                @if (isGenerals()) {
+                  <td style="padding:12px 16px;">
+                    <span class="badge" style="background:var(--surface2);color:var(--text2);font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+                      {{ item.storeName }}
+                    </span>
+                  </td>
+                }
+
+                <!-- On Hand & Pack Breakdown -->
+                <td style="padding:12px 16px;text-align:right;">
+                  <div class="mono" style="font-weight:800;font-size:13px;color:var(--text);">
+                    {{ item.oh | number }}
+                  </div>
+                  <div class="badge" style="background:rgba(79,70,229,0.08);color:var(--accent);font-size:9px;font-weight:700;padding:2px 6px;border-radius:6px;display:inline-block;margin-top:2px;">
+                    {{ item.formatted }}
+                  </div>
                 </td>
-                <td style="text-align:right;">
-                  <div style="font-weight:700;font-size:14px;color:var(--text1);">{{ item.oh }}</div>
-                  <div style="font-size:10px;color:var(--accent);font-weight:700;">{{ item.formatted }}</div>
+
+                <!-- Reserved -->
+                <td class="mono" style="padding:12px 16px;text-align:right;color:var(--text3);">
+                  {{ item.res | number }}
                 </td>
-                <td class="mono" style="text-align:right;color:var(--text3);">{{ item.res }}</td>
-                <td class="mono" style="text-align:right;font-weight:800;font-size:14px;" [style.color]="(item.oh - item.res) <= item.ro ? 'var(--red)' : 'var(--green)'">
-                  {{ item.oh - item.res }}
+
+                <!-- Available -->
+                <td class="mono" style="padding:12px 16px;text-align:right;font-weight:800;font-size:13px;"
+                    [style.color]="(item.oh - item.res) <= item.ro ? 'var(--red)' : '#10b981'">
+                  {{ (item.oh - item.res) | number }}
                 </td>
-                <td class="mono" style="text-align:right;color:var(--text3);">{{ item.ro }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-green': item.s === 'OK',
-                    'badge-amber': item.s === 'LOW',
-                    'badge-red': item.s === 'OUT'
-                  }" style="font-size:10px;padding:4px 10px;">{{ item.s }}</span>
+
+                <!-- Reorder Point -->
+                <td class="mono" style="padding:12px 16px;text-align:right;color:var(--text2);">
+                  {{ item.ro | number }}
                 </td>
-                <td style="text-align:right;padding-right:24px;">
-                  <button class="btn btn-secondary btn-xs" (click)="viewDetails(item)" style="display:inline-flex;align-items:center;gap:4px;font-weight:600;">
-                    View Details →
-                  </button>
+
+                <!-- Status -->
+                <td style="padding:12px 16px;text-align:center;">
+                  @if (item.s === 'OK') {
+                    <span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      IN STOCK
+                    </span>
+                  } @else if (item.s === 'LOW') {
+                    <span class="badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      LOW STOCK
+                    </span>
+                  } @else {
+                    <span class="badge" style="background:rgba(239,68,68,0.1);color:var(--red);font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;">
+                      OUT OF STOCK
+                    </span>
+                  }
                 </td>
-              </tr>
-            }
-            @if (inventory().length === 0) {
-              <tr>
-                <td colspan="7" style="text-align:center;padding:80px 24px;">
-                  <div style="font-size:48px;margin-bottom:16px;opacity:0.5;">📦</div>
-                  <div style="font-weight:700;font-size:18px;color:var(--text1);">No Inventory Records</div>
-                  <div style="font-size:14px;color:var(--text3);margin-top:8px;">Initialize stock for products to see them here.</div>
-                  <button *ngIf="isGenerals()" (click)="openAddModal()" class="btn btn-primary" style="margin-top:24px;">Seed First Product</button>
+
+                <!-- Actions -->
+                <td style="padding:12px 16px;text-align:right;">
+                  <div style="display:inline-flex;align-items:center;gap:6px;">
+                    <button (click)="openStockAdj(item)" class="btn btn-secondary" style="padding:4px 8px;font-size:11px;border-radius:6px;">
+                      Adjust
+                    </button>
+                    @if (isGenerals()) {
+                      <button (click)="viewCrossStore(item)" class="btn btn-secondary" style="padding:4px 8px;font-size:11px;border-radius:6px;">
+                        Stores
+                      </button>
+                    }
+                    <button (click)="viewDetails(item)" class="btn btn-primary" style="padding:4px 10px;font-size:11px;border-radius:6px;">
+                      Inspect →
+                    </button>
+                  </div>
                 </td>
               </tr>
             }
@@ -127,97 +341,163 @@
       </div>
     </div>
   }
-
-  <!-- ADJUSTMENT MODAL -->
-  @if (isModalOpen()) {
-    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
-      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:500px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
-        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;">
-          <div>
-            <div style="font-size:18px;font-weight:800;">Stock Details & Adjustment</div>
-            <div style="font-size:11px;color:var(--text3);">{{ selectedItem().n }}</div>
-          </div>
-          <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-        </div>
-
-        <div style="padding:24px;overflow-y:auto;flex:1;">
-          <div style="display:grid;gap:16px;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div>
-                <label class="label">Quantity On Hand</label>
-                <input type="number" class="inp" [(ngModel)]="selectedItem().oh">
-                <div style="font-size:10px;color:var(--text3);margin-top:4px;">{{ selectedItem().formatted || '-' }}</div>
-              </div>
-              <div>
-                <label class="label">Quantity Reserved</label>
-                <input type="number" class="inp" [(ngModel)]="selectedItem().res">
-              </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div>
-                <label class="label">Reorder Point</label>
-                <input type="number" class="inp" [(ngModel)]="selectedItem().ro">
-              </div>
-              <div>
-                <label class="label">Reorder Quantity</label>
-                <input type="number" class="inp" [(ngModel)]="selectedItem().roQty">
-              </div>
-            </div>
-
-            <div>
-              <label class="label">Adjustment Reason</label>
-              <textarea class="inp" [(ngModel)]="selectedItem().reason" style="height:60px;resize:none;" placeholder="e.g. Damage, Stock count, Return..."></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div style="padding:20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px;background:var(--surface);flex-shrink:0;">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button class="btn btn-primary" (click)="saveAdjustment()">Save Adjustments</button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- CROSS STORE STOCK MODAL -->
-  @if (isCrossStoreModalOpen()) {
-    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1001;padding:20px;">
-      <div class="modal-content fade-up" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:600px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.3);">
-        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);">
-          <div>
-            <div style="font-size:18px;font-weight:800;">Cross-Store Stock Overview</div>
-            <div style="font-size:11px;color:var(--text3);">{{ selectedItem().n }}</div>
-          </div>
-          <button (click)="isCrossStoreModalOpen.set(false)" style="background:none;border:none;color:var(--text3);font-size:24px;cursor:pointer;">&times;</button>
-        </div>
-        <div style="padding:24px;">
-          <table style="width:100%;border-collapse:collapse;">
-            <thead>
-              <tr style="text-align:left;border-bottom:1px solid var(--border);">
-                <th style="padding:12px 0;font-size:11px;color:var(--text3);text-transform:uppercase;">STORE</th>
-                <th style="padding:12px 0;font-size:11px;color:var(--text3);text-transform:uppercase;text-align:right;">ON HAND</th>
-                <th style="padding:12px 0;font-size:11px;color:var(--text3);text-transform:uppercase;text-align:right;">AVAILABLE</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let s of crossStoreStock()" style="border-bottom:1px solid var(--border);">
-                <td style="padding:12px 0;font-weight:600;">{{ s.storeName }}</td>
-                <td style="padding:12px 0;text-align:right;">{{ s.quantityOnHand }}</td>
-                <td style="padding:12px 0;text-align:right;font-weight:700;color:var(--green);">{{ s.quantityOnHand - s.quantityReserved }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="padding:20px;border-top:1px solid var(--border);background:var(--surface);display:flex;justify-content:flex-end;">
-          <button class="btn btn-secondary" (click)="isCrossStoreModalOpen.set(false)">Close</button>
-        </div>
-      </div>
-    </div>
-  }
 </div>
 
+<!-- Stock Adjustment Modal -->
+@if (isModalOpen()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:460px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Inventory Adjustment</div>
+          <h3 style="margin:2px 0 0;font-size:17px;font-weight:800;color:var(--text);">{{ selectedItem().n }}</h3>
+        </div>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">×</button>
+      </div>
+
+      <div style="display:grid;gap:14px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Physical Quantity On Hand</label>
+          <input type="number" class="inp mono" [(ngModel)]="selectedItem().oh" style="font-size:16px;font-weight:700;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reserved Units</label>
+          <input type="number" class="inp mono" [(ngModel)]="selectedItem().res">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Point</label>
+            <input type="number" class="inp mono" [(ngModel)]="selectedItem().ro">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Quantity</label>
+            <input type="number" class="inp mono" [(ngModel)]="selectedItem().roQty">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reason for Adjustment</label>
+          <select class="inp" [(ngModel)]="selectedItem().reason" style="font-size:12px;">
+            <option value="Physical Recount / Cycle Count">Physical Recount / Cycle Count</option>
+            <option value="Damaged Goods / Spoilage">Damaged Goods / Spoilage</option>
+            <option value="Inventory Shrinkage / Theft">Inventory Shrinkage / Theft</option>
+            <option value="Internal Store Consumption">Internal Store Consumption</option>
+            <option value="Supplier Overage Intake">Supplier Overage Intake</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+        <button (click)="closeModal()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;border-radius:8px;">Cancel</button>
+        <button (click)="saveAdjustment()" class="btn btn-primary" style="padding:8px 18px;font-size:12px;border-radius:8px;font-weight:700;">
+          Save Adjustment
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add Inventory to Store Modal -->
+@if (isAddModalOpen()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:480px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:var(--text);">Add Product to Store</h3>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">×</button>
+      </div>
+
+      <div style="display:grid;gap:14px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Product</label>
+          <select class="inp" [(ngModel)]="newInventoryItem.variantId" style="font-size:12px;">
+            @for (p of products(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Store Location</label>
+          <select class="inp" [(ngModel)]="newInventoryItem.storeId" style="font-size:12px;">
+            @for (s of stores(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Initial Quantity on Hand</label>
+          <input type="number" class="inp mono" [(ngModel)]="newInventoryItem.quantityOnHand">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Point</label>
+            <input type="number" class="inp mono" [(ngModel)]="newInventoryItem.reorderPoint">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;display:block;margin-bottom:4px;">Reorder Qty</label>
+            <input type="number" class="inp mono" [(ngModel)]="newInventoryItem.reorderQty">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+        <button (click)="closeModal()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;border-radius:8px;">Cancel</button>
+        <button (click)="saveNewInventory()" class="btn btn-primary" style="padding:8px 18px;font-size:12px;border-radius:8px;font-weight:700;">
+          Add to Inventory
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Cross-Store Stock Inspection Modal -->
+@if (isCrossStoreModalOpen()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;">
+    <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:540px;width:100%;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Cross-Store Stock Analysis</div>
+          <h3 style="margin:2px 0 0;font-size:17px;font-weight:800;color:var(--text);">{{ selectedItem()?.n }}</h3>
+        </div>
+        <button (click)="closeModal()" style="background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;">×</button>
+      </div>
+
+      @if (crossStoreStock().length === 0) {
+        <div style="padding:30px;text-align:center;color:var(--text3);font-size:12px;">
+          No other store branches currently stock this item.
+        </div>
+      } @else {
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;">
+          @for (cs of crossStoreStock(); track cs.storeId) {
+            <div style="padding:12px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:12px;">
+              <div>
+                <div style="font-weight:700;color:var(--text);">{{ cs.storeName }}</div>
+                <div style="font-size:10px;color:var(--text3);">Reorder threshold: {{ cs.reorderPoint }}</div>
+              </div>
+              <div class="mono" style="text-align:right;">
+                <div style="font-weight:800;" [style.color]="cs.quantityOnHand <= cs.reorderPoint ? 'var(--red)' : '#10b981'">
+                  {{ cs.quantityOnHand }} on hand
+                </div>
+                <div style="font-size:10px;color:var(--text3);">Reserved: {{ cs.quantityReserved }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <div style="display:flex;justify-content:flex-end;margin-top:20px;">
+        <button (click)="closeModal()" class="btn btn-secondary" style="padding:8px 16px;font-size:12px;border-radius:8px;">Close</button>
+      </div>
+    </div>
+  </div>
+}
+
 <style>
-  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .active-pill {
+    background: var(--surface) !important;
+    color: var(--accent) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .table-row-hover:hover {
+    background: rgba(79,70,229,0.04) !important;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
