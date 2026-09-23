@@ -1,75 +1,232 @@
-<div class="fade-up">
-  <!-- Header -->
-  <div style="margin-bottom:24px;">
-    <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Loyalty Ledger</div>
-    <div style="font-size:12px;color:var(--text3);margin-top:2px;">Audit trail of all customer point earnings and redemptions</div>
-  </div>
-
-  @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Retrieving ledger...</span>
-    </div>
-  } @else {
-    <div class="card">
-      <div style="overflow-x:auto;">
-        <table class="tbl">
-          <thead>
-            <tr>
-              <th>DATE</th>
-              <th>CUSTOMER</th>
-              <th>REASON / TRANSACTION</th>
-              <th style="text-align:right;">POINTS</th>
-              <th style="text-align:right;">NEW BALANCE</th>
-              <th style="text-align:right;">ACTION</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (entry of ledger(); track entry.id) {
-              <tr>
-                <td style="font-size:11px;color:var(--text3);">
-                  {{ entry.createdAt | date:'short' }}
-                </td>
-                <td>
-                  <div style="font-weight:700;font-size:13px;">{{ getCustomerName(entry.customerId, entry) }}</div>
-                </td>
-                <td>
-                  <div style="font-size:12px;">{{ entry.reason }}</div>
-                  @if (entry.transactionId) {
-                    <a [routerLink]="['/app/transactions', entry.transactionId]" style="font-size:10px;color:var(--accent);font-weight:600;text-decoration:none;display:inline-block;margin-top:2px;">
-                      View Tx #{{ entry.transactionId.substring(0,8) }} →
-                    </a>
-                  }
-                </td>
-                <td style="text-align:right;">
-                  <span [ngClass]="entry.delta > 0 ? 'text-green' : 'text-red'" style="font-weight:800;font-size:14px;">
-                    {{ entry.delta > 0 ? '+' : '' }}{{ entry.delta }}
-                  </span>
-                </td>
-                <td style="text-align:right;font-weight:700;" class="mono">
-                  {{ entry.balanceAfter }} pts
-                </td>
-                <td style="text-align:right;">
-                  <a [routerLink]="['/app/loyalty', entry.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View Audit</a>
-                </td>
-              </tr>
-            }
-            @if (ledger().length === 0) {
-              <tr>
-                <td colspan="6" style="text-align:center;padding:48px;color:var(--text3);">
-                  No point transactions recorded yet.
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+<div class="fade-up" style="padding: 24px; max-width: 1400px; margin: 0 auto;">
+  <!-- Page Header -->
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: 24px; flex-wrap:wrap; gap:16px;">
+    <div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <h1 style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--text1);">
+          Loyalty & Rewards Ledger
+        </h1>
+        <span class="badge badge-accent" style="font-size:11px; padding:2px 8px; font-weight:700;">
+          {{ filteredLedger().length }} entries
+        </span>
+      </div>
+      <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
+        Immutable audit trail of customer loyalty point accruals, gift conversions, and checkout redemptions.
       </div>
     </div>
-  }
-</div>
 
-<style>
-  .text-green { color: var(--green); }
-  .text-red { color: var(--red); }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <button (click)="loadData()" class="btn btn-secondary" style="height:38px; padding:0 14px; display:inline-flex; align-items:center; gap:6px; font-size:13px;" title="Reload loyalty ledger">
+        <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh</span>
+      </button>
+
+      <a routerLink="/app/customers" class="btn btn-primary" style="height:38px; padding:0 18px; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:13px;">
+        <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Customer Directory</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Bento Stats Row -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-bottom: 24px;">
+    <!-- Points Accrued -->
+    <div class="card" style="padding:18px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em;">Points Accrued</span>
+        <div style="width:28px; height:28px; border-radius:8px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center; color:var(--green);">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:24px; font-weight:800; color:var(--green); letter-spacing:-0.02em;" class="mono">+{{ totalPointsAccrued() | number }}</div>
+      <div style="font-size:11px; color:var(--text3); margin-top:4px;">Earned via store sales transactions</div>
+    </div>
+
+    <!-- Points Redeemed -->
+    <div class="card" style="padding:18px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em;">Points Redeemed</span>
+        <div style="width:28px; height:28px; border-radius:8px; background:rgba(245,158,11,0.12); display:flex; align-items:center; justify-content:center; color:var(--amber);">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <polyline points="9 21 3 21 3 15"></polyline>
+            <line x1="21" y1="3" x2="14" y2="10"></line>
+            <line x1="3" y1="21" x2="10" y2="14"></line>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:24px; font-weight:800; color:var(--amber); letter-spacing:-0.02em;" class="mono">-{{ totalPointsRedeemed() | number }}</div>
+      <div style="font-size:11px; color:var(--text3); margin-top:4px;">Claimed at checkout or converted</div>
+    </div>
+
+    <!-- Total Audit Entries -->
+    <div class="card" style="padding:18px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em;">Ledger Audit Events</span>
+        <div style="width:28px; height:28px; border-radius:8px; background:var(--surface2); display:flex; align-items:center; justify-content:center; color:var(--text2);">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:24px; font-weight:800; color:var(--text1); letter-spacing:-0.02em;">{{ totalEntries() }}</div>
+      <div style="font-size:11px; color:var(--text3); margin-top:4px;">Historical loyalty transactions</div>
+    </div>
+
+    <!-- Enrolled Customers -->
+    <div class="card" style="padding:18px 20px; border-radius:14px; background:var(--surface); border:1px solid var(--border);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+        <span style="font-size:11px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:0.04em;">Enrolled Members</span>
+        <div style="width:28px; height:28px; border-radius:8px; background:rgba(59,130,246,0.12); display:flex; align-items:center; justify-content:center; color:var(--accent);">
+          <svg style="width:14px; height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:24px; font-weight:800; color:var(--accent); letter-spacing:-0.02em;">{{ enrolledCount() }}</div>
+      <div style="font-size:11px; color:var(--text3); margin-top:4px;">Registered customer profiles</div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="card" style="padding:14px 18px; border-radius:14px; background:var(--surface); border:1px solid var(--border); margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+    <!-- Search Input -->
+    <div style="position:relative; flex:1; min-width:240px; max-width:400px;">
+      <svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:14px; height:14px; color:var(--text3);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search by customer name, reason, tx #..." class="inp" style="padding-left:36px; height:38px; font-size:13px; width:100%;">
+    </div>
+
+    <!-- Filter Pills -->
+    <div style="display:flex; align-items:center; gap:6px;">
+      <button (click)="typeFilter.set('All')" 
+              [style.background]="typeFilter() === 'All' ? 'var(--text1)' : 'var(--surface2)'"
+              [style.color]="typeFilter() === 'All' ? 'var(--surface)' : 'var(--text2)'"
+              style="border:none; padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s ease;">
+        All Entries
+      </button>
+
+      <button (click)="typeFilter.set('Accruals')" 
+              [style.background]="typeFilter() === 'Accruals' ? 'rgba(16,185,129,0.15)' : 'var(--surface2)'"
+              [style.color]="typeFilter() === 'Accruals' ? 'var(--green)' : 'var(--text2)'"
+              style="border:none; padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s ease;">
+        Accruals (+pts)
+      </button>
+
+      <button (click)="typeFilter.set('Redemptions')" 
+              [style.background]="typeFilter() === 'Redemptions' ? 'rgba(245,158,11,0.15)' : 'var(--surface2)'"
+              [style.color]="typeFilter() === 'Redemptions' ? 'var(--amber)' : 'var(--text2)'"
+              style="border:none; padding:6px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all .15s ease;">
+        Redemptions (-pts)
+      </button>
+    </div>
+  </div>
+
+  <!-- Loyalty Table -->
+  <div class="card" style="border-radius:16px; background:var(--surface); border:1px solid var(--border); overflow:hidden;">
+    <div *ngIf="isLoading()" style="padding:60px 20px; text-align:center;">
+      <div class="spinner" style="margin:0 auto 16px;"></div>
+      <div style="font-size:13px; color:var(--text3);">Loading loyalty ledger...</div>
+    </div>
+
+    <div *ngIf="!isLoading() && filteredLedger().length > 0" style="overflow-x:auto;">
+      <table class="tbl" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:var(--surface2); border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text3);">
+            <th style="padding:14px 20px; text-align:left;">DATE & TIME</th>
+            <th style="padding:14px 16px; text-align:left;">CUSTOMER MEMBER</th>
+            <th style="padding:14px 16px; text-align:left;">EVENT REASON / CONTEXT</th>
+            <th style="padding:14px 16px; text-align:right;">POINTS DELTA</th>
+            <th style="padding:14px 16px; text-align:right;">BALANCE AFTER</th>
+            <th style="padding:14px 20px; text-align:right;">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of filteredLedger()" class="hover-row" style="border-bottom:1px solid var(--border); transition:background .15s ease;">
+            <!-- Date -->
+            <td style="padding:16px 20px; font-size:12px; color:var(--text3);">
+              <div>{{ entry.createdAt | date:'MMM d, y' }}</div>
+              <div style="font-size:11px; margin-top:2px;">{{ entry.createdAt | date:'h:mm a' }}</div>
+            </td>
+
+            <!-- Customer -->
+            <td style="padding:16px 16px;">
+              <div style="font-weight:700; font-size:13px; color:var(--text1);">
+                {{ getCustomerName(entry.customerId, entry) }}
+              </div>
+              <div *ngIf="entry.customerId" class="mono" style="font-size:11px; color:var(--text3); margin-top:2px;">
+                ID: {{ entry.customerId.substring(0,8) }}
+              </div>
+            </td>
+
+            <!-- Event Reason & Tx Link -->
+            <td style="padding:16px 16px;">
+              <div style="font-size:13px; color:var(--text1); font-weight:500;">{{ entry.reason }}</div>
+              <div *ngIf="entry.transactionId" style="margin-top:3px;">
+                <a [routerLink]="['/app/transactions', entry.transactionId]" style="font-size:11px; color:var(--accent); font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                  <span>Tx #{{ entry.transactionId.substring(0,8).toUpperCase() }}</span>
+                  <svg style="width:10px; height:10px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="7" y1="17" x2="17" y2="7"></line>
+                    <polyline points="7 7 17 7 17 17"></polyline>
+                  </svg>
+                </a>
+              </div>
+            </td>
+
+            <!-- Delta -->
+            <td style="padding:16px 16px; text-align:right;">
+              <span [style.color]="entry.delta > 0 ? 'var(--green)' : 'var(--red)'" class="mono" style="font-weight:800; font-size:15px;">
+                {{ entry.delta > 0 ? '+' : '' }}{{ entry.delta }} pts
+              </span>
+            </td>
+
+            <!-- Balance After -->
+            <td style="padding:16px 16px; text-align:right;">
+              <span class="mono" style="font-weight:800; font-size:14px; color:var(--text1);">
+                {{ entry.balanceAfter | number }} pts
+              </span>
+            </td>
+
+            <!-- Action -->
+            <td style="padding:16px 20px; text-align:right;">
+              <a [routerLink]="['/app/loyalty', entry.id]" class="btn btn-secondary btn-xs" style="height:28px; padding:0 10px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
+                <span>Audit</span>
+                <svg style="width:11px; height:11px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && filteredLedger().length === 0" style="padding:70px 24px; text-align:center;">
+      <div style="width:56px; height:56px; border-radius:14px; background:var(--surface2); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:var(--text3);">
+        <svg style="width:28px; height:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      </div>
+      <div style="font-size:16px; font-weight:800; color:var(--text1); margin-bottom:4px;">No Loyalty Entries Found</div>
+      <div style="font-size:13px; color:var(--text3); max-width:380px; margin:0 auto 20px;">
+        {{ searchQuery() || typeFilter() !== 'All' ? 'No transactions match your search filter.' : 'Customer points earned from POS orders and redemption events will appear in this ledger.' }}
+      </div>
+    </div>
+  </div>
+</div>

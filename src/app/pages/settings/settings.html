@@ -1,37 +1,214 @@
-<div class="fade-up">
+<div class="fade-up" style="display:flex;flex-direction:column;gap:20px;padding-bottom:40px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="badge badge-accent" style="font-size:11px;padding:3px 8px;font-weight:700;">SYSTEM CONFIGURATION</span>
+        <span style="font-size:12px;color:var(--text3);font-family:var(--mono);">Tenant & Hardware Rules</span>
+      </div>
+      <h1 style="font-size:22px;font-weight:800;color:var(--text);margin:6px 0 2px;letter-spacing:-0.02em;">
+        Settings & Peripherals
+      </h1>
+      <p style="font-size:13px;color:var(--text3);margin:0;">
+        Manage organization profile, customer loyalty point economics, 80mm receipt thermal templates, and ESC/POS network hardware.
+      </p>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  @if (toastMessage()) {
+    <div class="fade-up" [style.background]="toastMessage()?.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(79,70,229,0.1)'"
+         [style.borderColor]="toastMessage()?.type === 'success' ? '#10b981' : 'var(--accent)'"
+         [style.color]="toastMessage()?.type === 'success' ? '#10b981' : 'var(--accent)'"
+         style="border:1px solid;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:10px;">
+      <svg style="width:16px;height:16px;flex-shrink:0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      <span>{{ toastMessage()?.text }}</span>
+    </div>
+  }
+
+  <!-- Tab Navigation Buttons -->
+  <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto;">
+    <button (click)="activeTab.set('profile')"
+            [style.background]="activeTab() === 'profile' ? 'var(--accent)' : 'var(--surface)'"
+            [style.color]="activeTab() === 'profile' ? '#fff' : 'var(--text2)'"
+            [style.border]="activeTab() === 'profile' ? '1px solid var(--accent)' : '1px solid var(--border)'"
+            style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;">
+      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      Store Profile & Regional
+    </button>
+
+    <button (click)="activeTab.set('loyalty')"
+            [style.background]="activeTab() === 'loyalty' ? 'var(--accent)' : 'var(--surface)'"
+            [style.color]="activeTab() === 'loyalty' ? '#fff' : 'var(--text2)'"
+            [style.border]="activeTab() === 'loyalty' ? '1px solid var(--accent)' : '1px solid var(--border)'"
+            style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;">
+      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+      </svg>
+      Loyalty & Rewards Rules
+    </button>
+
+    <button (click)="activeTab.set('receipt')"
+            [style.background]="activeTab() === 'receipt' ? 'var(--accent)' : 'var(--surface)'"
+            [style.color]="activeTab() === 'receipt' ? '#fff' : 'var(--text2)'"
+            [style.border]="activeTab() === 'receipt' ? '1px solid var(--accent)' : '1px solid var(--border)'"
+            style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;">
+      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Thermal Receipt Customizer
+    </button>
+
+    <button (click)="activeTab.set('hardware')"
+            [style.background]="activeTab() === 'hardware' ? 'var(--accent)' : 'var(--surface)'"
+            [style.color]="activeTab() === 'hardware' ? '#fff' : 'var(--text2)'"
+            [style.border]="activeTab() === 'hardware' ? '1px solid var(--accent)' : '1px solid var(--border)'"
+            style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;">
+      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6 9 6 2 18 2 18 9"/>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+        <rect x="6" y="14" width="12" height="8"/>
+      </svg>
+      Hardware & ESC/POS Printers
+    </button>
+  </div>
+
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading settings...</span>
+    <div style="display:flex;align-items:center;justify-content:center;padding:80px;color:var(--text3);">
+      <div style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
+      <span style="margin-left:12px;font-size:13px;">Loading system configurations...</span>
     </div>
   } @else {
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-      
-      <!-- Loyalty & Rewards Program Settings -->
-      <div class="card" style="padding:24px;grid-column: span 2;border:1px solid var(--border);background:var(--surface);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+
+    <!-- TAB 1: Store Profile & Regional -->
+    @if (activeTab() === 'profile') {
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;">
+        
+        <!-- Store Identification -->
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
             <div>
-              <div style="font-size:16px;font-weight:800;color:var(--text);">Loyalty & Rewards Program Configuration</div>
-              <div style="font-size:12px;color:var(--text3);margin-top:2px;">Configure organization-wide loyalty points accrual, redemption values, and eligibility rules.</div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">Store Branch Profile</div>
+              <div style="font-size:12px;color:var(--text3);">Primary operational identity, physical address, and contact details</div>
             </div>
           </div>
+
+          <div style="display:grid;gap:16px;margin-top:6px;">
+            <div>
+              <label class="label">Store Outlet Name</label>
+              <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Lagos Mainland Flagship">
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label class="label">Branch Code</label>
+                <input class="inp" [(ngModel)]="store().code" readonly style="background:var(--surface2);color:var(--text3);font-family:var(--mono);">
+              </div>
+              <div>
+                <label class="label">Telephone Contact</label>
+                <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 000 0000">
+              </div>
+            </div>
+
+            <div>
+              <label class="label">Physical Street Address</label>
+              <textarea class="inp" [(ngModel)]="store().address" style="height:76px;resize:none;" placeholder="Enter street address, building, or landmark..."></textarea>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label class="label">City</label>
+                <input class="inp" [(ngModel)]="store().city" placeholder="e.g. Victoria Island">
+              </div>
+              <div>
+                <label class="label">State</label>
+                <input class="inp" [(ngModel)]="store().state" placeholder="e.g. Lagos State">
+              </div>
+            </div>
+
+            <div style="padding-top:10px;">
+              <button (click)="saveStore()" [disabled]="isSavingStore()" class="btn btn-primary" style="padding:10px 24px;">
+                {{ isSavingStore() ? 'Saving...' : 'Save Store Profile' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regional & Statutory Settings -->
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
           <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">Regional & Fiscal Rules</div>
+              <div style="font-size:12px;color:var(--text3);">Currency display, timezone offset, and Value Added Tax</div>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:16px;margin-top:6px;">
+            <div>
+              <label class="label">Operational Currency</label>
+              <select class="inp" style="cursor:pointer;">
+                <option value="NGN" selected>Nigerian Naira (₦ / NGN)</option>
+                <option value="USD">United States Dollar ($ / USD)</option>
+                <option value="GBP">British Pound (£ / GBP)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="label">Timezone</label>
+              <input class="inp" [(ngModel)]="store().timezone" placeholder="Africa/Lagos">
+            </div>
+
+            <div>
+              <label class="label">Statutory Value Added Tax Rate (%)</label>
+              <input class="inp" type="number" step="0.5" value="7.5" placeholder="7.5">
+              <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
+                Federal Inland Revenue Service (FIRS) standard rate: 7.5%.
+              </span>
+            </div>
+
+            <div style="padding-top:10px;">
+              <button (click)="saveStore()" [disabled]="isSavingStore()" class="btn btn-primary" style="padding:10px 24px;">
+                {{ isSavingStore() ? 'Saving...' : 'Save Regional Rules' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- TAB 2: Loyalty & Rewards Rules -->
+    @if (activeTab() === 'loyalty') {
+      <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+            <div>
+              <div style="font-size:16px;font-weight:800;color:var(--text);">Customer Loyalty & Rewards Economics</div>
+              <div style="font-size:12px;color:var(--text3);">Configure chain-wide points accrual, currency redemption values, and minimum discount thresholds.</div>
+            </div>
+          </div>
+          <div>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);">
               <input type="checkbox" [(ngModel)]="loyaltySettings().loyaltyProgramEnabled" style="width:16px;height:16px;accent-color:var(--accent);">
-              Program Active
+              Loyalty Program Active
             </label>
           </div>
         </div>
 
-        @if (loyaltySuccessMessage()) {
-          <div style="background:rgba(16,185,129,0.1);border:1px solid #10b981;color:#10b981;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:16px;">
-            ✓ {{ loyaltySuccessMessage() }}
-          </div>
-        }
-
-        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:20px;padding-top:8px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;padding-top:10px;">
           <div>
             <label class="label">Points Accrual Spend Rate (₦ per Point)</label>
             <div style="position:relative;">
@@ -39,7 +216,7 @@
               <input class="inp" type="number" step="10" min="1" [(ngModel)]="loyaltySettings().loyaltyPointsEarnRate" style="padding-left:28px;" placeholder="100">
             </div>
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
-              Spend needed to earn 1 loyalty point (e.g. ₦100 = 1 point).
+              Customer spend required to earn 1 reward point (e.g. ₦100 spend = 1 point).
             </span>
           </div>
 
@@ -50,100 +227,310 @@
               <input class="inp" type="number" step="0.5" min="0.1" [(ngModel)]="loyaltySettings().loyaltyPointRedeemRate" style="padding-left:28px;" placeholder="1">
             </div>
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
-              Monetary value given per point redeemed (e.g. 1 point = ₦1).
+              Cash discount given at checkout per point redeemed (e.g. 1 point = ₦1).
             </span>
           </div>
 
           <div>
-            <label class="label">Minimum Points to Redeem</label>
+            <label class="label">Minimum Points Required to Redeem</label>
             <input class="inp" type="number" step="10" min="0" [(ngModel)]="loyaltySettings().loyaltyMinRedemptionPoints" placeholder="50">
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
-              Minimum point threshold required before points can be used.
+              Minimum points balance a customer must hold before applying discount at register.
             </span>
           </div>
         </div>
 
         <!-- Accrual Preview Pill -->
-        <div style="margin-top:20px;padding:12px 16px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-          <div style="font-size:12px;color:var(--text2);">
-            <strong style="color:var(--text);">Example:</strong> A customer spending <strong>₦10,000</strong> earns 
-            <strong style="color:var(--accent);">{{ 10000 / (loyaltySettings().loyaltyPointsEarnRate || 100) | number:'1.0-0' }} points</strong>, 
-            worth <strong>₦{{ (10000 / (loyaltySettings().loyaltyPointsEarnRate || 100)) * (loyaltySettings().loyaltyPointRedeemRate || 1) | number:'1.2-2' }}</strong> in discounts.
+        <div style="margin-top:10px;padding:16px 20px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+          <div style="font-size:13px;color:var(--text2);line-height:1.5;">
+            <strong style="color:var(--text);">Live Calculation Example:</strong> A shopper spending <strong>₦10,000</strong> at the register will earn 
+            <strong style="color:var(--accent);">{{ 10000 / (loyaltySettings().loyaltyPointsEarnRate || 100) | number:'1.0-0' }} loyalty points</strong>, 
+            which can later be redeemed for <strong>₦{{ (10000 / (loyaltySettings().loyaltyPointsEarnRate || 100)) * (loyaltySettings().loyaltyPointRedeemRate || 1) | number:'1.2-2' }}</strong> in instant checkout savings.
           </div>
-          <button (click)="saveLoyaltySettings()" [disabled]="isSavingLoyalty()" class="btn btn-primary" style="padding:8px 20px;">
+          <button (click)="saveLoyaltySettings()" [disabled]="isSavingLoyalty()" class="btn btn-primary" style="padding:10px 24px;">
             {{ isSavingLoyalty() ? 'Saving...' : 'Save Loyalty Rules' }}
           </button>
         </div>
       </div>
+    }
 
-      <!-- Store Information (if not Super Admin) -->
-      @if (!isOwner()) {
-        <div class="card" style="padding:24px;">
-          <div style="font-size:15px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
-            <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
-            Store Information
+    <!-- TAB 3: Thermal Receipt Customizer (with live 80mm preview!) -->
+    @if (activeTab() === 'receipt') {
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start;">
+        
+        <!-- Controls Column -->
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">80mm Thermal Receipt Layout</div>
+              <div style="font-size:12px;color:var(--text3);">Customize header branding, fiscal VAT details, and return policy footer</div>
+            </div>
           </div>
-          @if (storeSuccessMessage()) {
-            <div style="background:rgba(16,185,129,0.1);border:1px solid #10b981;color:#10b981;padding:8px 14px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:14px;">
-              ✓ {{ storeSuccessMessage() }}
-            </div>
-          }
-          <div style="display:grid;gap:16px;">
+
+          <div style="display:grid;gap:16px;margin-top:4px;">
             <div>
-              <label class="label">Store Name</label>
-              <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Lagos Mainland Store">
+              <label class="label">Business Trading Name</label>
+              <input class="inp" [(ngModel)]="receiptSettings().storeName" placeholder="Trading Name">
             </div>
+
             <div>
-              <label class="label">Store Code</label>
-              <input class="inp" [(ngModel)]="store().code" readonly style="background:var(--surface2);color:var(--text3);">
+              <label class="label">Receipt Subtitle / Tagline</label>
+              <input class="inp" [(ngModel)]="receiptSettings().headerSubtitle" placeholder="Tagline">
             </div>
+
             <div>
-              <label class="label">Address</label>
-              <textarea class="inp" [(ngModel)]="store().address" style="height:80px;resize:none;" placeholder="Enter physical address..."></textarea>
+              <label class="label">Store Location on Slip</label>
+              <input class="inp" [(ngModel)]="receiptSettings().address" placeholder="Physical Address">
             </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label class="label">Support Phone</label>
+                <input class="inp" [(ngModel)]="receiptSettings().phone" placeholder="Support Phone">
+              </div>
+              <div>
+                <label class="label">VAT Tax Registration #</label>
+                <input class="inp" [(ngModel)]="receiptSettings().vatNumber" placeholder="Tax ID">
+              </div>
+            </div>
+
             <div>
-              <label class="label">Phone Number</label>
-              <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 000 0000">
+              <label class="label">Custom Footer Greeting & Return Policy</label>
+              <textarea class="inp" [(ngModel)]="receiptSettings().footerMessage" style="height:76px;resize:none;" placeholder="Return policy message..."></textarea>
             </div>
+
+            <div style="display:flex;gap:20px;padding-top:4px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                <input type="checkbox" [(ngModel)]="receiptSettings().showBarcode" style="width:16px;height:16px;accent-color:var(--accent);">
+                Print Order Barcode
+              </label>
+
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                <input type="checkbox" [(ngModel)]="receiptSettings().showCashier" style="width:16px;height:16px;accent-color:var(--accent);">
+                Show Cashier Name
+              </label>
+            </div>
+
             <div style="padding-top:10px;">
-              <button (click)="saveChanges()" [disabled]="isSavingStore()" class="btn btn-primary">
-                {{ isSavingStore() ? 'Saving...' : 'Save Store Details' }}
+              <button (click)="saveReceiptSettings()" [disabled]="isSavingReceipt()" class="btn btn-primary" style="padding:10px 24px;">
+                {{ isSavingReceipt() ? 'Saving...' : 'Save Receipt Design' }}
               </button>
             </div>
           </div>
         </div>
 
-        <div class="card" style="padding:24px;">
-          <div style="font-size:15px;font-weight:800;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
-            <span style="width:4px;height:16px;background:var(--accent);border-radius:2px;"></span>
-            Regional Settings
+        <!-- Interactive 80mm Monospace Thermal Live Preview -->
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
+            <span style="font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:0.04em;">Live 80mm Thermal Preview</span>
+            <span class="badge" style="font-size:10px;">ESC/POS Standard</span>
           </div>
-          <div style="display:grid;gap:16px;">
-            <div>
-              <label class="label">Currency</label>
-              <select class="inp">
-                <option value="NGN">Nigerian Naira (₦)</option>
-                <option value="USD">US Dollar ($)</option>
-              </select>
+
+          <!-- Thermal Ticket Container -->
+          <div style="background:#ffffff;color:#111111;font-family:'Courier New', Courier, monospace;font-size:11.5px;line-height:1.55;padding:26px 22px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.15);border:1px solid #e2e8f0;position:relative;">
+            
+            <!-- Torn top visualizer -->
+            <div style="text-align:center;margin-bottom:14px;">
+              <div style="font-weight:900;font-size:16px;letter-spacing:0.04em;">{{ receiptSettings().storeName }}</div>
+              <div style="font-size:11px;font-weight:600;margin-top:2px;">{{ receiptSettings().headerSubtitle }}</div>
+              <div style="font-size:10.5px;color:#333;margin-top:2px;">{{ receiptSettings().address }}</div>
+              <div style="font-size:10.5px;color:#333;">Tel: {{ receiptSettings().phone }}</div>
+              <div style="font-size:10.5px;color:#333;">{{ receiptSettings().vatNumber }}</div>
+              <div style="margin:8px 0;letter-spacing:1px;">================================</div>
+              <div style="font-weight:900;font-size:13px;">SALES RECEIPT / FISCAL SLIP</div>
+              <div style="margin:8px 0;letter-spacing:1px;">================================</div>
             </div>
-            <div>
-              <label class="label">Timezone</label>
-              <input class="inp" [(ngModel)]="store().timezone" placeholder="Africa/Lagos">
+
+            <!-- Transaction Metadata -->
+            <div style="display:flex;justify-content:space-between;">
+              <span>Tx ID: #TX-984210</span>
+              <span>2026-09-22 14:32</span>
             </div>
-            <div>
-              <label class="label">Tax Rate (%)</label>
-              <input class="inp" type="number" value="7.5">
+            @if (receiptSettings().showCashier) {
+              <div style="display:flex;justify-content:space-between;">
+                <span>Terminal: POS-01</span>
+                <span>Cashier: Admin</span>
+              </div>
+            }
+
+            <div style="margin:8px 0;letter-spacing:1px;">--------------------------------</div>
+
+            <!-- Itemized Products -->
+            <div style="display:flex;justify-content:space-between;font-weight:700;">
+              <span>ITEM</span>
+              <span>QTY x PRICE   TOTAL</span>
             </div>
-            <div style="padding-top:10px;">
-              <button (click)="saveChanges()" [disabled]="isSavingStore()" class="btn btn-primary">
-                {{ isSavingStore() ? 'Saving...' : 'Save Config' }}
+            <div style="margin:4px 0;letter-spacing:1px;">--------------------------------</div>
+            
+            <div style="display:flex;justify-content:space-between;">
+              <span>Golden Penny Spaghetti</span>
+              <span>2 x 850.00  1,700.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span>Peak Milk Evaporated 160g</span>
+              <span>3 x 600.00  1,800.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span>Eva Bottled Water 75cl</span>
+              <span>4 x 250.00  1,000.00</span>
+            </div>
+
+            <div style="margin:8px 0;letter-spacing:1px;">--------------------------------</div>
+
+            <!-- Totals & VAT -->
+            <div style="display:flex;justify-content:space-between;">
+              <span>Subtotal:</span>
+              <span>₦4,500.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span>VAT (7.5% Included):</span>
+              <span>₦337.50</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-weight:900;font-size:13.5px;margin-top:4px;">
+              <span>TOTAL (NGN):</span>
+              <span>₦4,500.00</span>
+            </div>
+
+            <div style="margin:8px 0;letter-spacing:1px;">--------------------------------</div>
+
+            <!-- Tender -->
+            <div style="display:flex;justify-content:space-between;">
+              <span>CARD PAYMENT:</span>
+              <span>₦4,500.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#555;font-size:10px;">
+              <span>AUTH CODE: 884210</span>
+              <span>MASTERCARD ...4829</span>
+            </div>
+
+            <!-- Barcode representation -->
+            @if (receiptSettings().showBarcode) {
+              <div style="margin:16px 0 10px;text-align:center;">
+                <div style="font-family:'Libre Barcode 39', monospace;font-size:28px;letter-spacing:2px;line-height:1;margin:0 auto;display:inline-block;border-left:2px solid #111;border-right:2px solid #111;padding:0 8px;font-weight:900;">
+                  ||||| | |||| || ||| |||| |
+                </div>
+                <div style="font-size:10px;letter-spacing:1px;margin-top:2px;">*TX-984210*</div>
+              </div>
+            }
+
+            <!-- Footer Message -->
+            <div style="margin-top:14px;text-align:center;font-size:10px;color:#333;line-height:1.4;">
+              {{ receiptSettings().footerMessage }}
+            </div>
+
+            <div style="margin-top:10px;text-align:center;font-size:9.5px;color:#777;">
+              POWERED BY RETAILOS POS v2.8.4
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- TAB 4: Hardware & ESC/POS Network Printers -->
+    @if (activeTab() === 'hardware') {
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;">
+        
+        <!-- Hardware Settings Form -->
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">ESC/POS Thermal Network Printer</div>
+              <div style="font-size:12px;color:var(--text3);">LAN / Wi-Fi raw TCP socket communication (Port 9100)</div>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:16px;margin-top:4px;">
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;">
+              <div>
+                <label class="label">Printer IP Address</label>
+                <input class="inp" [(ngModel)]="hardwareSettings().printerIp" style="font-family:var(--mono);" placeholder="192.168.1.200">
+              </div>
+              <div>
+                <label class="label">TCP Port</label>
+                <input class="inp" type="number" [(ngModel)]="hardwareSettings().printerPort" style="font-family:var(--mono);" placeholder="9100">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label class="label">Serial Baud Rate</label>
+                <select class="inp" [(ngModel)]="hardwareSettings().baudRate" style="font-family:var(--mono);">
+                  <option [value]="9600">9600 baud</option>
+                  <option [value]="19200">19200 baud</option>
+                  <option [value]="38400">38400 baud</option>
+                  <option [value]="115200">115200 baud (Standard)</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Paper Roll Width</label>
+                <select class="inp" [(ngModel)]="receiptSettings().paperWidth">
+                  <option value="80mm">80mm (Standard Kitchen/Retail)</option>
+                  <option value="58mm">58mm (Compact Mobile)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                <input type="checkbox" [(ngModel)]="hardwareSettings().autoCutter" style="width:16px;height:16px;accent-color:var(--accent);">
+                Enable Automatic Guillotine Cutter (GS V 66 0)
+              </label>
+
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                <input type="checkbox" [(ngModel)]="hardwareSettings().drawerKickPulse" style="width:16px;height:16px;accent-color:var(--accent);">
+                Auto-Kick Cash Drawer On Cash Tender (ESC p 0 25 250)
+              </label>
+            </div>
+
+            <div style="padding-top:10px;display:flex;align-items:center;gap:10px;">
+              <button (click)="saveHardwareSettings()" [disabled]="isSavingHardware()" class="btn btn-primary" style="padding:10px 24px;">
+                {{ isSavingHardware() ? 'Saving...' : 'Save Hardware Config' }}
               </button>
             </div>
           </div>
         </div>
-      }
-    </div>
+
+        <!-- Hardware Peripheral Diagnostics -->
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">Hardware Diagnostics & Test Pulse</div>
+              <div style="font-size:12px;color:var(--text3);">Transmit diagnostic commands directly to connected register peripherals</div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:6px;">
+            <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Cash Drawer Solenoid Kick</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;">Transmits 24V solenoid pulse through RJ12 printer connector</div>
+              </div>
+              <button (click)="testDrawerKick()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+                Kick Drawer
+              </button>
+            </div>
+
+            <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Print Test Diagnostic Slip</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;">Sends ASCII diagnostic characters and triggers paper cutter</div>
+              </div>
+              <button (click)="testPrinter()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+                Test Print
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
   }
+
 </div>
 
 <style>

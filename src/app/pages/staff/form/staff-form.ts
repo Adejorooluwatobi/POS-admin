@@ -115,6 +115,11 @@ export class StaffFormComponent implements OnInit {
     }
   }
 
+  generateQuickPin() {
+    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+    this.staff.update(s => ({ ...s, pin: randomPin }));
+  }
+
   async saveStaff() {
     const s = this.staff();
     if (!s.firstName || !s.firstName.trim()) {

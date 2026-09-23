@@ -1,0 +1,231 @@
+<div class="fade-up" style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- Breadcrumb & Header Bar -->
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/terminals" style="color: var(--accent); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+        ← Back to POS Terminals
+      </a>
+      <span>/</span>
+      <span style="color: var(--text);">{{ isEditMode() ? 'Edit Configuration' : 'Register Terminal' }}</span>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+      <div>
+        <h1 class="font-headline" style="font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">
+          {{ isEditMode() ? 'Edit POS Terminal Configuration' : 'Register New POS Terminal' }}
+        </h1>
+        <p style="font-size: 12px; color: var(--text2); margin-top: 3px;">
+          Map hardware to a physical store branch, assign lane label, and generate device pairing code.
+        </p>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <a routerLink="/app/terminals" class="btn btn-secondary" style="height: 34px; padding: 0 14px; text-decoration: none;">
+          Cancel
+        </a>
+        <button type="button" (click)="saveTerminal()" [disabled]="isSaving()" class="btn btn-primary" style="height: 34px; padding: 0 16px; min-width: 140px; justify-content: center;">
+          @if (isSaving()) {
+            <span>Saving...</span>
+          } @else {
+            <span>{{ isEditMode() ? 'Save Changes' : 'Register & Pair' }}</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="card" style="padding: 60px; text-align: center;">
+      <div class="spinner" style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+      <span style="font-size: 13px; color: var(--text3);">Loading terminal telemetry...</span>
+    </div>
+  } @else if (showPairingSuccess()) {
+    <!-- Pairing PIN Success Card -->
+    <div class="card" style="padding: 36px; text-align: center; border-color: var(--accent);">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--green-d); color: var(--green); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+
+      <h2 class="font-headline" style="font-size: 20px; font-weight: 800; color: var(--text); margin: 0 0 6px;">
+        Terminal Registered Successfully
+      </h2>
+      <p style="font-size: 12.5px; color: var(--text3); max-width: 440px; margin: 0 auto 20px;">
+        Enter this one-time cryptographic pairing PIN on the physical POS touchscreen device to link it with RetailOS Cloud:
+      </p>
+
+      <div style="background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 20px; max-width: 340px; margin: 0 auto 24px;">
+        <div class="mono" style="font-size: 36px; font-weight: 900; letter-spacing: 0.18em; color: var(--accent);">
+          {{ generatedPairingCode() }}
+        </div>
+        <span style="font-size: 11px; color: var(--text3); display: block; margin-top: 6px;">
+          Device: <strong>{{ registeredTerminalName() }}</strong>
+        </span>
+      </div>
+
+      <button type="button" (click)="finishPairing()" class="btn btn-primary" style="padding: 10px 24px; font-size: 13px; margin: 0 auto;">
+        Done & Return to Terminals
+      </button>
+    </div>
+  } @else {
+    <!-- Error Banner -->
+    @if (errorMessage()) {
+      <div style="padding: 12px 16px; border-radius: 10px; background: var(--red-d); color: var(--red); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="errorMessage.set(null)" style="background: none; border: none; color: var(--red); cursor: pointer; font-size: 14px;">✕</button>
+      </div>
+    }
+
+    <!-- Form Cards -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Card 1: Core Identification -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            1. Device Identification & Store Mapping
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div style="grid-column: span 2;">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Terminal Label / Lane Name <span style="color: var(--red);">*</span>
+            </label>
+            <input type="text" [(ngModel)]="terminal().label" placeholder="e.g. Register 01 - Main Counter" class="inp" />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Store Branch Assignment <span style="color: var(--red);">*</span>
+            </label>
+            <select [(ngModel)]="terminal().storeId" [disabled]="isStoreManager()" class="inp">
+              @for (s of stores(); track s.id) {
+                <option [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+              }
+              @if (stores().length === 0) {
+                <option value="store-01">Downtown Flagship #04</option>
+                <option value="store-02">Victoria Island #01</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Operating Zone / Area
+            </label>
+            <select [(ngModel)]="terminal().zone" class="inp">
+              <option value="Main Floor">Main Floor (Front Counters)</option>
+              <option value="Express Zone">Express Zone (Bayside)</option>
+              <option value="Bar & Lounge">Bar & Lounge</option>
+              <option value="Outdoor Patio">Outdoor Patio</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Hardware Model Profile
+            </label>
+            <select [(ngModel)]="terminal().model" class="inp">
+              <option value="ApexStation Pro Max">ApexStation Pro Max (Dual Display)</option>
+              <option value="ApexStation Slim 12">ApexStation Slim 12 (Compact Counter)</option>
+              <option value="ApexFlex Mobile">ApexFlex Mobile 8" (Handheld WiFi)</option>
+              <option value="ApexKiosk 24">ApexKiosk 24" (Self-Checkout)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Operational Status
+            </label>
+            <select [(ngModel)]="terminal().status" class="inp">
+              <option value="ONLINE">ONLINE (Active for Selling)</option>
+              <option value="OFFLINE">OFFLINE (Standby)</option>
+              <option value="MAINTENANCE">MAINTENANCE (Diagnostics Only)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Network Topology -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            2. Network & Subnet Topology
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Static IPv4 Address
+            </label>
+            <input type="text" [(ngModel)]="terminal().ipAddress" placeholder="192.168.4.110" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Recommended for reliable slip printing and drawer solenoid control.</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Subnet Mask
+            </label>
+            <input type="text" value="255.255.255.0" readonly class="inp mono" style="opacity: 0.7;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Paired Peripherals -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            3. Peripheral Hardware Channels
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+          <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="terminal().hasCardReader" style="accent-color: var(--accent);" />
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text); display: block;">EMV Card Reader</span>
+              <span style="font-size: 10px; color: var(--text3);">WisePOS E / Castles</span>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="terminal().hasPrinter" style="accent-color: var(--accent);" />
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text); display: block;">Thermal Slip Printer</span>
+              <span style="font-size: 10px; color: var(--text3);">Epson TM-T88VI (ESC/POS)</span>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="terminal().hasCashDrawer" style="accent-color: var(--accent);" />
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text); display: block;">Electronic Cash Drawer</span>
+              <span style="font-size: 10px; color: var(--text3);">24V RJ12 Solenoid</span>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="terminal().hasScanner" style="accent-color: var(--accent);" />
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text); display: block;">Barcode Scanner</span>
+              <span style="font-size: 10px; color: var(--text3);">2D QR / UPC Optic</span>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); cursor: pointer;">
+            <input type="checkbox" [(ngModel)]="terminal().hasCfd" style="accent-color: var(--accent);" />
+            <div>
+              <span style="font-size: 12px; font-weight: 600; color: var(--text); display: block;">Customer Display (CFD)</span>
+              <span style="font-size: 10px; color: var(--text3);">HDMI Dual Mirror</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

@@ -1,36 +1,34 @@
-<div class="page-container" style="padding: 24px; max-width: 1000px; margin: 0 auto;">
+<div class="fade-up" style="max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; padding: 4px 0 32px;">
+
   <!-- Breadcrumb & Header Bar -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/products" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); margin-bottom: 8px;">
+      <a routerLink="/app/products" style="color: var(--accent); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 4px;">
         ← Back to Products Catalog
       </a>
       <span>/</span>
-      <span>{{ isEditMode() ? 'Edit Product' : 'New Product' }}</span>
+      <span style="color: var(--text);">{{ isEditMode() ? 'Edit Product' : 'Create Product' }}</span>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
-          {{ isEditMode() ? 'Edit Product' : 'Create New Product' }}
+        <h1 class="font-headline" style="font-size: 22px; font-weight: 800; color: var(--text); margin: 0;">
+          {{ isEditMode() ? 'Edit Product Profile' : 'Create New Catalog Item' }}
         </h1>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Configure SKU, barcodes, pricing, category classification and bulk packaging ratios.
-        </div>
+        <p style="font-size: 12px; color: var(--text2); margin-top: 3px;">
+          Configure Master SKU, barcodes, pricing, department classification, and POS fast touch tiles.
+        </p>
       </div>
 
-      <div style="display:flex; gap:10px;">
-        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" (click)="goBack()" class="btn btn-secondary" style="height: 34px; padding: 0 14px;" [disabled]="isSaving()">
           Cancel
         </button>
-        <button (click)="saveProduct()" class="btn btn-primary" [disabled]="isSaving()" style="min-width: 150px;">
+        <button type="button" (click)="saveProduct()" class="btn btn-primary" style="height: 34px; padding: 0 16px; min-width: 140px; justify-content: center;" [disabled]="isSaving()">
           @if (isSaving()) {
-            <span style="display:flex; align-items:center; gap:8px; justify-content:center;">
-              <span class="spinner-sm"></span>
-              Saving...
-            </span>
+            <span>Saving...</span>
           } @else {
-            {{ isEditMode() ? 'Save Changes' : 'Create Product' }}
+            <span>{{ isEditMode() ? 'Save Changes' : 'Publish Product' }}</span>
           }
         </button>
       </div>
@@ -39,142 +37,71 @@
 
   <!-- Loading State -->
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
-      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading product details...</div>
+    <div class="card" style="padding: 60px; text-align: center;">
+      <div class="spinner" style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+      <span style="font-size: 13px; color: var(--text3);">Loading product specifications...</span>
     </div>
   } @else {
     <!-- Error Banner -->
     @if (errorMessage()) {
-      <div style="margin-bottom:20px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1.5px solid rgba(255,60,60,0.3); border-radius:12px; display:flex; align-items:flex-start; gap:12px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Blocked</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
-        </div>
-        <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
+      <div style="padding: 12px 16px; border-radius: 10px; background: var(--red-d); color: var(--red); font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+        <span>{{ errorMessage() }}</span>
+        <button type="button" (click)="errorMessage.set(null)" style="background: none; border: none; color: var(--red); cursor: pointer; font-size: 14px;">✕</button>
       </div>
     }
 
-    <div style="display:grid; gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
       <!-- Card 1: Core Identification -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🏷️ Basic Information
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            1. Basic Identification & Classification
+          </span>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text);">
+            <input type="checkbox" [(ngModel)]="product().isActive" style="width: 16px; height: 16px; accent-color: var(--accent);" />
+            <span>Active for Sale</span>
+          </label>
         </div>
 
-        <div style="display:grid; gap: 16px;">
-          <div>
-            <label class="label">Product Name <span style="color:var(--red);">*</span></label>
-            <input class="inp" [(ngModel)]="product().name" placeholder="e.g. Coca-Cola 50cl">
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <label class="label">Master SKU <span style="color:var(--red);">*</span></label>
-              <input class="inp mono" [(ngModel)]="product().masterSku" placeholder="e.g. SKU-BEV-001">
-            </div>
-            <div>
-              <label class="label">Brand</label>
-              <input class="inp" [(ngModel)]="product().brand" placeholder="e.g. Coca-Cola Company">
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <label class="label">Category</label>
-              <select class="inp" [(ngModel)]="product().categoryId">
-                <option value="">Select a Category...</option>
-                @for (c of categories(); track c.id) {
-                  <option [value]="c.id">{{ c.name }}</option>
-                }
-              </select>
-            </div>
-            <div style="display:flex; align-items:center; gap: 12px; padding-top: 24px;">
-              <input type="checkbox" id="prodActive" [(ngModel)]="product().isActive" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
-              <label for="prodActive" style="font-size: 13px; font-weight: 700; cursor:pointer;">Active for Sale</label>
-            </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div style="grid-column: span 2;">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Product Title / Name <span style="color: var(--red);">*</span>
+            </label>
+            <input type="text" [(ngModel)]="product().name" placeholder="e.g. Signature Oat Cold Brew 500ml" class="inp" />
           </div>
 
           <div>
-            <label class="label">Description</label>
-            <textarea class="inp" [(ngModel)]="product().description" style="height:70px; resize:vertical;" placeholder="Optional product description or ingredients..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 2: Barcodes Management -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          ║▌ Barcodes & Scanning
-        </div>
-
-        <div>
-          <label class="label">Add Barcodes (Multiple Supported)</label>
-          <div style="display:flex; gap: 8px; margin-bottom: 12px; max-width: 500px;">
-            <input class="inp mono" #bcInp placeholder="Scan or enter barcode" (keyup.enter)="addBarcode(bcInp.value); bcInp.value = ''">
-            <button class="btn btn-secondary" (click)="addBarcode(bcInp.value); bcInp.value = ''" style="padding: 0 16px;">
-              Add
-            </button>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Master SKU Identifier <span style="color: var(--red);">*</span>
+            </label>
+            <input type="text" [(ngModel)]="product().masterSku" placeholder="e.g. SKU-BEV-001" class="inp mono" />
           </div>
 
-          <div style="display:flex; flex-wrap:wrap; gap: 8px;">
-            @for (bc of product().barcodes; track bc) {
-              <div class="badge badge-dim" style="display:flex; align-items:center; gap:8px; padding: 6px 12px; font-size: 12px;">
-                <span class="mono">{{ bc }}</span>
-                <span (click)="removeBarcode(bc)" style="cursor:pointer; font-weight:800; color:var(--red); font-size:14px;" title="Remove barcode">&times;</span>
-              </div>
-            }
-            @if (!product().barcodes || product().barcodes.length === 0) {
-              <div style="font-size: 12px; color: var(--text3);">No barcodes registered yet. Barcodes allow instant cashier scanning at checkout.</div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3: Pricing & Tax Configuration -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          💰 Pricing & Tax Profile
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px;">
           <div>
-            <label class="label">Cost Price (₦)</label>
-            <input type="number" class="inp mono" [(ngModel)]="product().costPrice" placeholder="0.00">
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Purchase / acquisition cost per unit.</div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Brand / Manufacturer
+            </label>
+            <input type="text" [(ngModel)]="product().brand" placeholder="e.g. RetailOS or Vendor Brand" class="inp" />
           </div>
-          <div>
-            <label class="label">Selling Price (₦) <span style="color:var(--red);">*</span></label>
-            <input type="number" class="inp mono" [(ngModel)]="product().sellingPrice" placeholder="0.00" style="font-size:16px; font-weight:700;">
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">Base shelf price per single unit.</div>
-          </div>
-        </div>
 
-        <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 16px;">
           <div>
-            <label class="label">Tax Category</label>
-            <select class="inp" [(ngModel)]="product().taxCategory" (change)="onTaxCategoryChange()">
-              <option value="STANDARD">Standard Rate (VAT)</option>
-              <option value="ZERO">Zero-Rated (0%)</option>
-              <option value="EXEMPT">Exempt (0%)</option>
-              <option value="REDUCED">Reduced Rate</option>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Product Category
+            </label>
+            <select [(ngModel)]="product().categoryId" class="inp">
+              <option value="">Select Category...</option>
+              @for (c of categories(); track c.id) {
+                <option [value]="c.id">{{ c.name }}</option>
+              }
             </select>
           </div>
-          <div>
-            <label class="label">Tax Rate (%)</label>
-            <input type="number" class="inp mono" [(ngModel)]="product().taxRate" placeholder="7.5">
-          </div>
-        </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
           <div>
-            <label class="label">Weight (grams)</label>
-            <input type="number" class="inp" [(ngModel)]="product().weightGrams" placeholder="e.g. 500">
-          </div>
-          <div>
-            <label class="label">Unit of Measure (UOM)</label>
-            <select class="inp" [(ngModel)]="product().unitOfMeasure">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Unit of Measure (UOM)
+            </label>
+            <select [(ngModel)]="product().unitOfMeasure" class="inp">
               <option value="Each">Each (Item)</option>
               <option value="Kg">Kilograms (kg)</option>
               <option value="G">Grams (g)</option>
@@ -183,74 +110,250 @@
               <option value="Pack">Pack</option>
             </select>
           </div>
+
+          <div style="grid-column: span 2;">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Description & Ingredients
+            </label>
+            <textarea [(ngModel)]="product().description" rows="2" placeholder="Optional product description, handling instructions or notes..." class="inp" style="resize: vertical;"></textarea>
+          </div>
         </div>
       </div>
 
-      <!-- Card 4: Packaging Ratios & Bulk Configuration -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          📦 Bulk Packaging & Roll/Pack Ratios
+      <!-- Card 2: Barcodes & Scanning -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            2. Barcodes & Cashier Quick-Scanning
+          </span>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
-          <div>
-            <label class="label">Singles per Roll</label>
-            <input type="number" class="inp" [(ngModel)]="product().singlesPerRoll" placeholder="e.g. 12">
-            <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">Singles that make 1 Roll</div>
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+            Attach Barcode / UPC (Supports Multiple Codes)
+          </label>
+          <div style="display: flex; gap: 8px; max-width: 480px; margin-bottom: 12px;">
+            <input #bcInp placeholder="Scan or type barcode, then press Enter" class="inp mono" (keyup.enter)="addBarcode(bcInp.value); bcInp.value = ''" />
+            <button type="button" (click)="addBarcode(bcInp.value); bcInp.value = ''" class="btn btn-secondary" style="height: 34px; padding: 0 14px;">
+              Add
+            </button>
           </div>
-          <div>
-            <label class="label">Rolls per Pack</label>
-            <input type="number" class="inp" [(ngModel)]="product().rollsPerPack" placeholder="e.g. 6">
-            <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">Rolls that make 1 Pack</div>
-          </div>
-          <div>
-            <label class="label">Singles per Pack</label>
-            <input type="number" class="inp" [(ngModel)]="product().singlesPerPack" placeholder="e.g. 72">
-            <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">Total singles in full pack</div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            @for (bc of product().barcodes; track bc) {
+              <div class="badge badge-dim" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px;">
+                <svg style="width: 12px; height: 12px; color: var(--text3);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                </svg>
+                <span class="mono" style="font-weight: 700;">{{ bc }}</span>
+                <span (click)="removeBarcode(bc)" style="cursor: pointer; color: var(--red); font-weight: 800; font-size: 14px; margin-left: 2px;" title="Remove">&times;</span>
+              </div>
+            }
+            @if (!product().barcodes || product().barcodes.length === 0) {
+              <span style="font-size: 11.5px; color: var(--text3);">No barcodes attached. Cashiers can still search by name or SKU at checkout.</span>
+            }
           </div>
         </div>
+      </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+      <!-- Card 3: Pricing & Economics -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            3. Pricing & Gross Margin Economics
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           <div>
-            <label class="label">Roll Price (₦)</label>
-            <input type="number" class="inp mono" [(ngModel)]="product().rollPrice" placeholder="0.00">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Regular Selling Price (₦) <span style="color: var(--red);">*</span>
+            </label>
+            <input type="number" [(ngModel)]="product().sellingPrice" placeholder="0.00" class="inp mono" style="font-size: 15px; font-weight: 700;" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Standard frontline shelf price per unit.</span>
           </div>
+
           <div>
-            <label class="label">Pack Price (₦)</label>
-            <input type="number" class="inp mono" [(ngModel)]="product().packPrice" placeholder="0.00">
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Unit Cost Basis (₦)
+            </label>
+            <input type="number" [(ngModel)]="product().costPrice" placeholder="0.00" class="inp mono" style="font-size: 15px; font-weight: 700;" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Wholesale or acquisition cost per unit.</span>
+          </div>
+
+          <!-- Margin Preview Card -->
+          <div style="grid-column: span 2; background: var(--surface2); padding: 12px 16px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 700; color: var(--green);">
+                Projected Profit Margin:
+              </span>
+              <span class="mono" style="font-size: 13px; font-weight: 800; color: var(--green);">
+                {{ calculateMargin().percent | number:'1.1-1' }}%
+              </span>
+            </div>
+            <div class="mono" style="font-size: 12px; font-weight: 700; color: var(--text);">
+              Profit: ₦{{ calculateMargin().profit | number:'1.2-2' }} / unit
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Tax Classification
+            </label>
+            <select [(ngModel)]="product().taxCategory" (change)="onTaxCategoryChange()" class="inp">
+              <option value="STANDARD">Standard Rate (7.5% VAT)</option>
+              <option value="ZERO">Zero-Rated (0%)</option>
+              <option value="EXEMPT">Tax Exempt (0%)</option>
+              <option value="REDUCED">Reduced Rate</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Tax Rate (%)
+            </label>
+            <input type="number" [(ngModel)]="product().taxRate" class="inp mono" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: POS Frontline Fast-Grid & KDS Station Routing -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            4. Frontline POS Fast-Grid & Station Routing
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Assigned Quick Touch Key
+            </label>
+            <select [(ngModel)]="product().fastGridTile" class="inp mono" style="font-weight: 700;">
+              <option value="Disabled">Disabled (Search & Scan Only)</option>
+              <option value="Tile #01">Tile #01 (Top-Left Quick Key)</option>
+              <option value="Tile #02">Tile #02</option>
+              <option value="Tile #03">Tile #03</option>
+              <option value="Tile #04">Tile #04</option>
+              <option value="Tile #05">Tile #05</option>
+              <option value="Tile #08">Tile #08</option>
+              <option value="Tile #11">Tile #11</option>
+            </select>
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Assign top-selling items to fast-grid tiles for single-tap cashier checkout.</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Kitchen / Bar Routing Station (KDS)
+            </label>
+            <select [(ngModel)]="product().kdsStation" class="inp">
+              <option value="Front Counter">Front Counter (Default)</option>
+              <option value="Barista KDS 1">Barista KDS 1 (Espresso & Craft Bar)</option>
+              <option value="Hot Line KDS 2">Hot Line KDS 2 (Kitchen & Grill)</option>
+              <option value="Bakery Dispatch">Bakery Dispatch (Viennoiserie Counter)</option>
+            </select>
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Direct ticket printing or kitchen display routing upon payment confirmation.</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Item Weight (Grams)
+            </label>
+            <input type="number" [(ngModel)]="product().weightGrams" placeholder="e.g. 500" class="inp mono" />
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 10px; padding-top: 22px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text);">
+              <input type="checkbox" [(ngModel)]="product().allowBackorders" style="width: 16px; height: 16px; accent-color: var(--accent);" />
+              <span>Allow Backorders on Terminal (Sell past zero stock)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Inventory Logic & Automated Reordering -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            5. Inventory Logic & Reorder Thresholds
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Low Stock Alert Threshold
+            </label>
+            <input type="number" [(ngModel)]="product().lowStockThreshold" placeholder="10" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Triggers amber warning badges in portal when stock falls below this level.</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Automated Reorder Quantity
+            </label>
+            <input type="number" [(ngModel)]="product().reorderQuantity" placeholder="50" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Default units suggested when generating purchase orders or requisitions.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6: Packaging & Bulk Ratios -->
+      <div class="card" style="padding: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em;">
+            6. Bulk Packaging & Roll / Pack Ratios
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Singles per Roll
+            </label>
+            <input type="number" [(ngModel)]="product().singlesPerRoll" placeholder="e.g. 12" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Singles that make 1 Roll</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Rolls per Pack
+            </label>
+            <input type="number" [(ngModel)]="product().rollsPerPack" placeholder="e.g. 6" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Rolls that make 1 Pack</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Singles per Full Pack
+            </label>
+            <input type="number" [(ngModel)]="product().singlesPerPack" placeholder="e.g. 72" class="inp mono" />
+            <span style="font-size: 10px; color: var(--text3); display: block; margin-top: 4px;">Total singles in full case</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Roll Price (₦)
+            </label>
+            <input type="number" [(ngModel)]="product().rollPrice" placeholder="0.00" class="inp mono" />
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text3); margin-bottom: 6px;">
+              Full Pack Price (₦)
+            </label>
+            <input type="number" [(ngModel)]="product().packPrice" placeholder="0.00" class="inp mono" />
           </div>
         </div>
 
         @if (product().singlesPerRoll && product().rollsPerPack) {
-          <div style="margin-top: 16px; padding: 12px; background: var(--surface2); border-radius: 10px; border: 1px solid var(--border); font-size: 12px; color: var(--text2);">
-            📐 <strong>Calculated Ratio:</strong> 1 Pack = {{ product().singlesPerRoll * product().rollsPerPack }} Singles ({{ product().rollsPerPack }} Rolls × {{ product().singlesPerRoll }} Units)
+          <div style="margin-top: 14px; padding: 10px 14px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); font-size: 12px; color: var(--text2);">
+            📐 <strong>Packaging Ratio:</strong> 1 Full Pack = {{ product().singlesPerRoll * product().rollsPerPack }} Singles ({{ product().rollsPerPack }} Rolls × {{ product().singlesPerRoll }} Units)
           </div>
         }
       </div>
     </div>
   }
-</div>
 
-<style>
-  .label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    display: block;
-    margin-bottom: 6px;
-  }
-  .spinner-sm {
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: inline-block;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-</style>
+</div>

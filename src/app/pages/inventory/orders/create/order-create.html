@@ -1,254 +1,328 @@
-<div class="page-container" style="padding: 24px; max-width: 1200px; margin: 0 auto;">
+<div class="fade-up" style="padding: 16px 20px; max-width: 1200px; margin: 0 auto;">
   <!-- Header / Breadcrumb -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 6px;">
-      <a (click)="goBack()" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Movement Orders
+  <div style="margin-bottom: 18px;">
+    <div style="display:flex; align-items:center; gap: 6px; font-size: 11.5px; color: var(--text3); margin-bottom: 6px;">
+      <a (click)="goBack()" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:5px; font-weight:600;">
+        <svg style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span>Movement Orders</span>
       </a>
-      <span>/</span>
-      <span>New Movement Order</span>
+      <span style="color:var(--border2);">/</span>
+      <span style="color:var(--text1); font-weight:600;">New Movement Order</span>
     </div>
-    <div style="display:flex; align-items:center; justify-content:space-between;">
+
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1);">
+        <h1 style="font-size: 19px; font-weight: 700; margin: 0; color: var(--text1); letter-spacing:-0.02em;">
           Create Movement Order
         </h1>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Dispatch stock from Headquarters or transfer inventory between store locations.
+        <div style="font-size: 11.5px; color: var(--text3); margin-top: 3px;">
+          Dispatch stock from Headquarters warehouse or transfer inventory directly between retail branches.
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
-        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSubmitting()">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSubmitting()" style="height:32px; padding:0 14px; font-size:11.5px;">
           Cancel
         </button>
-        <button (click)="submitOrder()" class="btn btn-primary" [disabled]="isSubmitting()" style="min-width: 170px;">
-          {{ isSubmitting() ? 'Creating...' : 'Create Movement Order' }}
+        <button (click)="submitOrder()" class="btn btn-primary" [disabled]="isSubmitting()" style="height:32px; padding:0 18px; font-size:11.5px; font-weight:650; min-width: 150px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+          <svg *ngIf="!isSubmitting()" style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>{{ isSubmitting() ? 'Creating Order...' : 'Create Movement Order' }}</span>
         </button>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading()" style="text-align:center; padding: 60px 0;">
+  <div *ngIf="isLoading()" style="text-align:center; padding: 70px 0;">
     <div class="spinner" style="margin: 0 auto 16px;"></div>
-    <div style="color: var(--text3); font-size: 14px;">Loading store locations & product catalog...</div>
+    <div style="color: var(--text3); font-size: 13px;">Loading store locations & product catalog...</div>
   </div>
 
-  <div *ngIf="!isLoading()" style="display:flex; flex-direction:column; gap:24px;">
-    <!-- 1. Transfer Route & Type Card -->
-    <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-      <div style="font-size: 16px; font-weight: 800; color: var(--text1); margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
-        <span>🚚</span> Transfer Route & Logistics
+  <div *ngIf="!isLoading()" style="display:flex; flex-direction:column; gap:16px;">
+    <!-- 1. Transfer Route & Logistics Card -->
+    <div class="card" style="padding: 16px 18px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border);">
+      <div style="font-size: 13.5px; font-weight: 700; color: var(--text1); margin-bottom: 14px; display:flex; align-items:center; gap:8px;">
+        <div style="width:24px; height:24px; border-radius:6px; background:rgba(59,130,246,0.12); display:flex; align-items:center; justify-content:center; color:var(--accent);">
+          <svg style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+        </div>
+        <span>Transfer Route & Logistics</span>
       </div>
 
-      <!-- Transfer Type Cards -->
-      <div style="margin-bottom: 20px;">
-        <label class="label" style="margin-bottom: 8px;">Transfer Direction</label>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+      <!-- Transfer Direction Cards -->
+      <div style="margin-bottom: 16px;">
+        <label class="label" style="margin-bottom: 6px; font-size:10px; text-transform:uppercase; font-weight:600;">Transfer Direction</label>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+          <!-- HQ to Store -->
           <div (click)="setTransferType(0)" 
                [style.borderColor]="transferType === 0 ? 'var(--accent)' : 'var(--border)'"
-               [style.background]="transferType === 0 ? 'var(--accent-d)' : 'var(--surface2)'"
-               style="padding:16px; border-radius:12px; border:2px solid; cursor:pointer; display:flex; align-items:center; gap:14px; transition:all .2s ease;">
-            <span style="font-size:26px;">🏢</span>
+               [style.background]="transferType === 0 ? 'rgba(59,130,246,0.06)' : 'var(--surface2)'"
+               style="padding:12px 14px; border-radius:9px; border:2px solid; cursor:pointer; display:flex; align-items:center; gap:10px; transition:all .2s ease;">
+            <div style="width:30px; height:30px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--accent); border:1px solid var(--border);">
+              <svg style="width:15px; height:15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
             <div>
-              <div style="font-size:14px; font-weight:800; color:var(--text1);">HQ to Store</div>
-              <div style="font-size:11px; color:var(--text3); margin-top:2px;">Dispatch central warehouse inventory to a branch outlet</div>
+              <div style="font-size:12px; font-weight:700; color:var(--text1);">Central HQ to Store Outlet</div>
+              <div style="font-size:10px; color:var(--text3); margin-top:2px;">Dispatch central warehouse inventory to replenish a branch store</div>
             </div>
           </div>
 
+          <!-- Store to Store -->
           <div (click)="setTransferType(1)" 
                [style.borderColor]="transferType === 1 ? 'var(--accent)' : 'var(--border)'"
-               [style.background]="transferType === 1 ? 'var(--accent-d)' : 'var(--surface2)'"
-               style="padding:16px; border-radius:12px; border:2px solid; cursor:pointer; display:flex; align-items:center; gap:14px; transition:all .2s ease;">
-            <span style="font-size:26px;">🔄</span>
+               [style.background]="transferType === 1 ? 'rgba(59,130,246,0.06)' : 'var(--surface2)'"
+               style="padding:12px 14px; border-radius:9px; border:2px solid; cursor:pointer; display:flex; align-items:center; gap:10px; transition:all .2s ease;">
+            <div style="width:30px; height:30px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--amber); border:1px solid var(--border);">
+              <svg style="width:15px; height:15px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="17 1 21 5 17 9"></polyline>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <polyline points="7 23 3 19 7 15"></polyline>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+            </div>
             <div>
-              <div style="font-size:14px; font-weight:800; color:var(--text1);">Store to Store</div>
-              <div style="font-size:11px; color:var(--text3); margin-top:2px;">Transfer stock directly between two retail locations</div>
+              <div style="font-size:12px; font-weight:700; color:var(--text1);">Inter-Store Branch Transfer</div>
+              <div style="font-size:10px; color:var(--text3); margin-top:2px;">Transfer inventory directly between two retail store branches</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Route Selector -->
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom: 20px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom: 14px;">
         <!-- Origin Store -->
         <div>
-          <label class="label" style="margin-bottom: 6px;">Origin / Source Location <span style="color:var(--red);">*</span></label>
-          <div *ngIf="transferType === 0" class="inp" style="background:var(--surface2); display:flex; align-items:center; color:var(--text1); font-weight:700;">
-            🏢 Headquarters (HQ)
+          <label class="label" style="margin-bottom: 5px; font-size:10px; text-transform:uppercase; font-weight:600;">
+            Origin / Source Location <span style="color:var(--red);">*</span>
+          </label>
+          <div *ngIf="transferType === 0" class="inp" style="background:var(--surface2); display:flex; align-items:center; gap:8px; color:var(--text1); font-weight:600; height:32px; font-size:11.5px;">
+            <svg style="width:13px; height:13px; color:var(--accent);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Headquarters Central Warehouse (HQ)</span>
           </div>
-          <select *ngIf="transferType === 1" [(ngModel)]="sourceStoreId" class="inp">
-            <option [ngValue]="null" disabled>Select Origin Store...</option>
+          <select *ngIf="transferType === 1" [(ngModel)]="sourceStoreId" class="inp" style="height:32px; font-size:11.5px; font-weight:600;">
+            <option [ngValue]="null" disabled>Select Origin Store Location...</option>
             <option *ngFor="let s of stores()" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
           </select>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
+          <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">
             The store location dispatching the goods.
           </div>
         </div>
 
         <!-- Destination Store -->
         <div>
-          <label class="label" style="margin-bottom: 6px;">Destination Store <span style="color:var(--red);">*</span></label>
-          <select [(ngModel)]="destinationStoreId" class="inp">
-            <option value="" disabled>Select Destination Store...</option>
+          <label class="label" style="margin-bottom: 5px; font-size:10px; text-transform:uppercase; font-weight:600;">
+            Destination Store <span style="color:var(--red);">*</span>
+          </label>
+          <select [(ngModel)]="destinationStoreId" class="inp" style="height:32px; font-size:11.5px; font-weight:600;">
+            <option value="" disabled>Select Receiving Store Location...</option>
             <option *ngFor="let s of stores()" [value]="s.id" [disabled]="transferType === 1 && s.id === sourceStoreId">
               {{ s.name }} ({{ s.code }})
             </option>
           </select>
-          <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-            The receiving branch that will count and approve the shipment.
+          <div style="font-size: 10px; color: var(--text3); margin-top: 4px;">
+            The receiving branch that will physically count and approve the shipment.
           </div>
         </div>
       </div>
 
       <!-- Logistics, Driver & Carrier Details -->
-      <div style="margin-top: 20px; padding-top: 20px; border-top: 1px dashed var(--border);">
-        <div style="font-size: 13px; font-weight: 800; color: var(--text1); margin-bottom: 12px; display:flex; align-items:center; gap:6px;">
-          <span>🚛</span> Carrier & Transport Details (Optional)
+      <div style="margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--border);">
+        <div style="font-size: 11.5px; font-weight: 700; color: var(--text1); margin-bottom: 10px; display:flex; align-items:center; gap:6px;">
+          <svg style="width:13px; height:13px; color:var(--text3);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+            <path d="M2 12h20"></path>
+          </svg>
+          <span>Carrier & Transport Logistics (Optional)</span>
         </div>
         
-        <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1.2fr; gap:16px; margin-bottom: 16px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom: 12px;">
           <div>
-            <label class="label" style="margin-bottom: 6px;">Driver / Courier Name</label>
-            <input type="text" class="inp" [(ngModel)]="driverName" placeholder="e.g. Michael Smith">
+            <label class="label" style="margin-bottom: 4px; font-size:9.5px; text-transform:uppercase; font-weight:600;">Driver / Courier Name</label>
+            <input type="text" class="inp" [(ngModel)]="driverName" placeholder="e.g. Samuel Adebayo" style="height:30px; font-size:11px;">
           </div>
           <div>
-            <label class="label" style="margin-bottom: 6px;">Driver Phone Number</label>
-            <input type="tel" class="inp" [(ngModel)]="driverPhone" placeholder="e.g. +1 (555) 234-5678">
+            <label class="label" style="margin-bottom: 4px; font-size:9.5px; text-transform:uppercase; font-weight:600;">Driver Contact Phone</label>
+            <input type="tel" class="inp" [(ngModel)]="driverPhone" placeholder="e.g. +234 803 123 4567" style="height:30px; font-size:11px;">
           </div>
           <div>
-            <label class="label" style="margin-bottom: 6px;">Vehicle Plate Number</label>
-            <input type="text" class="inp" [(ngModel)]="vehiclePlateNumber" placeholder="e.g. ABC-7890" style="text-transform:uppercase;">
+            <label class="label" style="margin-bottom: 4px; font-size:9.5px; text-transform:uppercase; font-weight:600;">Vehicle Registration Plate</label>
+            <input type="text" class="inp" [(ngModel)]="vehiclePlateNumber" placeholder="e.g. KJA-492-XA" style="text-transform:uppercase; height:30px; font-size:11px; font-family:monospace;">
           </div>
           <div>
-            <label class="label" style="margin-bottom: 6px;">Estimated Delivery Time (ETA)</label>
-            <input type="datetime-local" class="inp" [(ngModel)]="estimatedDeliveryTime">
+            <label class="label" style="margin-bottom: 4px; font-size:9.5px; text-transform:uppercase; font-weight:600;">Estimated Delivery Time (ETA)</label>
+            <input type="datetime-local" class="inp" [(ngModel)]="estimatedDeliveryTime" style="height:30px; font-size:11px;">
           </div>
         </div>
 
         <div>
-          <label class="label" style="margin-bottom: 6px;">Dispatch Notes & Handling Instructions</label>
-          <input type="text" class="inp" [(ngModel)]="notes" placeholder="e.g. Fragile items in box 3, gate code 4492, call driver on arrival...">
+          <label class="label" style="margin-bottom: 4px; font-size:9.5px; text-transform:uppercase; font-weight:600;">Dispatch Notes & Shipping Instructions</label>
+          <input type="text" class="inp" [(ngModel)]="notes" placeholder="e.g. Handle with care, fragile cartons, gate security instructions..." style="height:30px; font-size:11px;">
         </div>
       </div>
     </div>
 
     <!-- 2. Transfer Items Card -->
-    <div class="card" style="border-radius: 16px; background: var(--surface); border: 1px solid var(--border); overflow: hidden;">
-      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+    <div class="card" style="border-radius: 10px; background: var(--surface); border: 1px solid var(--border); overflow: hidden;">
+      <div style="padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background:var(--surface);">
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: var(--text1); display:flex; align-items:center; gap:8px;">
-            <span>📦</span> Transfer Items List
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text1); display:flex; align-items:center; gap:8px;">
+            <div style="width:24px; height:24px; border-radius:6px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center; color:var(--green);">
+              <svg style="width:13px; height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+            </div>
+            <span>Transfer Line Items</span>
           </div>
-          <div style="font-size: 12px; color: var(--text3); margin-top: 2px;">
-            Select items to include in this shipment and configure pack/roll quantities.
+          <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
+            Select items to include in this shipment and configure pack, roll, and single quantities with lot tracking.
           </div>
         </div>
 
-        <button (click)="addItem()" class="btn btn-secondary btn-sm" style="display:flex; align-items:center; gap:6px; color:var(--accent); font-weight:700;">
-          <span>+</span> Add Line Item
+        <button (click)="addItem()" class="btn btn-secondary btn-sm" style="display:inline-flex; align-items:center; gap:5px; color:var(--accent); font-weight:650; height:28px; padding:0 10px; font-size:11px;">
+          <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Line Item</span>
         </button>
       </div>
 
       <div style="overflow-x: auto;">
-        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+        <table class="tbl" style="width: 100%; border-collapse: collapse;">
           <thead>
-            <tr style="background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px;">
-              <th style="padding: 14px 20px; width: 40px; text-align: center;">#</th>
-              <th style="padding: 14px 16px; text-align: left; min-width: 320px;">Product / Variant</th>
-              <th style="padding: 14px 16px; text-align: left; width: 140px;">Packaging</th>
-              <th style="padding: 14px 16px; text-align: left; min-width: 260px;">Quantity</th>
-              <th style="padding: 14px 16px; text-align: right; width: 140px;">Total Base Units</th>
-              <th style="padding: 14px 20px; width: 60px; text-align: center;">Action</th>
+            <tr style="background: var(--surface2); border-bottom: 1px solid var(--border); font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em;">
+              <th style="padding: 10px 14px; width: 40px; text-align: center;">#</th>
+              <th style="padding: 10px 14px; text-align: left; min-width: 440px;">PRODUCT / VARIANT & LOT</th>
+              <th style="padding: 10px 14px; text-align: left; width: 130px;">PACKAGING SPEC</th>
+              <th style="padding: 10px 14px; text-align: left; min-width: 260px;">TRANSFER QUANTITY</th>
+              <th style="padding: 10px 14px; text-align: right; width: 140px;">TOTAL BASE UNITS</th>
+              <th style="padding: 10px 14px; width: 50px; text-align: center;">ACTION</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of items; let idx = index" style="border-bottom: 1px solid var(--border);" class="hover-row">
+            <tr *ngFor="let item of items; let idx = index" style="border-bottom: 1px solid var(--border); transition:background .15s ease;" class="hover-row">
               <!-- # -->
-              <td style="padding: 16px 20px; text-align: center; color: var(--text3); font-weight: 700;">
+              <td style="padding: 12px 14px; text-align: center; color: var(--text3); font-weight: 600; font-size:11px;">
                 {{ idx + 1 }}
               </td>
 
-              <!-- Product Selection -->
-              <td style="padding: 16px 16px;">
-                <select class="inp" [(ngModel)]="item.variantId" (ngModelChange)="onProductSelect(item, $event)" style="font-weight: 600;">
+              <!-- Product Selection & Lot Info -->
+              <td style="padding: 12px 14px;">
+                <select class="inp" [(ngModel)]="item.variantId" (ngModelChange)="onProductSelect(item, $event)" style="font-weight: 600; height:32px; font-size:11.5px;">
                   <option value="" disabled>Select product to transfer...</option>
                   <option *ngFor="let v of variants()" [value]="v.id">
                     {{ v.productName || v.name }} (SKU: {{ v.sku }})
                   </option>
                 </select>
-                <div *ngIf="item.sku" style="font-size: 11px; color: var(--text3); margin-top: 4px; display:flex; align-items:center; gap:8px;">
-                  <span>SKU: <span class="mono" style="color:var(--text1); font-weight:700;">{{ item.sku }}</span></span>
+                <div *ngIf="item.sku" style="font-size: 10.5px; color: var(--text3); margin-top: 4px; display:flex; align-items:center; gap:5px;">
+                  <span>SKU:</span>
+                  <span class="mono" style="color:var(--text1); font-weight:600;">{{ item.sku }}</span>
                 </div>
-                <div *ngIf="item.variantId" style="margin-top: 10px; padding: 10px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px;">
+
+                <!-- Batch / Lot # and Expiry Inputs -->
+                <div *ngIf="item.variantId" style="margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border);">
+                  <!-- Lot Number Header & Input -->
                   <div>
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Batch / Lot #</label>
-                    <div style="display:flex; gap:4px;">
-                      <input type="text" class="inp" [(ngModel)]="item.batchNumber" placeholder="LOT-..." style="font-size:11px; padding:4px 8px; height:30px;">
-                      <button type="button" (click)="autoGenerateBatch(item)" class="btn btn-secondary btn-xs" title="Auto-generate Batch Code" style="padding:4px 6px; height:30px;">⚡</button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                      <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text2); font-weight:700; letter-spacing:0.04em;">
+                        Batch / Lot Number
+                      </label>
+                      <button type="button" (click)="autoGenerateBatch(item)" class="btn btn-secondary" title="Auto-generate standard batch code" style="padding: 2px 7px; height: 22px; font-size: 10px; border-radius: 5px; display:inline-flex; align-items:center; gap:3px;">
+                        <span>⚡ Auto-Gen</span>
+                      </button>
                     </div>
+                    <input type="text"
+                           class="inp"
+                           [(ngModel)]="item.batchNumber"
+                           placeholder="Type batch # (e.g. LOT-2026-001)"
+                           style="width:100%; box-sizing:border-box; font-size:11.5px; padding:5px 9px; height:30px; font-family:monospace; font-weight:600; border-radius:6px; background:var(--surface);">
                   </div>
-                  <div>
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Prod Date</label>
-                    <input type="date" class="inp" [(ngModel)]="item.productionDate" style="font-size:11px; padding:4px 6px; height:30px;">
-                  </div>
-                  <div>
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Expiry Date</label>
-                    <input type="date" class="inp" [(ngModel)]="item.expiryDate" style="font-size:11px; padding:4px 6px; height:30px;">
+
+                  <!-- Manufacturing & Expiry Dates -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+                    <div>
+                      <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Mfg Date</label>
+                      <input type="date" class="inp" [(ngModel)]="item.productionDate" style="width:100%; box-sizing:border-box; font-size:11px; padding:3px 7px; height:28px; border-radius:6px; background:var(--surface);">
+                    </div>
+                    <div>
+                      <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:3px;">Expiry Date</label>
+                      <input type="date" class="inp" [(ngModel)]="item.expiryDate" style="width:100%; box-sizing:border-box; font-size:11px; padding:3px 7px; height:28px; border-radius:6px; background:var(--surface);">
+                    </div>
                   </div>
                 </div>
               </td>
 
               <!-- Packaging Spec -->
-              <td style="padding: 16px 16px; font-size: 12px; color: var(--text2);">
+              <td style="padding: 12px 14px; font-size: 11px; color: var(--text2);">
                 <ng-container *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1">
-                  <span class="badge" style="background:var(--surface2); color:var(--text1); border:1px solid var(--border); font-size:11px; padding:4px 8px; font-weight:600;">
+                  <span class="badge" style="background:var(--surface2); color:var(--accent); border:1px solid var(--border); font-size:10px; padding:2px 7px; font-weight:650;">
                     {{ item.conversionFactor }} Sgl / Pack
                   </span>
+                  <div *ngIf="item.singlesPerRoll > 1" style="font-size:9.5px; color:var(--text3); margin-top:3px;">
+                    {{ item.singlesPerRoll }} Sgl / Roll
+                  </div>
                 </ng-container>
                 <ng-container *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1">
-                  <span style="color:var(--text3);">Single Unit</span>
+                  <span style="color:var(--text3); font-size:10.5px; font-weight:500;">Single Unit Item</span>
                 </ng-container>
               </td>
 
               <!-- Quantity Input (Packs / Rolls / Singles) -->
-              <td style="padding: 16px 16px;">
-                <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:8px; align-items:center;">
-                  <div style="width: 80px;" *ngIf="item.conversionFactor > 1">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Packs</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.packs" style="text-align:center; font-weight:700;">
+              <td style="padding: 12px 14px;">
+                <div *ngIf="item.conversionFactor > 1 || item.singlesPerRoll > 1" style="display:flex; gap:6px; align-items:flex-end;">
+                  <div style="width: 70px;" *ngIf="item.conversionFactor > 1">
+                    <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:600; display:block; margin-bottom:3px;">Packs</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.packs" style="text-align:center; font-weight:700; height:30px; font-size:11.5px;">
                   </div>
 
-                  <div style="width: 70px;" *ngIf="item.singlesPerRoll > 1">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Rolls</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.rolls" style="text-align:center; font-weight:700;">
+                  <div style="width: 65px;" *ngIf="item.singlesPerRoll > 1">
+                    <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:600; display:block; margin-bottom:3px;">Rolls</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.rolls" style="text-align:center; font-weight:700; height:30px; font-size:11.5px;">
                   </div>
 
-                  <div style="width: 80px;">
-                    <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Singles</label>
-                    <input type="number" min="0" class="inp" [(ngModel)]="item.singles" style="text-align:center; font-weight:700;">
+                  <div style="width: 70px;">
+                    <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:600; display:block; margin-bottom:3px;">Singles</label>
+                    <input type="number" min="0" class="inp" [(ngModel)]="item.singles" style="text-align:center; font-weight:700; height:30px; font-size:11.5px;">
                   </div>
                 </div>
 
-                <div *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1" style="width: 120px;">
-                  <label style="font-size: 10px; text-transform:uppercase; color:var(--text3); font-weight:700; display:block; margin-bottom:2px;">Quantity</label>
-                  <input type="number" min="1" class="inp" [(ngModel)]="item.quantityOrdered" style="font-weight:700;">
+                <div *ngIf="item.conversionFactor <= 1 && item.singlesPerRoll <= 1" style="width: 100px;">
+                  <label style="font-size: 9.5px; text-transform:uppercase; color:var(--text3); font-weight:600; display:block; margin-bottom:3px;">Quantity</label>
+                  <input type="number" min="1" class="inp" [(ngModel)]="item.quantityOrdered" style="font-weight:700; height:30px; text-align:center; font-size:11.5px;">
                 </div>
               </td>
 
               <!-- Total Base Units -->
-              <td style="padding: 16px 16px; text-align: right;">
-                <div style="font-size: 16px; font-weight: 800; color: var(--accent);" class="mono">
+              <td style="padding: 12px 14px; text-align: right;">
+                <div style="font-size: 14px; font-weight: 700; color: var(--accent);" class="mono">
                   {{ calcItemTotal(item) | number }}
                 </div>
-                <div style="font-size: 10px; color: var(--text3);">Base Units</div>
+                <div style="font-size: 9.5px; color: var(--text3); text-transform:uppercase; font-weight:600;">Units</div>
               </td>
 
               <!-- Action: Remove -->
-              <td style="padding: 16px 20px; text-align: center;">
-                <button (click)="removeItem(idx)" [disabled]="items.length === 1" class="btn btn-secondary btn-xs" style="color: var(--red); border-color: transparent; padding: 6px 10px;" title="Remove item">
-                  ✕
+              <td style="padding: 12px 14px; text-align: center;">
+                <button (click)="removeItem(idx)" [disabled]="items.length === 1" class="btn btn-secondary btn-xs" style="color: var(--red); border-color: transparent; width:26px; height:26px; padding:0; display:inline-flex; align-items:center; justify-content:center;" title="Remove line item">
+                  <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
                 </button>
               </td>
             </tr>
@@ -257,26 +331,26 @@
       </div>
 
       <!-- Bottom Summary Bar -->
-      <div style="padding: 20px 24px; background: var(--surface2); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <div style="display:flex; gap: 24px;">
+      <div style="padding: 12px 18px; background: var(--surface2); border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; gap: 20px; align-items:center;">
           <div>
-            <span style="font-size: 12px; color: var(--text3); font-weight: 600;">Total Line Items:</span>
-            <span style="font-size: 14px; font-weight: 800; color: var(--text1); margin-left: 6px;">{{ items.length }}</span>
+            <span style="font-size: 10px; color: var(--text3); font-weight: 600; text-transform:uppercase;">Line Items:</span>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text1); margin-left: 5px;">{{ items.length }}</span>
           </div>
           <div>
-            <span style="font-size: 12px; color: var(--text3); font-weight: 600;">Total Units to Dispatch:</span>
-            <span style="font-size: 15px; font-weight: 800; color: var(--accent); margin-left: 6px;" class="mono">
+            <span style="font-size: 10px; color: var(--text3); font-weight: 600; text-transform:uppercase;">Total Units to Dispatch:</span>
+            <span style="font-size: 14px; font-weight: 700; color: var(--accent); margin-left: 5px;" class="mono">
               {{ getTotalUnits() | number }}
             </span>
           </div>
         </div>
 
-        <div style="display:flex; gap: 10px;">
-          <button (click)="addItem()" class="btn btn-secondary btn-sm" style="color:var(--accent);">
+        <div style="display:flex; gap: 8px; align-items:center;">
+          <button (click)="addItem()" class="btn btn-secondary btn-sm" style="color:var(--accent); font-weight:650; height:30px; padding:0 12px; font-size:11px;">
             + Add Another Item
           </button>
-          <button (click)="submitOrder()" class="btn btn-primary btn-sm" [disabled]="isSubmitting()" style="min-width: 160px;">
-            {{ isSubmitting() ? 'Creating...' : 'Create Movement Order' }}
+          <button (click)="submitOrder()" class="btn btn-primary btn-sm" [disabled]="isSubmitting()" style="min-width: 140px; font-weight:650; height:30px; padding:0 16px; font-size:11px;">
+            {{ isSubmitting() ? 'Creating Order...' : 'Create Movement Order' }}
           </button>
         </div>
       </div>

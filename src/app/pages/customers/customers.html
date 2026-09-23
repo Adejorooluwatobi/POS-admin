@@ -1,79 +1,223 @@
-<div class="fade-up">
-  <!-- Header with Action -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div class="fade-up" style="display:flex;flex-direction:column;gap:20px;">
+  <!-- Header with Actions -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
     <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Customers</div>
-      <div style="font-size:12px;color:var(--text3);">Manage your loyalty programs and customer relationships</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-.02em;margin:0;color:var(--text1);">Customer Directory & CRM</h1>
+        <span class="badge badge-accent" style="font-size:11px;font-weight:700;">Retail CRM</span>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-top:4px;">Manage omnichannel retail profiles, loyalty reward balances, and cardholders</div>
     </div>
     @if (isOwner()) {
-      <a routerLink="/app/customers/new" class="btn btn-primary" style="padding:10px 16px;font-size:13px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;">
-        <span style="font-size:18px;margin-right:6px;">+</span> New Customer
-      </a>
+      <div style="display:flex;gap:10px;">
+        <a routerLink="/app/customers/new" class="btn btn-primary" style="padding:10px 18px;font-size:13px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:15px;height:15px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Register Customer
+        </a>
+      </div>
     }
   </div>
 
+  <!-- Bento Stats Row -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Total Customers</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:var(--text1);" class="mono">{{ totalCustomers().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Omnichannel customer base</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Loyalty Members</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:var(--accent);" class="mono">{{ activeMembers().toLocaleString() }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Enrolled reward accounts</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Reward Points</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;color:#10b981;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:#10b981;" class="mono">{{ totalPoints().toLocaleString() }} pts</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Total circulating reward points</div>
+    </div>
+
+    <div class="card" style="padding:18px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Cumulative Spend</span>
+        <div style="width:28px;height:28px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:#f59e0b;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        </div>
+      </div>
+      <div style="font-size:24px;font-weight:900;color:#f59e0b;" class="mono">₦{{ totalSpend().toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Lifetime tracked retail sales</div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Control Bar -->
+  <div class="card" style="padding:14px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <!-- Search Bar -->
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:280px;background:var(--surface2);padding:8px 14px;border-radius:10px;border:1px solid var(--border);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;color:var(--text3);flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input 
+        type="text" 
+        [ngModel]="searchQuery()" 
+        (ngModelChange)="searchQuery.set($event)" 
+        placeholder="Search by customer name, phone, email, or loyalty card #..." 
+        style="background:none;border:none;outline:none;font-size:13px;color:var(--text1);width:100%;font-family:inherit;">
+      @if (searchQuery()) {
+        <button (click)="searchQuery.set('')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:0;">✕</button>
+      }
+    </div>
+
+    <!-- Filter Pills -->
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+      <button 
+        (click)="setStatusFilter('ALL')" 
+        [class.btn-primary]="statusFilter() === 'ALL'" 
+        [class.btn-secondary]="statusFilter() !== 'ALL'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        All ({{ totalCustomers() }})
+      </button>
+      <button 
+        (click)="setStatusFilter('ACTIVE')" 
+        [class.btn-primary]="statusFilter() === 'ACTIVE'" 
+        [class.btn-secondary]="statusFilter() !== 'ACTIVE'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Active
+      </button>
+      <button 
+        (click)="setStatusFilter('LOYALTY')" 
+        [class.btn-primary]="statusFilter() === 'LOYALTY'" 
+        [class.btn-secondary]="statusFilter() !== 'LOYALTY'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Loyalty ({{ activeMembers() }})
+      </button>
+      <button 
+        (click)="setStatusFilter('INACTIVE')" 
+        [class.btn-primary]="statusFilter() === 'INACTIVE'" 
+        [class.btn-secondary]="statusFilter() !== 'INACTIVE'" 
+        class="btn btn-xs" 
+        style="font-size:11px;padding:6px 12px;border-radius:8px;">
+        Inactive
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading customers...</span>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;color:var(--text3);">
+      <div class="spinner" style="width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
+      <div style="font-size:13px;font-weight:600;">Loading customer registry...</div>
     </div>
   } @else {
-    <div class="card">
+    <!-- Customers Table Card -->
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table class="tbl">
+        <table class="tbl" style="width:100%;border-collapse:collapse;">
           <thead>
             <tr>
-              <th>CUSTOMER</th>
-              <th>LOYALTY #</th>
-              <th>TIER</th>
-              <th style="text-align:right;">POINTS</th>
-              <th style="text-align:right;">TOTAL SPEND</th>
-              <th style="text-align:right;">LAST VISIT</th>
-              <th style="text-align:right;">ACTIONS</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Customer Profile</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Loyalty Card</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Tier</th>
+              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Points</th>
+              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Lifetime Spend</th>
+              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Registered Store</th>
+              <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Status</th>
+              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            @for (c of customers(); track c.id) {
-              <tr>
-                <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:32px;height:32px;border-radius:8px;background:var(--accent-d);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent);">
-                      {{ c.n[0] }}
+            @for (c of filteredCustomers(); track c.id) {
+              <tr style="border-top:1px solid var(--border);transition:background .15s ease;">
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:var(--accent-d);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;border:1px solid rgba(99,102,241,0.2);flex-shrink:0;">
+                      {{ c.firstName ? c.firstName[0].toUpperCase() : (c.n ? c.n[0].toUpperCase() : 'C') }}
                     </div>
                     <div>
-                      <div style="font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;">
-                        {{ c.n }}
+                      <div style="font-weight:700;font-size:13px;color:var(--text1);display:flex;align-items:center;gap:6px;">
+                        <a [routerLink]="['/app/customers', c.id]" style="color:var(--text1);text-decoration:none;transition:color .15s ease;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text1)'">
+                          {{ c.n }}
+                        </a>
                         @if (c.isSelfRegistered) {
-                          <span class="badge badge-purple" style="font-size:9px;padding:1px 5px;">Online</span>
+                          <span class="badge badge-purple" style="font-size:9px;padding:1px 6px;">Online</span>
                         }
                       </div>
-                      <div style="font-size:10px;color:var(--text3);">
-                        {{ c.e || c.ph || 'No contact' }}
-                        @if (c.storeName || c.registeredStoreName) {
-                          · {{ c.storeName || c.registeredStoreName }}
-                        }
+                      <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+                        {{ c.ph || c.e || 'No contact specified' }}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td class="mono" style="font-size:11px;color:var(--text2);">{{ c.loy }}</td>
-                <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-purple': c.tier === 'PLATINUM',
-                    'badge-amber': c.tier === 'GOLD',
-                    'badge-dim': c.tier === 'SILVER',
-                    'badge-green': c.tier === 'BRONZE'
-                  }">{{ c.tier }}</span>
+                <td style="padding:12px 16px;">
+                  @if (c.loy && c.loy !== 'N/A') {
+                    <span class="mono" style="font-size:12px;font-weight:700;color:var(--text1);background:var(--surface2);padding:4px 8px;border-radius:6px;border:1px solid var(--border);">
+                      {{ c.loy }}
+                    </span>
+                  } @else {
+                    <span style="font-size:11px;color:var(--text3);">Unassigned</span>
+                  }
                 </td>
-                <td class="mono" style="text-align:right;font-weight:700;">{{ (c.pts || 0).toLocaleString() }}</td>
-                <td class="mono" style="text-align:right;font-weight:700;">₦{{ (c.spend || 0).toLocaleString() }}</td>
-                <td style="color:var(--text2);font-size:11px;">{{ c.last }}</td>
-                <td style="text-align:right;">
+                <td style="padding:12px 16px;">
+                  @if (c.tier === 'PLATINUM') {
+                    <span class="badge badge-purple" style="font-size:10px;font-weight:700;">PLATINUM</span>
+                  } @else if (c.tier === 'GOLD') {
+                    <span class="badge badge-amber" style="font-size:10px;font-weight:700;">GOLD</span>
+                  } @else if (c.tier === 'SILVER') {
+                    <span class="badge badge-blue" style="font-size:10px;font-weight:700;">SILVER</span>
+                  } @else {
+                    <span class="badge badge-dim" style="font-size:10px;font-weight:700;">BRONZE</span>
+                  }
+                </td>
+                <td style="padding:12px 16px;text-align:right;" class="mono">
+                  <span style="font-weight:800;color:#10b981;font-size:13px;">{{ (c.pts || 0).toLocaleString() }}</span>
+                  <span style="font-size:10px;color:var(--text3);margin-left:2px;">pts</span>
+                </td>
+                <td style="padding:12px 16px;text-align:right;" class="mono">
+                  <span style="font-weight:800;color:var(--text1);font-size:13px;">₦{{ (c.spend || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
+                </td>
+                <td style="padding:12px 16px;">
+                  <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--text3);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    {{ c.storeName || 'General / All Stores' }}
+                  </div>
+                </td>
+                <td style="padding:12px 16px;text-align:center;">
+                  @if (c.active !== false) {
+                    <span class="badge badge-green" style="font-size:10px;font-weight:700;">ACTIVE</span>
+                  } @else {
+                    <span class="badge badge-dim" style="font-size:10px;font-weight:700;">INACTIVE</span>
+                  }
+                </td>
+                <td style="padding:12px 16px;text-align:right;">
                   <div style="display:flex;justify-content:flex-end;gap:6px;">
-                    <a [routerLink]="['/app/customers', c.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View</a>
+                    <a [routerLink]="['/app/customers', c.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;font-size:11px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      View
+                    </a>
                     @if (isOwner()) {
-                      <a [routerLink]="['/app/customers', c.id, 'edit']" class="btn btn-primary btn-xs" style="text-decoration:none;">Edit</a>
-                      <button (click)="deleteCustomer(c.id)" class="btn btn-secondary btn-xs" style="color:#ff5555;border-color:rgba(255,85,85,0.3);" title="Delete Customer">Delete</button>
+                      <a [routerLink]="['/app/customers', c.id, 'edit']" class="btn btn-secondary btn-xs" style="text-decoration:none;font-size:11px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        Edit
+                      </a>
+                      <button (click)="deleteCustomer(c.id)" class="btn btn-secondary btn-xs" style="color:var(--red);border-color:rgba(239,68,68,0.3);font-size:11px;padding:4px 8px;border-radius:6px;" title="Delete Customer">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                      </button>
                     }
                   </div>
                 </td>
@@ -82,11 +226,33 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Empty State -->
+      @if (filteredCustomers().length === 0) {
+        <div style="padding:60px 20px;text-align:center;color:var(--text3);">
+          <div style="width:52px;height:52px;border-radius:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid var(--border);color:var(--text3);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:24px;height:24px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:6px;">No Customers Found</div>
+          <div style="font-size:12px;color:var(--text3);max-width:380px;margin:0 auto 16px;">
+            @if (searchQuery()) {
+              No customer profiles matched "{{ searchQuery() }}". Try clearing your search query or adjusting your filters.
+            } @else {
+              No customer profiles registered yet in your RetailOS system. Click below to add your first customer.
+            }
+          </div>
+          @if (isOwner() && !searchQuery()) {
+            <a routerLink="/app/customers/new" class="btn btn-primary" style="padding:8px 16px;font-size:12px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Register First Customer
+            </a>
+          }
+        </div>
+      }
     </div>
   }
 </div>
 
 <style>
-  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>

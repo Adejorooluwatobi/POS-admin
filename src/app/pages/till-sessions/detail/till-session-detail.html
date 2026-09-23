@@ -1,177 +1,286 @@
-<div class="page-container" style="padding: 24px; max-width: 950px; margin: 0 auto;">
-  <!-- Header (Hidden on Print) -->
-  <div class="no-print" style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/till-sessions" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Till Sessions
-      </a>
-      <span>/</span>
-      <span>Session #{{ session()?.id }}</span>
+<div class="page-container fade-up" style="max-width:1040px;margin:0 auto;padding-bottom:40px;">
+  <!-- Breadcrumbs & Actions Bar (Hidden on Print) -->
+  <div class="no-print" style="margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:8px;">
+        <a routerLink="/app/till-sessions" style="color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:4px;font-weight:600;">
+          <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>Till Sessions</span>
+        </a>
+        <span>/</span>
+        <span class="mono" style="color:var(--text2);">Session #{{ (session()?.id || sessionId() || '').substring(0, 8) }}</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <h1 style="font-size:24px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin:0;">
+          Shift Reconciliation & Z-Report
+        </h1>
+        @if (isSessionOpen()) {
+          <span class="badge" style="background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;"></span>
+            ACTIVE SHIFT
+          </span>
+        } @else {
+          <span class="badge" style="background:rgba(100,116,139,0.12);color:var(--text3);border:1px solid rgba(100,116,139,0.3);padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">
+            CLOSED SHIFT
+          </span>
+        }
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px;">
+        Forensic cash count verification, register drawer intake, and fiscal balance signoff
+      </div>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-      <div>
-        <div style="display:flex; align-items:center; gap:12px;">
-          <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
-            Till Session Details
-          </h1>
-          <span [class]="isSessionOpen() ? 'badge badge-success' : 'badge badge-dim'" style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">
-            {{ isSessionOpen() ? 'ACTIVE SHIFT' : 'CLOSED SHIFT' }}
-          </span>
-        </div>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Cash reconciliation, register floats, and shift performance audit.
-        </div>
-      </div>
-
-      <div style="display:flex; gap:10px;">
-        <button (click)="printReport()" class="btn btn-primary" style="display:flex; align-items:center; gap:8px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Print {{ isSessionOpen() ? 'X-Report (Interim)' : 'Z-Report (End of Day)' }}
-        </button>
-      </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a routerLink="/app/till-sessions" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:9px 16px;font-size:12px;border-radius:10px;text-decoration:none;">
+        <span>← Back to Ledger</span>
+      </a>
+      <button (click)="printReport()" class="btn btn-primary" style="display:flex;align-items:center;gap:8px;padding:9px 18px;font-size:12px;border-radius:10px;font-weight:700;">
+        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>Print {{ isSessionOpen() ? 'X-Report (Interim)' : 'Z-Report (Fiscal Close)' }}</span>
+      </button>
     </div>
   </div>
 
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
-      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading till session...</div>
+    <div class="card" style="padding:80px;text-align:center;border-radius:16px;background:var(--surface);border:1px solid var(--border);">
+      <div class="spinner" style="width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Loading shift details...</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Reconstructing cash reconciliation breakdown</div>
     </div>
   } @else if (errorMessage()) {
-    <div style="padding: 24px; text-align:center; background:rgba(255,60,60,0.08); border-radius:12px; border:1px solid rgba(255,60,60,0.2);">
-      <div style="color: var(--red); font-weight: 700; margin-bottom: 8px;">Failed to load session</div>
-      <div style="color: var(--text2); font-size: 13px;">{{ errorMessage() }}</div>
+    <div class="card" style="padding:32px;text-align:center;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:16px;">
+      <div style="color:var(--red);font-weight:700;font-size:14px;margin-bottom:6px;">Unable to Load Till Session</div>
+      <div style="color:var(--text2);font-size:12px;">{{ errorMessage() }}</div>
+      <a routerLink="/app/till-sessions" class="btn btn-secondary" style="margin-top:16px;display:inline-flex;padding:8px 16px;font-size:12px;border-radius:8px;text-decoration:none;">
+        Return to Till Sessions
+      </a>
     </div>
   } @else {
-    <!-- Shift Summary Metric Cards -->
-    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Total Sales</div>
-        <div class="mono" style="font-size: 22px; font-weight: 800; color: var(--accent); margin-top: 4px;">
+    <!-- 4 Bento KPI Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;margin-bottom:24px;">
+      <!-- Total Sales -->
+      <div class="card" style="padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Shift Total Sales</div>
+        <div class="mono" style="font-size:24px;font-weight:900;color:var(--accent);margin-top:6px;">
           ₦{{ (progress()?.totalSales ?? session()?.totalSales ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
-          {{ progress()?.transactionCount ?? session()?.transactionCount ?? 0 }} transactions
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+          {{ progress()?.transactionCount ?? session()?.transactionCount ?? 0 }} transactions processed
         </div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Opening Cash Float</div>
-        <div class="mono" style="font-size: 22px; font-weight: 800; color: var(--text1); margin-top: 4px;">
+      <!-- Opening Float -->
+      <div class="card" style="padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Opening Cash Float</div>
+        <div class="mono" style="font-size:24px;font-weight:900;color:var(--text);margin-top:6px;">
           ₦{{ (session()?.openingFloat ?? session()?.openBalance ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">Verified drawer base</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+          Initial drawer float at shift start
+        </div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Expected Cash in Till</div>
-        <div class="mono" style="font-size: 22px; font-weight: 800; color: var(--text1); margin-top: 4px;">
+      <!-- Expected in Till -->
+      <div class="card" style="padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Expected In Drawer</div>
+        <div class="mono" style="font-size:24px;font-weight:900;color:var(--text);margin-top:6px;">
           ₦{{ (session()?.expectedCash ?? progress()?.expectedCash ?? session()?.expectedBalance ?? 0) | number:'1.2-2' }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">Float + cash payments</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+          Float + cash payments received
+        </div>
       </div>
 
-      <div class="card" style="padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Closing Drawer Variance</div>
-        <div class="mono" style="font-size: 22px; font-weight: 800; margin-top: 4px;" [style.color]="(session()?.variance || 0) < 0 ? 'var(--red)' : (session()?.variance || 0) > 0 ? '#10b981' : 'var(--text1)'">
-          ₦{{ (session()?.variance || 0) | number:'1.2-2' }}
+      <!-- Variance -->
+      <div class="card" style="padding:18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Closing Variance</div>
+        <div class="mono" style="font-size:24px;font-weight:900;margin-top:6px;" [style.color]="(session()?.variance || 0) < 0 ? 'var(--red)' : ((session()?.variance || 0) > 0 ? '#10b981' : 'var(--text)')">
+          {{ (session()?.variance || 0) === 0 ? '₦0.00' : ((session()?.variance || 0) > 0 ? '+₦' + (session()?.variance | number:'1.2-2') : '-₦' + ((session()?.variance * -1) | number:'1.2-2')) }}
         </div>
-        <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
-          {{ (session()?.variance || 0) === 0 ? 'Drawer perfectly balanced' : (session()?.variance || 0) < 0 ? 'Shortage detected' : 'Overage detected' }}
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+          {{ (session()?.variance || 0) === 0 ? 'Cash drawer balanced perfectly' : ((session()?.variance || 0) < 0 ? 'Shortage detected' : 'Overage detected') }}
         </div>
       </div>
     </div>
 
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-      <!-- Shift & Terminal Details -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🖥️ Terminal & Cashier Metadata
+    <!-- Details Grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:20px;">
+      <!-- Terminal & Staff Hardware Profile -->
+      <div class="card" style="padding:22px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
+            <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--text);">Terminal & Frontline Staff</div>
+            <div style="font-size:11px;color:var(--text3);">Hardware attribution and user assignment</div>
+          </div>
         </div>
 
-        <div style="display:grid; gap: 14px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Register / Terminal</span>
-            <span style="font-size: 13px; font-weight: 700; color: var(--text1);">
-              {{ terminal()?.name || session()?.terminalName || 'Terminal #' + (session()?.terminalId || '1') }}
+        <div style="display:grid;gap:12px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">POS Register:</span>
+            <span style="font-weight:700;color:var(--text);">
+              {{ terminal()?.name || session()?.terminalName || 'Register #' + (session()?.terminalId || '01') }}
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Cashier / Associate</span>
-            <span style="font-size: 13px; font-weight: 700; color: var(--text1);">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Terminal Code:</span>
+            <span class="mono" style="font-weight:600;color:var(--accent);">
+              {{ terminal()?.terminalCode || 'POS-01' }}
+            </span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Cashier On Duty:</span>
+            <span style="font-weight:700;color:var(--text);">
               {{ staffMember()?.fullName || (staffMember()?.firstName ? (staffMember()?.firstName + ' ' + staffMember()?.lastName) : session()?.staffName) || 'Cashier' }}
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Shift Opened</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Shift Opened At:</span>
+            <span class="mono" style="color:var(--text2);">
               {{ (session()?.openedAt || session()?.openTime) | date:'medium' }}
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between;">
-            <span style="font-size: 13px; color: var(--text3);">Shift Closed</span>
-            <span style="font-size: 13px; font-weight: 600; color: var(--text1);">
-              {{ (session()?.closedAt || session()?.closeTime) ? ((session()?.closedAt || session()?.closeTime) | date:'medium') : 'Shift in progress (Open)' }}
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Shift Closed At:</span>
+            <span class="mono" style="color:var(--text2);">
+              {{ (session()?.closedAt || session()?.closeTime) ? ((session()?.closedAt || session()?.closeTime) | date:'medium') : 'In Session (Active)' }}
+            </span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text3);">Supervisor Approval:</span>
+            <span style="font-weight:600;color:#10b981;display:flex;align-items:center;gap:4px;">
+              <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              Verified Electronic Signature
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Cash Reconciliation Breakdown -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          💵 Cash Drawer Audit & Reconciliation
+      <!-- Cash Drawer Audit & Reconciliation -->
+      <div class="card" style="padding:22px;border-radius:16px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--border);">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;">
+            <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M6 12h.01M18 12h.01"></path>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:800;color:var(--text);">Cash Drawer Balance Audit</div>
+            <div style="font-size:11px;color:var(--text3);">Discrepancy inspection & float recount</div>
+          </div>
         </div>
 
-        <div style="display:grid; gap: 14px;">
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Starting Opening Float</span>
-            <span class="mono" style="font-size: 13px; font-weight: 600; color: var(--text1);">
+        <div style="display:grid;gap:12px;font-size:12px;">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Starting Cash Float:</span>
+            <span class="mono" style="font-weight:600;color:var(--text);">
               ₦{{ (session()?.openingFloat ?? session()?.openBalance ?? 0) | number:'1.2-2' }}
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Expected In Drawer</span>
-            <span class="mono" style="font-size: 13px; font-weight: 700; color: var(--text1);">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Net Cash Intake:</span>
+            <span class="mono" style="font-weight:600;color:var(--text);">
+              ₦{{ ((session()?.expectedCash ?? progress()?.expectedCash ?? session()?.expectedBalance ?? 0) - (session()?.openingFloat ?? session()?.openBalance ?? 0)) | number:'1.2-2' }}
+            </span>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Expected Total In Drawer:</span>
+            <span class="mono" style="font-weight:700;color:var(--text);">
               ₦{{ (session()?.expectedCash ?? progress()?.expectedCash ?? session()?.expectedBalance ?? 0) | number:'1.2-2' }}
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; padding-bottom: 10px; border-bottom: 1px solid var(--border);">
-            <span style="font-size: 13px; color: var(--text3);">Actual Count At Close</span>
-            <span class="mono" style="font-size: 13px; font-weight: 800; color: var(--accent);">
+          <div style="display:flex;justify-content:space-between;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--text3);">Actual Physical Recount:</span>
+            <span class="mono" style="font-weight:800;color:var(--accent);">
               @if (session()?.closingCash !== null && session()?.closingCash !== undefined) {
                 ₦{{ session()?.closingCash | number:'1.2-2' }}
               } @else {
-                <span style="color:var(--text3); font-weight:500;">Pending Shift Close</span>
+                <span style="color:var(--text3);font-weight:500;">Pending Shift Close</span>
               }
             </span>
           </div>
 
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size: 14px; font-weight: 800; color: var(--text1);">Drawer Variance</span>
-            <span class="mono" style="font-size: 16px; font-weight: 900;" [style.color]="(session()?.variance || 0) < 0 ? 'var(--red)' : (session()?.variance || 0) > 0 ? '#10b981' : 'var(--text1)'">
-              ₦{{ (session()?.variance || 0) | number:'1.2-2' }}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+            <span style="font-size:13px;font-weight:800;color:var(--text);">Forensic Variance:</span>
+            <span class="mono" style="font-size:16px;font-weight:900;" [style.color]="(session()?.variance || 0) < 0 ? 'var(--red)' : ((session()?.variance || 0) > 0 ? '#10b981' : 'var(--text)')">
+              {{ (session()?.variance || 0) === 0 ? '₦0.00 (Balanced)' : ((session()?.variance || 0) > 0 ? '+₦' + (session()?.variance | number:'1.2-2') : '-₦' + ((session()?.variance * -1) | number:'1.2-2')) }}
             </span>
           </div>
         </div>
+
+        @if (session()?.notes) {
+          <div style="padding:10px 12px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);font-size:11px;color:var(--text2);margin-top:6px;">
+            <strong style="color:var(--text);">Audit Notes:</strong> {{ session()?.notes }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Printable Thermal Z-Report Template (For Window.print()) -->
+    <div class="print-only" style="display:none;margin-top:40px;padding:24px;border:1px dashed #999;max-width:340px;margin-left:auto;margin-right:auto;font-family:'JetBrains Mono', monospace;font-size:11px;color:#000;">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:16px;font-weight:bold;">RETAILOS FISCAL AUDIT</div>
+        <div style="font-size:12px;margin-top:2px;">*** {{ isSessionOpen() ? 'X-REPORT (INTERIM)' : 'Z-REPORT (END OF SHIFT)' }} ***</div>
+        <div style="margin-top:6px;">Session: {{ session()?.id }}</div>
+        <div>Date: {{ (session()?.openedAt || session()?.openTime) | date:'yyyy-MM-dd HH:mm' }}</div>
+      </div>
+      <div style="border-top:1px dashed #000;border-bottom:1px dashed #000;padding:8px 0;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;"><span>Terminal:</span><span>{{ terminal()?.name || 'POS-01' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>Cashier:</span><span>{{ getStaffName(session()?.staffId) }}</span></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;"><span>OPENING FLOAT:</span><span>₦{{ (session()?.openingFloat || 0) | number:'1.2-2' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>TOTAL SALES:</span><span>₦{{ (progress()?.totalSales ?? session()?.totalSales ?? 0) | number:'1.2-2' }}</span></div>
+        <div style="display:flex;justify-content:space-between;"><span>EXPECTED CASH:</span><span>₦{{ (session()?.expectedCash || 0) | number:'1.2-2' }}</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:bold;"><span>ACTUAL CLOSE:</span><span>₦{{ (session()?.closingCash || 0) | number:'1.2-2' }}</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:bold;margin-top:6px;border-top:1px solid #000;padding-top:4px;">
+          <span>VARIANCE:</span><span>₦{{ (session()?.variance || 0) | number:'1.2-2' }}</span>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;border-top:1px dashed #000;padding-top:12px;font-size:10px;">
+        <div>--- SHIFT SUPERVISOR SIGNATURE ---</div>
+        <div style="height:30px;"></div>
+        <div>_________________________________</div>
       </div>
     </div>
   }
 </div>
 
 <style>
-  .badge-success { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-  .badge-dim { background: rgba(100,116,139,0.12); color: var(--text3); border: 1px solid rgba(100,116,139,0.3); }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.15); }
+  }
   @media print {
     .no-print { display: none !important; }
+    .print-only { display: block !important; }
     body { background: #fff !important; color: #000 !important; }
-    .card { border: 1px solid #ccc !important; box-shadow: none !important; }
+    .card { border: none !important; box-shadow: none !important; }
   }
 </style>

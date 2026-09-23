@@ -1,36 +1,36 @@
-<div class="page-container" style="padding: 24px; max-width: 800px; margin: 0 auto;">
+<div class="page-container" style="padding:24px;max-width:850px;margin:0 auto;">
   <!-- Breadcrumbs & Header -->
-  <div style="margin-bottom: 24px;">
-    <div style="display:flex; align-items:center; gap: 8px; font-size: 13px; color: var(--text3); margin-bottom: 8px;">
-      <a routerLink="/app/staff" style="cursor:pointer; color:var(--accent); text-decoration:none; display:flex; align-items:center; gap:4px; font-weight:600;">
-        ← Back to Staff
+  <div style="margin-bottom:24px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);margin-bottom:8px;">
+      <a routerLink="/app/staff" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to Staff
       </a>
       <span>/</span>
       <span>{{ isEditMode() ? 'Edit Staff Member' : 'New Staff Member' }}</span>
     </div>
 
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--text1); letter-spacing: -0.02em;">
-          {{ isEditMode() ? 'Edit Staff Member' : 'Add New Staff Member' }}
+        <h1 style="font-size:24px;font-weight:800;margin:0;color:var(--text1);letter-spacing:-0.02em;">
+          {{ isEditMode() ? 'Edit Staff Member' : 'Register New Staff Member' }}
         </h1>
-        <div style="font-size: 13px; color: var(--text3); margin-top: 4px;">
-          Assign store access, security roles, and POS login credentials.
+        <div style="font-size:13px;color:var(--text3);margin-top:4px;">
+          Configure security roles, store branch access, and 4-digit POS register PINs
         </div>
       </div>
 
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex;gap:10px;">
         <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">
           Cancel
         </button>
-        <button (click)="saveStaff()" class="btn btn-primary" [disabled]="isSaving()" style="min-width: 140px;">
+        <button (click)="saveStaff()" class="btn btn-primary" [disabled]="isSaving()" style="min-width:140px;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
           @if (isSaving()) {
-            <span style="display:flex; align-items:center; gap:8px; justify-content:center;">
-              <span class="spinner-sm"></span>
-              Saving...
-            </span>
+            <span class="spinner-sm"></span>
+            <span>Saving...</span>
           } @else {
-            {{ isEditMode() ? 'Save Changes' : 'Create Staff Member' }}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>{{ isEditMode() ? 'Save Changes' : 'Create Staff Member' }}</span>
           }
         </button>
       </div>
@@ -38,30 +38,31 @@
   </div>
 
   @if (isLoading()) {
-    <div style="text-align:center; padding: 60px 0;">
+    <div style="text-align:center;padding:80px 0;">
       <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color: var(--text3); font-size: 14px;">Loading staff profile...</div>
+      <div style="color:var(--text3);font-size:14px;font-weight:600;">Loading staff profile...</div>
     </div>
   } @else {
     @if (errorMessage()) {
-      <div style="margin-bottom:20px; padding:14px 16px; background:rgba(255,60,60,0.08); border:1.5px solid rgba(255,60,60,0.3); border-radius:12px; display:flex; align-items:flex-start; gap:12px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4444" stroke-width="2" style="flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div style="margin-bottom:20px;padding:14px 16px;background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.3);border-radius:12px;display:flex;align-items:flex-start;gap:12px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:#ff4444;margin-bottom:2px;">Action Blocked</div>
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:2px;">Action Blocked</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
         </div>
         <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
       </div>
     }
 
-    <div style="display:grid; gap: 24px;">
+    <div style="display:grid;gap:20px;">
       <!-- Card 1: Personal Details -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          👤 Personal Information
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Personal & Employment Details
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <label class="label">First Name <span style="color:var(--red);">*</span></label>
             <input class="inp" [(ngModel)]="staff().firstName" placeholder="e.g. John">
@@ -72,10 +73,10 @@
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
           <div>
             <label class="label">Work Email <span style="color:var(--red);">*</span></label>
-            <input class="inp" [(ngModel)]="staff().email" type="email" placeholder="john.doe@company.com">
+            <input class="inp" [(ngModel)]="staff().email" type="email" placeholder="john.doe@retailos.com">
           </div>
           <div>
             <label class="label">Employee ID / Number</label>
@@ -83,29 +84,30 @@
           </div>
         </div>
 
-        <div style="margin-top: 16px; max-width: 50%;">
+        <div style="margin-top:16px;max-width:50%;">
           <label class="label">Hire Date</label>
           <input class="inp" [(ngModel)]="staff().hiredAt" type="date">
         </div>
       </div>
 
       <!-- Card 2: Role & Store Assignment -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🛡️ Role & Store Assignment
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Security Role & Store Assignment
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <label class="label">Security Role <span style="color:var(--red);">*</span></label>
             <select class="inp" [(ngModel)]="staff().roleId">
-              <option value="" disabled>Select Role</option>
+              <option value="" disabled>Select Role Level</option>
               @for (role of filteredRoles(); track role.id) {
                 <option [value]="role.id">{{ role.name }}</option>
               }
             </select>
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-              Dictates POS and Portal system capabilities and permissions.
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+              Governs permissions across the POS registers and backoffice portal.
             </div>
           </div>
 
@@ -113,53 +115,63 @@
             <div>
               <label class="label">Assigned Branch / Store <span style="color:var(--red);">*</span></label>
               <select class="inp" [(ngModel)]="staff().storeId">
-                <option [ngValue]="null">Select Store Branch</option>
+                <option [ngValue]="null">Select Store Location</option>
                 @for (s of stores(); track s.id) {
                   <option [value]="s.id">{{ s.name }} ({{ s.code }})</option>
                 }
               </select>
-              <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-                Required for store managers, cashiers, supervisors and staff.
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+                Branch location for shift scheduling, drawer float, and till reporting.
               </div>
             </div>
           } @else {
-            <div style="padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; display:flex; flex-direction:column; justify-content:center;">
-              <div style="font-size: 12px; font-weight: 700; color: var(--accent);">🌐 All Store Branches (HQ)</div>
-              <div style="font-size: 11px; color: var(--text3); margin-top: 2px;">
-                Tenant Administrators have cross-branch administrative authority.
+            <div style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;justify-content:center;">
+              <div style="font-size:12px;font-weight:700;color:var(--accent);display:flex;align-items:center;gap:6px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                All Branches (HQ Authority)
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px;">
+                Tenant Administrators have multi-store governance and access across all locations.
               </div>
             </div>
           }
         </div>
 
-        <div style="display:flex; align-items:center; gap: 12px; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:12px;padding-top:16px;margin-top:16px;border-top:1px solid var(--border);">
           <input type="checkbox" id="staffActive" [(ngModel)]="staff().isActive" style="width:18px;height:18px;cursor:pointer;accent-color:var(--accent);">
-          <label for="staffActive" style="font-size: 13px; font-weight: 700; cursor:pointer;">
-            Staff Account Active & Authorized
+          <label for="staffActive" style="font-size:13px;font-weight:700;color:var(--text1);cursor:pointer;">
+            Staff Account Active & Authorized to Log In
           </label>
         </div>
       </div>
 
-      <!-- Card 3: Security & POS Authentication -->
-      <div class="card" style="padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border);">
-        <div style="font-size: 14px; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 16px;">
-          🔑 Authentication & POS Credentials
+      <!-- Card 3: POS PIN & Web Authentication -->
+      <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Authentication & Credentials
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
-            <label class="label">Quick POS PIN (4-6 digits)</label>
-            <input class="inp mono" [(ngModel)]="staff().pin" type="password" maxlength="6" placeholder="{{ isEditMode() ? 'Leave blank to keep current PIN' : 'e.g. 1234' }}">
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-              Used by cashiers for terminal unlocking and shift switches.
+            <label class="label">Quick POS Register PIN (4-6 digits)</label>
+            <div style="display:flex;gap:8px;">
+              <input class="inp mono" [(ngModel)]="staff().pin" type="text" maxlength="6" placeholder="{{ isEditMode() ? '•••• (leave blank to keep)' : 'e.g. 1234' }}" style="font-weight:700;">
+              <button type="button" (click)="generateQuickPin()" class="btn btn-secondary" style="white-space:nowrap;padding:0 12px;display:inline-flex;align-items:center;gap:4px;font-size:12px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                Random
+              </button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+              Fast keypad PIN used by cashier to unlock terminal drawer and switch shifts.
             </div>
           </div>
 
           <div>
             <label class="label">Portal Web Password</label>
-            <input class="inp mono" [(ngModel)]="staff().password" type="password" placeholder="{{ isEditMode() ? 'Leave blank to keep current password' : 'Enter password' }}">
-            <div style="font-size: 11px; color: var(--text3); margin-top: 4px;">
-              Used for logging into this management backoffice portal.
+            <input class="inp mono" [(ngModel)]="staff().password" type="password" placeholder="{{ isEditMode() ? '•••••••• (leave blank to keep)' : 'Enter strong portal password' }}">
+            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+              Secure password for logging into this browser-based management portal.
             </div>
           </div>
         </div>

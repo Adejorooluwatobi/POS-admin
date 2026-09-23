@@ -1,5 +1,6 @@
-import { Component, signal, OnInit } from '@angular/core';
-import { CommonModule, NgClass } from '@angular/common';
+import { Component, signal, OnInit, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { RoleService } from '../../services/role.service';
 import { AuthService } from '../../services/auth.service';
@@ -8,13 +9,15 @@ import { Role } from '../../models/pos.models';
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, NgClass, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './roles.html'
 })
 export class RolesComponent implements OnInit {
   public roles = signal<Role[]>([]);
   public isLoading = signal<boolean>(false);
   public isOwner = signal<boolean>(false);
+  public searchQuery = signal<string>('');
+  public statusFilter = signal<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
 
   public systemRoles = [
     { id: 2, name: 'Store Manager', icon: '👔', key: 'StoreManager' },
@@ -22,6 +25,30 @@ export class RolesComponent implements OnInit {
     { id: 4, name: 'Supervisor', icon: '🕵️', key: 'Supervisor' },
     { id: 3, name: 'Cashier', icon: '🛒', key: 'Cashier' }
   ];
+
+  public totalRoles = computed(() => this.roles().length);
+  public activeRoles = computed(() => this.roles().filter(r => r.isActive !== false).length);
+  public managerRoles = computed(() => this.roles().filter(r => r.systemRole === 2 || r.systemRole === 5).length);
+  public cashierRoles = computed(() => this.roles().filter(r => r.systemRole === 3).length);
+
+  public filteredRoles = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const filter = this.statusFilter();
+    let list = this.roles();
+
+    if (filter === 'ACTIVE') {
+      list = list.filter(r => r.isActive !== false);
+    } else if (filter === 'INACTIVE') {
+      list = list.filter(r => r.isActive === false);
+    }
+
+    if (!q) return list;
+
+    return list.filter(r =>
+      (r.name && r.name.toLowerCase().includes(q)) ||
+      (r.description && r.description.toLowerCase().includes(q))
+    );
+  });
 
   constructor(
     private roleService: RoleService,
@@ -39,9 +66,12 @@ export class RolesComponent implements OnInit {
     this.isLoading.set(true);
     try {
       const data = await this.roleService.getRoles();
-      const items = (data.items || data).map((r: any) => ({
+      const raw = data.items || data;
+      const rawList = Array.isArray(raw) ? raw : [];
+      const items = rawList.map((r: any) => ({
         ...r,
-        systemRole: this.mapSystemRoleToId(r.systemRole)
+        systemRole: this.mapSystemRoleToId(r.systemRole),
+        isActive: r.isActive !== undefined ? r.isActive : true
       }));
       this.roles.set(items);
     } catch (error) {
@@ -51,9 +81,13 @@ export class RolesComponent implements OnInit {
     }
   }
 
+  setStatusFilter(filter: 'ALL' | 'ACTIVE' | 'INACTIVE') {
+    this.statusFilter.set(filter);
+  }
+
   async deleteRole(id: string | undefined) {
     if (!id) return;
-    if (!confirm('Are you sure you want to delete this role?')) return;
+    if (!confirm('Are you sure you want to delete this security role? Staff members assigned this role must be reassigned.')) return;
 
     try {
       await this.roleService.deleteRole(id);

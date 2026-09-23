@@ -42,8 +42,22 @@ export class ProductFormComponent implements OnInit {
     rollsPerPack: null,
     singlesPerPack: null,
     rollPrice: null,
-    packPrice: null
+    packPrice: null,
+    fastGridTile: 'Disabled',
+    pinToFastGrid: false,
+    allowBackorders: false,
+    lowStockThreshold: 10,
+    reorderQuantity: 50,
+    kdsStation: 'Front Counter'
   });
+
+  public calculateMargin(): { profit: number; percent: number } {
+    const cost = Number(this.product().costPrice) || 0;
+    const price = Number(this.product().sellingPrice) || 0;
+    const profit = price - cost;
+    const percent = price > 0 ? (profit / price) * 100 : 0;
+    return { profit, percent };
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -108,7 +122,13 @@ export class ProductFormComponent implements OnInit {
         rollsPerPack: p.rollsPerPack,
         singlesPerPack: p.singlesPerPack,
         rollPrice: p.rollPrice,
-        packPrice: p.packPrice
+        packPrice: p.packPrice,
+        fastGridTile: p.fastGridTile || 'Disabled',
+        pinToFastGrid: p.fastGridTile && p.fastGridTile !== 'Disabled',
+        allowBackorders: p.allowBackorders || false,
+        lowStockThreshold: p.lowStockThreshold || 10,
+        reorderQuantity: p.reorderQuantity || 50,
+        kdsStation: p.kdsStation || 'Front Counter'
       });
     } catch (err: any) {
       this.errorMessage.set(err?.error?.message || 'Failed to load product details.');
@@ -180,7 +200,12 @@ export class ProductFormComponent implements OnInit {
       rollsPerPack: p.rollsPerPack ? Number(p.rollsPerPack) : null,
       singlesPerPack: p.singlesPerPack ? Number(p.singlesPerPack) : null,
       rollPrice: p.rollPrice ? Number(p.rollPrice) : null,
-      packPrice: p.packPrice ? Number(p.packPrice) : null
+      packPrice: p.packPrice ? Number(p.packPrice) : null,
+      fastGridTile: p.fastGridTile || 'Disabled',
+      allowBackorders: Boolean(p.allowBackorders),
+      lowStockThreshold: Number(p.lowStockThreshold) || 10,
+      reorderQuantity: Number(p.reorderQuantity) || 50,
+      kdsStation: p.kdsStation || 'Front Counter'
     };
 
     try {

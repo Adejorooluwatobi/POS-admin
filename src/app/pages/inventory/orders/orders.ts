@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -22,6 +22,46 @@ export class OrdersComponent implements OnInit {
   public userStoreId = signal<string | null>(null);
   public isGeneral = signal<boolean>(false);
   public isSuperAdmin = signal<boolean>(false);
+
+  public totalOrdersCount = computed(() => this.orders().length);
+  public dispatchedCount = computed(() => this.orders().filter(o => o.status === 'Dispatched').length);
+  public receivedCount = computed(() => this.orders().filter(o => o.status === 'Received').length);
+  public disputedCount = computed(() => this.orders().filter(o => o.status === 'Disputed').length);
+  public approvedCount = computed(() => this.orders().filter(o => o.status === 'Approved' || o.status === 'Resolved').length);
+
+  public searchQuery = signal<string>('');
+  public statusFilter = signal<string>('All');
+  public directionFilter = signal<string>('All');
+
+  public filteredOrders = computed(() => {
+    let list = this.orders();
+    const q = this.searchQuery().toLowerCase().trim();
+    const status = this.statusFilter();
+    const dir = this.directionFilter();
+    const userStore = this.userStoreId();
+
+    if (status !== 'All') {
+      list = list.filter(o => o.status === status);
+    }
+
+    if (dir === 'Inbound') {
+      list = list.filter(o => o.destinationStoreId === userStore);
+    } else if (dir === 'Outbound') {
+      list = list.filter(o => o.sourceStoreId === userStore);
+    }
+
+    if (q) {
+      list = list.filter(o => 
+        (o.orderNumber && o.orderNumber.toLowerCase().includes(q)) ||
+        (o.sourceStoreName && o.sourceStoreName.toLowerCase().includes(q)) ||
+        (o.destinationStoreName && o.destinationStoreName.toLowerCase().includes(q)) ||
+        (o.driverName && o.driverName.toLowerCase().includes(q)) ||
+        (o.vehiclePlateNumber && o.vehiclePlateNumber.toLowerCase().includes(q))
+      );
+    }
+
+    return list;
+  });
 
   // Create Modal State
   public isCreateModalOpen = signal<boolean>(false);

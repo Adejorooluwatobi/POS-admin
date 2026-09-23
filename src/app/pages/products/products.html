@@ -1,83 +1,421 @@
-<div class="fade-up">
-  <!-- Header with Action -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div class="fade-up" style="display: flex; flex-direction: column; gap: 20px;">
+
+  <!-- ═══════════════════════════════════════════════════
+       1. TOP ACTION & CATALOG STRIP
+  ════════════════════════════════════════════════════ -->
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
     <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Products Catalog</div>
-      <div style="font-size:12px;color:var(--text3);">Manage your product listings, categories and pricing</div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span class="mono" style="font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; background: var(--accent-d); color: var(--accent); border: 1px solid rgba(79,70,229,0.2);">
+          Catalog Operations
+        </span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--text3);" class="mono">
+          RetailOS Cloud Sync
+        </span>
+      </div>
+      <h1 class="font-headline" style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); margin: 0;">
+        Product Catalog & Inventory
+      </h1>
+      <p style="font-size: 12px; color: var(--text2); margin-top: 3px;">
+        Manage retail prices, multi-store stock allocations, and POS Fast-Grid touch tiles.
+      </p>
     </div>
-    <div style="display:flex;gap:12px;align-items:center;">
-      <div style="position:relative;width:240px;">
-        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">🔍</span>
-        <input class="inp" style="padding-left:36px;" placeholder="Search products..." (input)="filterProducts($any($event.target).value)">
-      </div>
-      <div style="position:relative;width:240px;display:flex;gap:6px;">
-        <div style="position:relative;flex:1;">
-          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:16px;">🛒</span>
-          <input class="inp" style="padding-left:36px;border-color:var(--accent);" placeholder="Scan Barcode..." (keyup.enter)="onBarcodeScanned($any($event.target).value); $any($event.target).value = ''">
-        </div>
-        <button class="btn btn-secondary" (click)="openScanner('search')" style="padding:0 12px;display:flex;align-items:center;justify-content:center;" title="Scan with camera">
-          📷
-        </button>
-      </div>
-      @if (!authService.isSuperAdmin()) {
-        <a routerLink="/app/products/new" class="btn btn-primary" style="padding:10px 16px;font-size:13px;border-radius:10px;margin-left:auto;text-decoration:none;display:inline-flex;align-items:center;">
-          <span style="font-size:18px;margin-right:6px;">+</span> New Product
+
+    <!-- Right Action Buttons -->
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+      <button type="button" (click)="openScanner()" class="btn btn-secondary" style="height: 34px; padding: 0 12px; gap: 6px;">
+        <svg style="width: 14px; height: 14px; color: var(--green);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+        </svg>
+        <span>Stock Take (Camera)</span>
+      </button>
+
+      @if (isOwner()) {
+        <a routerLink="/app/products/new" class="btn btn-primary" style="height: 34px; padding: 0 14px; gap: 6px; text-decoration: none; display: inline-flex; align-items: center;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>New Product</span>
         </a>
       }
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════════
+       2. CATEGORY FILTER STRIP
+  ════════════════════════════════════════════════════ -->
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; overflow-x: auto; padding-bottom: 2px;">
+    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+      <button type="button" (click)="selectedCategory.set('ALL')"
+              class="btn" style="padding: 5px 12px; font-size: 11.5px; border-radius: 20px; gap: 6px;"
+              [style.background]="selectedCategory() === 'ALL' ? 'var(--accent)' : 'var(--surface)'"
+              [style.color]="selectedCategory() === 'ALL' ? '#ffffff' : 'var(--text2)'"
+              [style.border]="selectedCategory() === 'ALL' ? '1px solid var(--accent)' : '1px solid var(--border)'">
+        <span>All Items</span>
+        <span class="mono" style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;"
+              [style.background]="selectedCategory() === 'ALL' ? 'rgba(255,255,255,0.25)' : 'var(--surface2)'">
+          {{ categoryCounts()['ALL'] || 0 }}
+        </span>
+      </button>
+
+      @for (cat of categories(); track cat.id) {
+        <button type="button" (click)="selectedCategory.set(cat.name)"
+                class="btn" style="padding: 5px 12px; font-size: 11.5px; border-radius: 20px; gap: 6px;"
+                [style.background]="selectedCategory() === cat.name ? 'var(--accent)' : 'var(--surface)'"
+                [style.color]="selectedCategory() === cat.name ? '#ffffff' : 'var(--text2)'"
+                [style.border]="selectedCategory() === cat.name ? '1px solid var(--accent)' : '1px solid var(--border)'">
+          <span>{{ cat.name }}</span>
+          <span class="mono" style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px;"
+                [style.background]="selectedCategory() === cat.name ? 'rgba(255,255,255,0.25)' : 'var(--surface2)'">
+            {{ categoryCounts()[cat.name] || 0 }}
+          </span>
+        </button>
+      }
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text3); flex-shrink: 0;" class="mono">
+      <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green);" class="animate-pulse"></span>
+      <span>Cloud Sync: Real-time</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       3. INVENTORY METRICS ROW (4 BENTO CARDS)
+  ════════════════════════════════════════════════════ -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+    <!-- Total Active SKUs -->
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Total Active SKUs</span>
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--surface2); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </div>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="font-headline" style="font-size: 24px; font-weight: 800; color: var(--text);">{{ totalActiveSkus() }}</span>
+        <span class="badge badge-accent">Live Fleet</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text3);">Synchronized across stores</div>
+    </div>
+
+    <!-- Total Inventory Valuation -->
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Total Valuation (Cost)</span>
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--surface2); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/>
+          </svg>
+        </div>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="font-headline" style="font-size: 22px; font-weight: 800; color: var(--text);">₦{{ formatNum(totalValuationCost()) }}</span>
+        <span class="badge badge-accent">Cost basis</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        Retail potential: ₦{{ formatNum(totalValuationRetail()) }}
+      </div>
+    </div>
+
+    <!-- Low Stock Items -->
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Low Stock Items</span>
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--amber-d); color: var(--amber); display: flex; align-items: center; justify-content: center;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="font-headline" style="font-size: 24px; font-weight: 800; color: var(--amber);">
+          {{ lowStockCount() }} <span style="font-size: 12px; font-weight: 500; color: var(--text3);">items</span>
+        </span>
+        <span class="badge badge-amber">Reorder Req.</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text3);">Threshold &lt; 15 units</div>
+    </div>
+
+    <!-- Out of Stock Items -->
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Out of Stock</span>
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--red-d); color: var(--red); display: flex; align-items: center; justify-content: center;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+          </svg>
+        </div>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="font-headline" style="font-size: 24px; font-weight: 800; color: var(--red);">
+          {{ outOfStockCount() }} <span style="font-size: 12px; font-weight: 500; color: var(--text3);">items</span>
+        </span>
+        <span class="badge badge-red">Critical</span>
+      </div>
+      <div style="font-size: 11px; color: var(--text3);">Needs stock replenishment</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       4. SEARCH & FILTER CONTROL STRIP
+  ════════════════════════════════════════════════════ -->
+  <div class="card" style="padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px; flex-wrap: wrap;">
+      <!-- Search Input -->
+      <div style="position: relative; flex: 1; min-width: 220px;">
+        <svg style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text3);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)"
+               placeholder="Search by SKU, Barcode, Product Name..."
+               class="inp" style="padding-left: 32px; padding-right: 32px; height: 34px; font-size: 12px;" />
+        <button type="button" (click)="openScanner()" title="Scan barcode with camera"
+                style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text3);">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Store Allocation Filter -->
+      <select [ngModel]="selectedStore()" (ngModelChange)="selectedStore.set($event)"
+              class="inp" style="width: auto; height: 34px; font-size: 12px; font-weight: 600;">
+        <option value="ALL">All Store Locations</option>
+        @for (s of stores(); track s.id) {
+          <option [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+        }
+      </select>
+
+      <!-- Stock Level Filter -->
+      <select [ngModel]="stockFilter()" (ngModelChange)="stockFilter.set($event)"
+              class="inp" style="width: auto; height: 34px; font-size: 12px; font-weight: 600;">
+        <option value="ALL">All Stock States</option>
+        <option value="LOW">Low Stock (&lt; 15)</option>
+        <option value="OUT">Out of Stock</option>
+        <option value="OPTIMAL">Optimal Stock</option>
+      </select>
+    </div>
+
+    <!-- Clear Filters & Refresh Button -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button type="button" (click)="clearAllFilters()"
+              class="btn btn-secondary" style="height: 34px; font-size: 11.5px;">
+        Clear Filters
+      </button>
+      <button type="button" (click)="loadProducts()" title="Reload from Database" class="btn btn-secondary" style="height: 34px; width: 34px; padding: 0; justify-content: center;">
+        <svg style="width: 14px; height: 14px; color: var(--accent);" [class.animate-spin]="isLoading()" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Active Filter Chips Row -->
+    @if (hasActiveFilters()) {
+      <div style="width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11.5px; padding-top: 8px; border-top: 1px dashed var(--border);">
+        <span style="font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase;">Applied:</span>
+        @if (selectedCategory() !== 'ALL') {
+          <span class="badge badge-accent" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
+            Category: {{ selectedCategory() }}
+            <span (click)="selectedCategory.set('ALL')" style="cursor: pointer; font-weight: 800; font-size: 13px;" title="Remove filter">&times;</span>
+          </span>
+        }
+        @if (stockFilter() !== 'ALL') {
+          <span class="badge badge-amber" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
+            Stock: {{ stockFilter() }}
+            <span (click)="stockFilter.set('ALL')" style="cursor: pointer; font-weight: 800; font-size: 13px;" title="Remove filter">&times;</span>
+          </span>
+        }
+        @if (selectedStore() !== 'ALL') {
+          <span class="badge badge-dim" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
+            Store: {{ getSelectedStoreName() }}
+            <span (click)="selectedStore.set('ALL')" style="cursor: pointer; font-weight: 800; font-size: 13px;" title="Remove filter">&times;</span>
+          </span>
+        }
+        @if (searchQuery().trim()) {
+          <span class="badge badge-dim" style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;">
+            "{{ searchQuery() }}"
+            <span (click)="searchQuery.set('')" style="cursor: pointer; font-weight: 800; font-size: 13px;" title="Clear search">&times;</span>
+          </span>
+        }
+        <button type="button" (click)="clearAllFilters()" style="background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; font-size: 11px; margin-left: 4px;">
+          Clear all filters
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Loading State -->
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading products...</span>
+    <div class="card" style="padding: 60px; text-align: center;">
+      <div class="spinner" style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
+      <span style="font-size: 13px; color: var(--text3);">Loading products from database...</span>
+    </div>
+  } @else if (filteredProducts().length === 0) {
+    <!-- Clean Enterprise Empty State -->
+    <div class="card" style="padding: 60px 20px; text-align: center;">
+      <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--surface2); color: var(--accent); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center;">
+        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      <h3 class="font-headline" style="font-size: 16px; font-weight: 800; color: var(--text); margin: 0 0 4px;">
+        No Products in Catalog
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text3); max-width: 400px; margin: 0 auto 18px;">
+        @if (searchQuery() || selectedCategory() !== 'ALL' || stockFilter() !== 'ALL') {
+          No products match your active search or filter criteria. Try clearing filters.
+        } @else {
+          Your product catalog is empty. Create your first SKU with pricing, barcodes, and stock levels.
+        }
+      </p>
+      @if (isOwner()) {
+        <a routerLink="/app/products/new" class="btn btn-primary" style="text-decoration: none; padding: 8px 18px; margin: 0 auto; display: inline-flex; align-items: center; gap: 6px;">
+          <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Create First Product</span>
+        </a>
+      }
     </div>
   } @else {
-    <div class="card">
-      <div style="overflow-x:auto;">
+    <!-- ═══════════════════════════════════════════════════
+         5. PRODUCTS & INVENTORY TABLE CONTAINER
+    ════════════════════════════════════════════════════ -->
+    <div class="card" style="overflow: hidden;">
+      <div style="overflow-x: auto;">
         <table class="tbl">
           <thead>
             <tr>
-              <th>PRODUCT</th>
-              <th>SKU</th>
-              <th>CATEGORY</th>
-              <th style="text-align:right;">PRICE</th>
-              <th>TAX</th>
-              <th>STATUS</th>
-              @if (!isOwner()) { <th style="text-align:right;">ACTIONS</th> }
+              <th style="width: 38px; text-align: center;">
+                <input type="checkbox" [checked]="selectAll()" (change)="toggleSelectAll()" style="cursor: pointer;" />
+              </th>
+              <th>PRODUCT & CATEGORY</th>
+              <th>SKU & BARCODE</th>
+              <th style="text-align: right;">RETAIL & MARGIN</th>
+              <th>STOCK LEVEL</th>
+              <th>MULTI-STORE ALLOCATION</th>
+              <th style="text-align: center;">POS FAST-GRID</th>
+              <th style="text-align: right;">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            @for (p of products(); track p.id) {
-              <tr>
+            @for (p of filteredProducts(); track p.id) {
+              <tr [style.background]="p.stockStatus === 'OUT' ? 'rgba(239,68,68,0.04)' : p.stockStatus === 'LOW' ? 'rgba(245,158,11,0.04)' : 'transparent'">
+                <!-- Checkbox -->
+                <td style="text-align: center;">
+                  <input type="checkbox" [checked]="p.isSelected" (change)="toggleItemSelect(p)" style="cursor: pointer;" />
+                </td>
+
+                <!-- Product & Category -->
                 <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:32px;height:32px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;">
-                      {{ p.e }}
-                    </div>
-                    <div>
-                      <div style="font-weight:600;font-size:13px;">{{ p.n }}</div>
-                      <div style="font-size:10px;color:var(--text3);">{{ p.brand || 'No Brand' }}</div>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    @if (p.imageUrl) {
+                      <img [src]="p.imageUrl" [alt]="p.n"
+                           style="width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border);" />
+                    } @else {
+                      <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--accent); font-weight: 700;">
+                        {{ p.n ? p.n.charAt(0).toUpperCase() : 'P' }}
+                      </div>
+                    }
+                    <div style="display: flex; flex-direction: column;">
+                      <a [routerLink]="['/app/products', p.id]"
+                         style="font-weight: 700; font-size: 13px; color: var(--text); text-decoration: none;"
+                         class="hover:text-primary">
+                        {{ p.n }}
+                      </a>
+                      <span style="font-size: 10px; color: var(--text3);">
+                        {{ p.cat }} • {{ p.department }}
+                      </span>
                     </div>
                   </div>
                 </td>
-                <td class="mono" style="font-size:11px;color:var(--text2);">{{ p.sku }}</td>
-                <td><span class="badge badge-accent">{{ p.cat }}</span></td>
-                <td class="mono" style="text-align:right;font-weight:700;">₦{{ (p.price || 0).toLocaleString() }}</td>
+
+                <!-- SKU & Barcode -->
                 <td>
-                  <span class="badge" [ngClass]="{
-                    'badge-green': p.tax === 'ZERO',
-                    'badge-purple': p.tax === 'EXEMPT',
-                    'badge-dim': p.tax === 'STANDARD'
-                  }">{{ p.tax }}</span>
+                  <div style="display: flex; flex-direction: column;" class="mono">
+                    <span style="font-weight: 700; font-size: 11.5px; color: var(--text);">{{ p.sku }}</span>
+                    <span style="font-size: 10px; color: var(--text3);">{{ p.barcode }}</span>
+                  </div>
                 </td>
-                <td><span class="badge" [ngClass]="p.status === 'ACTIVE' ? 'badge-green' : 'badge-red'">{{ p.status }}</span></td>
-                <td style="text-align:right;">
-                  <div style="display:flex;gap:8px;justify-content:flex-end;">
-                    <a [routerLink]="['/app/products', p.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View</a>
-                    @if (!authService.isSuperAdmin()) {
-                      <a [routerLink]="['/app/products', p.id, 'edit']" class="btn btn-secondary btn-xs" style="text-decoration:none;">Edit</a>
-                      <button class="btn btn-danger btn-xs" (click)="deleteProduct(p.id)" style="background:var(--red);border-color:var(--red);">Delete</button>
+
+                <!-- Retail & Margin -->
+                <td style="text-align: right;" class="mono">
+                  <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                    <span style="font-weight: 700; font-size: 13px; color: var(--text);">₦{{ formatNum(p.price) }}</span>
+                    <span style="font-size: 10px; color: var(--green); font-weight: 600;">
+                      Cost ₦{{ formatNum(p.cost) }} ({{ p.marginPct }}%)
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Stock Level -->
+                <td>
+                  <div style="display: flex; flex-direction: column; gap: 4px; width: 110px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px;">
+                      <span class="mono" style="font-weight: 700;"
+                            [style.color]="p.stockStatus === 'OUT' ? 'var(--red)' : p.stockStatus === 'LOW' ? 'var(--amber)' : 'var(--text)'">
+                        {{ p.stockLevel }} units
+                      </span>
+                      <span class="badge" [ngClass]="{
+                        'badge-green': p.stockStatus === 'OPTIMAL',
+                        'badge-amber': p.stockStatus === 'LOW',
+                        'badge-red': p.stockStatus === 'OUT'
+                      }" style="font-size: 9px; padding: 1px 4px;">
+                        {{ p.stockStatus === 'OPTIMAL' ? 'In Stock' : p.stockStatus === 'LOW' ? 'Low' : 'Out' }}
+                      </span>
+                    </div>
+                    <div style="background: var(--surface2); height: 4px; border-radius: 2px; overflow: hidden;">
+                      <div [style.background]="p.stockStatus === 'OUT' ? 'var(--red)' : p.stockStatus === 'LOW' ? 'var(--amber)' : 'var(--green)'"
+                           style="height: 100%; border-radius: 2px;"
+                           [style.width.%]="p.stockStatus === 'OUT' ? 0 : p.stockStatus === 'LOW' ? 25 : 85"></div>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- Multi-Store Allocation -->
+                <td>
+                  <div style="display: flex; flex-direction: column; gap: 2px; font-size: 11px;" class="mono">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                      <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--green);"></span>
+                      <span style="font-weight: 600; color: var(--text);">Assigned: {{ p.downtownStock }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px; color: var(--text3); font-size: 10px;">
+                      <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--text3);"></span>
+                      <span>Branch: {{ p.westsideStock }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- POS Fast-Grid Allocation Badge -->
+                <td style="text-align: center;">
+                  <button type="button" (click)="cycleFastGridTile(p, $event)"
+                          title="Click to cycle touch screen quick tile assignment"
+                          class="badge"
+                          [ngClass]="p.fastGridTile !== 'Disabled' ? 'badge-accent' : 'badge-dim'"
+                          style="cursor: pointer; padding: 3px 8px; font-size: 10.5px; border: 1px solid var(--border);">
+                    <svg style="width: 10px; height: 10px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    <span>{{ p.fastGridTile || 'Disabled' }}</span>
+                  </button>
+                </td>
+
+                <!-- Actions -->
+                <td style="text-align: right;">
+                  <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                    <a [routerLink]="['/app/products', p.id]" class="btn btn-secondary btn-xs" style="text-decoration: none;">
+                      View
+                    </a>
+                    @if (isOwner()) {
+                      <a [routerLink]="['/app/products', p.id, 'edit']" class="btn btn-secondary btn-xs" style="text-decoration: none;">
+                        Edit
+                      </a>
+                      <button type="button" (click)="deleteProduct(p.id, $event)" title="Delete" class="btn btn-danger btn-xs">
+                        Delete
+                      </button>
                     }
                   </div>
                 </td>
@@ -89,14 +427,13 @@
     </div>
   }
 
-  @if (isScannerOpen()) {
-    <div class="modal-backdrop" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:2000;padding:20px;">
-      <app-barcode-scanner (scanned)="handleScan($event)" (closed)="closeScanner()"></app-barcode-scanner>
-    </div>
-  }
 </div>
 
-<style>
-  .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+<!-- ═══════════════════════════════════════════════════
+     6. CAMERA BARCODE SCANNER MODAL
+════════════════════════════════════════════════════ -->
+@if (isScannerOpen()) {
+  <div class="modal-bg">
+    <app-barcode-scanner (scanned)="handleScan($event)" (closed)="closeScanner()"></app-barcode-scanner>
+  </div>
+}

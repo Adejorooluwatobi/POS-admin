@@ -1,70 +1,330 @@
-<div class="fade-up">
-  <!-- Header -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+<div class="fade-up" style="max-width:1440px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
+  <!-- Header Bar -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
     <div>
-      <div style="font-size:24px;font-weight:800;letter-spacing:-.02em;">Till Sessions</div>
-      <div style="font-size:12px;color:var(--text3);">Monitor active shifts, cash floats and session history</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:10px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;border:1px solid rgba(79,70,229,0.2);">
+          <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <line x1="6" y1="12" x2="18" y2="12"></line>
+            <line x1="6" y1="8" x2="10" y2="8"></line>
+            <line x1="6" y1="16" x2="14" y2="16"></line>
+          </svg>
+        </div>
+        <div>
+          <h1 style="font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--text);margin:0;">Till Sessions & Shift Ledger</h1>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">
+            Real-time cashier shift audit, cash drawer floats, expected intake, and end-of-day discrepancy reconciliation
+          </div>
+        </div>
+      </div>
     </div>
-    <button class="btn btn-secondary" (click)="loadSessions()" style="padding:10px 16px;font-size:13px;border-radius:10px;">
-      Refresh Sessions
-    </button>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a routerLink="/app/terminals" class="btn btn-secondary" style="display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12px;border-radius:10px;text-decoration:none;">
+        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        <span>POS Terminals</span>
+      </a>
+      <button class="btn btn-secondary" (click)="loadAll()" [disabled]="isLoading()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12px;border-radius:10px;">
+        <svg [class.animate-spin]="isLoading()" style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>Refresh Ledger</span>
+      </button>
+    </div>
   </div>
 
+  <!-- Bento KPI Row -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;">
+    <!-- Active Shifts -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Active Register Shifts</div>
+          <div style="font-size:24px;font-weight:900;color:var(--text);margin-top:6px;display:flex;align-items:center;gap:8px;">
+            <span>{{ activeShiftsCount() }}</span>
+            @if (activeShiftsCount() > 0) {
+              <span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;display:flex;align-items:center;gap:4px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;"></span>
+                ONLINE
+              </span>
+            }
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        {{ activeShiftsCount() }} frontline cashiers currently logged in
+      </div>
+    </div>
+
+    <!-- Active Float in Drawers -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Current Float Deployed</div>
+          <div class="mono" style="font-size:24px;font-weight:900;color:var(--accent);margin-top:6px;">
+            ₦{{ totalFloatInDrawers() | number:'1.2-2' }}
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+            <path d="M6 12h.01M18 12h.01"></path>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        Base cash float assigned to active tills
+      </div>
+    </div>
+
+    <!-- Discrepancy Alerts -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Variance Incidents</div>
+          <div style="font-size:24px;font-weight:900;margin-top:6px;" [style.color]="discrepancyCount() > 0 ? 'var(--red)' : 'var(--text)'">
+            {{ discrepancyCount() }}
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(239,68,68,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        {{ discrepancyCount() === 0 ? 'Zero till discrepancies detected' : discrepancyCount() + ' shift(s) require forensic review' }}
+      </div>
+    </div>
+
+    <!-- Net Drift / Variance -->
+    <div class="card" style="padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">Net Drift / Variance</div>
+          <div class="mono" style="font-size:24px;font-weight:900;margin-top:6px;" [style.color]="netDiscrepancy() < 0 ? 'var(--red)' : (netDiscrepancy() > 0 ? '#10b981' : 'var(--text)')">
+            {{ netDiscrepancy() === 0 ? '₦0.00' : (netDiscrepancy() > 0 ? '+₦' + (netDiscrepancy() | number:'1.2-2') : '-₦' + ((netDiscrepancy() * -1) | number:'1.2-2')) }}
+          </div>
+        </div>
+        <div style="width:34px;height:34px;border-radius:10px;background:rgba(100,116,139,0.1);color:var(--text2);display:flex;align-items:center;justify-content:center;">
+          <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+        Cumulative overage vs. shortage drift
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="card" style="padding:12px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <!-- Search -->
+    <div style="position:relative;flex:1;min-width:240px;max-width:400px;">
+      <svg style="width:14px;height:14px;position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Filter by terminal, cashier, or session ID..."
+             style="width:100%;padding:8px 12px 8px 34px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text);outline:none;">
+    </div>
+
+    <!-- Status Tabs -->
+    <div style="display:flex;align-items:center;gap:4px;background:var(--surface2);padding:3px;border-radius:9px;border:1px solid var(--border);">
+      <button (click)="filterStatus.set('ALL')" [class.active-pill]="filterStatus() === 'ALL'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        All Shifts ({{ sessions().length }})
+      </button>
+      <button (click)="filterStatus.set('OPEN')" [class.active-pill]="filterStatus() === 'OPEN'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Active ({{ activeShiftsCount() }})
+      </button>
+      <button (click)="filterStatus.set('CLOSED')" [class.active-pill]="filterStatus() === 'CLOSED'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Closed ({{ sessions().length - activeShiftsCount() }})
+      </button>
+      <button (click)="filterStatus.set('DISCREPANCY')" [class.active-pill]="filterStatus() === 'DISCREPANCY'"
+              style="padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;">
+        Discrepancies ({{ discrepancyCount() }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Forensic Shifts Ledger -->
   @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading sessions...</span>
+    <div class="card" style="padding:80px;text-align:center;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div class="spinner" style="width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--text);">Loading till shifts...</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px;">Connecting to frontline terminals ledger</div>
+    </div>
+  } @else if (filteredSessions().length === 0) {
+    <!-- Empty State -->
+    <div class="card" style="padding:60px 24px;text-align:center;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
+      <div style="width:48px;height:48px;border-radius:14px;background:var(--surface2);color:var(--text3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1px solid var(--border);">
+        <svg style="width:24px;height:24px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+          <line x1="6" y1="12" x2="18" y2="12"></line>
+        </svg>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);">No Till Sessions Found</div>
+      <div style="font-size:12px;color:var(--text3);margin:4px auto 0;max-width:440px;line-height:1.5;">
+        @if (searchTerm() || filterStatus() !== 'ALL') {
+          No sessions match your search or status filter criteria. Try clearing filters.
+        } @else {
+          Once cashiers log into frontline POS registers and declare opening cash drawer floats, their shift records and float reconciliations will stream into this audit ledger in real time.
+        }
+      </div>
+      @if (searchTerm() || filterStatus() !== 'ALL') {
+        <button (click)="searchTerm.set(''); filterStatus.set('ALL')" class="btn btn-secondary" style="margin-top:16px;font-size:12px;border-radius:8px;">
+          Clear Filters
+        </button>
+      }
     </div>
   } @else {
-    <div class="card">
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow:hidden;">
       <div style="overflow-x:auto;">
-        <table class="tbl">
+        <table class="tbl" style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
-            <tr>
-              <th>TERMINAL</th>
-              <th>STAFF</th>
-              <th>OPENED AT</th>
-              <th style="text-align:right;">OPEN FLOAT</th>
-              <th style="text-align:right;">CURRENT/CLOSE</th>
-              <th style="text-align:right;">VARIANCE</th>
-              <th>STATUS</th>
-              <th style="text-align:right;">ACTIONS</th>
+            <tr style="border-bottom:1px solid var(--border);background:var(--surface2);">
+              <th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">REGISTER / TERMINAL</th>
+              <th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">CASHIER ATTRIBUTION</th>
+              <th style="padding:12px 16px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">SHIFT TIMELINE</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">OPENING FLOAT</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">CLOSE / COUNT</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">VARIANCE</th>
+              <th style="padding:12px 16px;text-align:center;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">STATUS</th>
+              <th style="padding:12px 16px;text-align:right;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            @for (s of sessions(); track s.id) {
-              <tr>
-                <td>
-                  <div style="font-weight:600;font-size:13px;">{{ getTerminalName(s.terminalId) }}</div>
-                  <div style="font-size:10px;color:var(--text3);">Created: {{ s.createdAt | date:'MMM d, HH:mm' }}</div>
+            @for (s of filteredSessions(); track s.id) {
+              <tr style="border-bottom:1px solid var(--border);transition:background 0.15s;" class="table-row-hover">
+                <!-- Terminal -->
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:30px;height:30px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);">
+                      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                      </svg>
+                    </div>
+                    <div>
+                      <div style="font-weight:700;color:var(--text);">{{ getTerminalName(s.terminalId) }}</div>
+                      <div class="mono" style="font-size:10px;color:var(--text3);">{{ getTerminalCode(s.terminalId) }} &bull; Session #{{ (s.id || '').substring(0, 8) }}</div>
+                    </div>
+                  </div>
                 </td>
-                <td>
-                  <div style="font-size:13px;">{{ getStaffName(s.staffId) }}</div>
+
+                <!-- Cashier -->
+                <td style="padding:12px 16px;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="width:26px;height:26px;border-radius:50%;background:rgba(79,70,229,0.1);color:var(--accent);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:1px solid rgba(79,70,229,0.2);">
+                      {{ getStaffName(s.staffId).substring(0, 2).toUpperCase() }}
+                    </div>
+                    <div>
+                      <div style="font-weight:600;color:var(--text);">{{ getStaffName(s.staffId) }}</div>
+                      <div style="font-size:10px;color:var(--text3);">{{ getStaffRole(s.staffId) }}</div>
+                    </div>
+                  </div>
                 </td>
-                <td style="font-size:11px;color:var(--text2);">
-                  {{ (s.openedAt || s.openTime) | date:'MMM d, HH:mm' }}
+
+                <!-- Timeline -->
+                <td style="padding:12px 16px;">
+                  <div style="font-weight:500;color:var(--text2);">
+                    {{ (s.openedAt || s.openTime) | date:'MMM d, HH:mm' }}
+                  </div>
+                  <div style="font-size:10px;color:var(--text3);">
+                    @if (isOpen(s)) {
+                      <span style="color:#10b981;font-weight:600;">Currently In Progress</span>
+                    } @else {
+                      Closed: {{ (s.closedAt || s.closeTime) ? ((s.closedAt || s.closeTime) | date:'HH:mm') : '—' }}
+                    }
+                  </div>
                 </td>
-                <td class="mono" style="text-align:right;">₦{{ (s.openingFloat || s.openBalance || 0).toLocaleString() }}</td>
-                <td class="mono" style="text-align:right;font-weight:700;">
-                  ₦{{ (s.closingCash || s.closeBalance || 0).toLocaleString() }}
+
+                <!-- Opening Float -->
+                <td class="mono" style="padding:12px 16px;text-align:right;color:var(--text2);">
+                  ₦{{ (s.openingFloat || s.openBalance || 0) | number:'1.2-2' }}
                 </td>
-                <td class="mono" style="text-align:right;" [style.color]="(s.variance || 0) < 0 ? 'var(--red)' : 'var(--green)'">
-                  {{ (s.variance || 0) !== 0 ? '₦' + (s.variance || 0).toLocaleString() : '—' }}
+
+                <!-- Closing Cash / Current -->
+                <td class="mono" style="padding:12px 16px;text-align:right;font-weight:700;color:var(--text);">
+                  @if (s.closingCash !== null && s.closingCash !== undefined) {
+                    ₦{{ s.closingCash | number:'1.2-2' }}
+                  } @else {
+                    <span style="color:var(--text3);font-weight:400;font-size:11px;">Active Till</span>
+                  }
                 </td>
-                <td>
-                  <span class="badge" [ngClass]="(s.status === 'OPEN' || s.status === 'Open') ? 'badge-green' : 'badge-dim'">
-                    {{ s.status }}
-                  </span>
+
+                <!-- Variance -->
+                <td class="mono" style="padding:12px 16px;text-align:right;">
+                  @if ((s.variance || 0) === 0) {
+                    <span class="badge" style="background:var(--surface2);color:var(--text3);font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
+                      ₦0.00 (Balanced)
+                    </span>
+                  } @else if ((s.variance || 0) > 0) {
+                    <span class="badge" style="background:rgba(16,185,129,0.1);color:#10b981;font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid rgba(16,185,129,0.2);font-weight:700;">
+                      +₦{{ (s.variance || 0) | number:'1.2-2' }} (Overage)
+                    </span>
+                  } @else {
+                    <span class="badge" style="background:rgba(239,68,68,0.1);color:var(--red);font-size:10px;padding:3px 8px;border-radius:6px;border:1px solid rgba(239,68,68,0.2);font-weight:700;">
+                      -₦{{ ((s.variance || 0) * -1) | number:'1.2-2' }} (Shortage)
+                    </span>
+                  }
                 </td>
-                <td style="text-align:right;">
-                  <a [routerLink]="['/app/till-sessions', s.id]" class="btn btn-secondary btn-xs" style="text-decoration:none;">View Details</a>
+
+                <!-- Status -->
+                <td style="padding:12px 16px;text-align:center;">
+                  @if (isOpen(s)) {
+                    <span class="badge" style="background:rgba(16,185,129,0.12);color:#10b981;border:1px solid rgba(16,185,129,0.3);padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                      <span style="width:5px;height:5px;border-radius:50%;background:#10b981;animation:pulse 2s infinite;"></span>
+                      ACTIVE
+                    </span>
+                  } @else {
+                    <span class="badge" style="background:rgba(100,116,139,0.12);color:var(--text3);border:1px solid rgba(100,116,139,0.25);padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;">
+                      CLOSED
+                    </span>
+                  }
                 </td>
-              </tr>
-            }
-            @if (sessions().length === 0) {
-              <tr>
-                <td colspan="8" style="text-align:center;padding:40px;color:var(--text3);">
-                  No active or recent till sessions found.
+
+                <!-- Actions -->
+                <td style="padding:12px 16px;text-align:right;">
+                  <div style="display:inline-flex;align-items:center;gap:6px;">
+                    <button (click)="inspect(s)" class="btn btn-secondary" style="padding:4px 8px;font-size:11px;border-radius:6px;display:flex;align-items:center;gap:4px;">
+                      <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      <span>Quick View</span>
+                    </button>
+                    <a [routerLink]="['/app/till-sessions', s.id]" class="btn btn-primary" style="padding:4px 10px;font-size:11px;border-radius:6px;text-decoration:none;display:flex;align-items:center;gap:4px;">
+                      <span>Details & Z-Report</span>
+                      <svg style="width:10px;height:10px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
+                    </a>
+                  </div>
                 </td>
               </tr>
             }
@@ -75,8 +335,120 @@
   }
 </div>
 
+<!-- Slide-Out Quick Inspection Drawer -->
+@if (inspectingSession()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:90;display:flex;justify-content:flex-end;" (click)="closeDrawer()">
+    <div style="width:100%;max-width:440px;background:var(--surface);height:100%;box-shadow:-10px 0 30px rgba(0,0,0,0.3);padding:24px;display:flex;flex-direction:column;justify-content:space-between;border-left:1px solid var(--border);" (click)="$event.stopPropagation()">
+      <div style="display:flex;flex-direction:column;gap:20px;overflow-y:auto;">
+        <!-- Drawer Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:16px;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;">Till Shift Dossier</div>
+            <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:2px;">
+              Session #{{ (inspectingSession()?.id || '').substring(0, 8) }}
+            </div>
+          </div>
+          <button (click)="closeDrawer()" class="btn btn-secondary" style="padding:6px;border-radius:8px;">
+            <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Status Card -->
+        <div class="card" style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:12px;font-weight:600;color:var(--text2);">Shift Status</span>
+            <span class="badge" [style.background]="isOpen(inspectingSession()!) ? 'rgba(16,185,129,0.15)' : 'rgba(100,116,139,0.15)'"
+                  [style.color]="isOpen(inspectingSession()!) ? '#10b981' : 'var(--text3)'"
+                  style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px;">
+              {{ isOpen(inspectingSession()!) ? 'ACTIVE IN PROGRESS' : 'CLOSED SHIFT' }}
+            </span>
+          </div>
+          <div style="margin-top:12px;display:grid;gap:6px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:var(--text3);">Terminal:</span>
+              <strong style="color:var(--text);">{{ getTerminalName(inspectingSession()!.terminalId) }}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:var(--text3);">Cashier:</span>
+              <strong style="color:var(--text);">{{ getStaffName(inspectingSession()!.staffId) }}</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:var(--text3);">Opened:</span>
+              <span style="color:var(--text2);">{{ (inspectingSession()!.openedAt || inspectingSession()!.openTime) | date:'medium' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Float Reconciliation Card -->
+        <div class="card" style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">
+            Cash Float Reconciliation
+          </div>
+          <div style="display:grid;gap:10px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border);">
+              <span style="color:var(--text2);">Starting Float:</span>
+              <span class="mono" style="font-weight:600;color:var(--text);">₦{{ (inspectingSession()!.openingFloat || inspectingSession()!.openBalance || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border);">
+              <span style="color:var(--text2);">Expected in Drawer:</span>
+              <span class="mono" style="font-weight:700;color:var(--text);">₦{{ (inspectingSession()!.expectedCash || inspectingSession()!.expectedBalance || 0) | number:'1.2-2' }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:8px;border-bottom:1px solid var(--border);">
+              <span style="color:var(--text2);">Closing Actual Count:</span>
+              <span class="mono" style="font-weight:800;color:var(--accent);">
+                @if (inspectingSession()!.closingCash !== null && inspectingSession()!.closingCash !== undefined) {
+                  ₦{{ inspectingSession()!.closingCash | number:'1.2-2' }}
+                } @else {
+                  <span style="color:var(--text3);font-weight:400;font-size:12px;">Shift Active</span>
+                }
+              </span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+              <span style="font-weight:700;color:var(--text);">Cash Discrepancy:</span>
+              <span class="mono" style="font-weight:900;font-size:14px;" [style.color]="(inspectingSession()!.variance || 0) < 0 ? 'var(--red)' : ((inspectingSession()!.variance || 0) > 0 ? '#10b981' : 'var(--text)')">
+                {{ (inspectingSession()!.variance || 0) === 0 ? '₦0.00 (Balanced)' : ((inspectingSession()!.variance || 0) > 0 ? '+₦' + (inspectingSession()!.variance | number:'1.2-2') : '-₦' + ((inspectingSession()!.variance! * -1) | number:'1.2-2')) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        @if (inspectingSession()!.notes) {
+          <div class="card" style="padding:14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);">
+            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Shift Supervisor Notes</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.4;">{{ inspectingSession()!.notes }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- Drawer Bottom Action -->
+      <div style="padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;">
+        <button (click)="closeDrawer()" class="btn btn-secondary" style="flex:1;justify-content:center;padding:10px;font-size:12px;border-radius:10px;">
+          Close
+        </button>
+        <a [routerLink]="['/app/till-sessions', inspectingSession()!.id]" class="btn btn-primary" style="flex:1;justify-content:center;padding:10px;font-size:12px;border-radius:10px;text-decoration:none;display:flex;align-items:center;gap:6px;">
+          <span>Full Z-Report →</span>
+        </a>
+      </div>
+    </div>
+  </div>
+}
+
 <style>
+  .active-pill {
+    background: var(--surface) !important;
+    color: var(--accent) !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  .table-row-hover:hover {
+    background: rgba(79,70,229,0.03) !important;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .fade-up { animation: fadeUp 0.3s ease-out forwards; }
+  .animate-spin { animation: spin 0.8s linear infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.15); }
+  }
 </style>

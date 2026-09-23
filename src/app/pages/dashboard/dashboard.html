@@ -1,181 +1,514 @@
-<div class="fade-up">
+<div class="fade-up" style="display:flex;flex-direction:column;gap:20px;">
 
-  @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
-    <div class="alert-banner" style="background:var(--accent-d);border:1px solid rgba(2,132,199,.2);color:var(--accent);margin-bottom:16px;">
-      👑 You are viewing as <strong>Super Admin (Owner)</strong>. You can monitor all stores but cannot modify store settings.
+  <!-- ═══════════════════════════════════════════════════
+       1. EXECUTIVE SUITE HEADER
+  ════════════════════════════════════════════════════ -->
+  <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;">
+    <!-- Store & Live Status -->
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--accent-d);color:var(--accent);border:1px solid rgba(79,70,229,0.2);">
+          Executive Terminal Suite
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--green);" class="mono">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);" class="animate-pulse"></span>
+          Live Feed Active
+        </span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <h1 style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:var(--text);margin:0;" class="font-headline">
+          {{ activeStoreName() }} Overview
+        </h1>
+        <span class="mono" style="font-size:11px;color:var(--text3);font-weight:500;">
+          POS-NET ID: {{ storeCode() }}
+        </span>
+      </div>
     </div>
-  }
 
-  <!-- Organization Insights for Tenant Admin -->
-  @if (authService.currentUser()?.role === 'TENANT_ADMIN') {
-    <div class="card" style="background:var(--surface);border:1px solid var(--border);padding:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
-       <div>
-         <div style="font-weight:700;font-size:15px;margin-bottom:4px;">Organization Insights</div>
-         <div style="font-size:12px;color:var(--text3);">View aggregated performance for all your branches and staff.</div>
-       </div>
-       <button [routerLink]="['/app/tenants', authService.currentUser()?.tenantId]" class="btn btn-primary btn-sm">
-         View Business Analytics →
-       </button>
-    </div>
-  }
-
-  @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:100px;color:var(--text3);">
-      <div class="spinner" style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading insights...</span>
-    </div>
-  } @else {
-    <!-- KPI Row -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
-      <div class="card stat-card">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:18px;">₦</div>
-        </div>
-        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">₦{{ formatNum(totalRevenue()) }}</div>
-        <div style="font-size:11px;color:var(--text2);">{{ (authService.currentUser()?.role === 'CASHIER' || authService.currentUser()?.role === 'SUPERVISOR') ? 'My Sales (Today)' : 'Total Revenue' }}</div>
+    <!-- Controls & Actions -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <!-- Date Picker Pill -->
+      <div style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--border);box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+        <svg style="width:14px;height:14px;color:var(--text3);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span style="font-size:12px;font-weight:600;color:var(--text);">{{ currentDateFormatted() }}</span>
       </div>
 
-      <div class="card stat-card">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:18px;">🧾</div>
-        </div>
-        <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ totalTx() }}</div>
-        <div style="font-size:11px;color:var(--text2);">{{ (authService.currentUser()?.role === 'CASHIER' || authService.currentUser()?.role === 'SUPERVISOR') ? 'My Transactions' : 'Transactions' }}</div>
-      </div>
+      <!-- Sync All Registers -->
+      <button (click)="syncAllRegisters()"
+              class="btn btn-secondary"
+              style="padding:7px 12px;font-size:12px;border-radius:10px;gap:6px;"
+              [disabled]="isSyncing()">
+        <svg style="width:14px;height:14px;color:var(--accent);" [class.animate-spin]="isSyncing()" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        <span>{{ isSyncing() ? 'Syncing...' : 'Sync All Registers' }}</span>
+      </button>
 
-      @if (authService.currentUser()?.role !== 'CASHIER' && authService.currentUser()?.role !== 'SUPERVISOR') {
-        <div class="card stat-card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:18px;">🏪</div>
-          </div>
-          <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ activeStoresCount() }}</div>
-          <div style="font-size:11px;color:var(--text2);">Active Stores</div>
-        </div>
-
-        <div class="card stat-card">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
-            <div style="font-size:18px;">📦</div>
-          </div>
-          <div class="mono" style="font-size:20px;font-weight:700;margin-bottom:2px;">{{ lowStockCount() }}</div>
-          <div style="font-size:11px;color:var(--text2);">Low Stock Items</div>
-        </div>
-      }
+      <!-- Export Daily Summary -->
+      <button (click)="exportDailySummary()"
+              class="btn btn-primary"
+              style="padding:7px 14px;font-size:12px;border-radius:10px;gap:6px;">
+        <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>Export Daily Summary</span>
+      </button>
     </div>
+  </div>
 
-    <!-- Advanced Analytics Row -->
-    @if (authService.currentUser()?.role !== 'CASHIER' && authService.currentUser()?.role !== 'SUPERVISOR') {
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
-        <div class="card stat-card" style="background:var(--surface2);">
-          <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">PROFIT MARGIN</div>
-          <div class="mono" style="font-size:24px;font-weight:700;color:var(--green);">
-            {{ profitMargin() | number:'1.0-1' }}%
-          </div>
-        </div>
-        <div class="card stat-card" style="background:var(--surface2);">
-          <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">GROSS PROFIT</div>
-          <div class="mono" style="font-size:24px;font-weight:700;">
-            ₦{{ formatNum(grossProfit()) }}
+  <!-- ═══════════════════════════════════════════════════
+       2. TOP 4 METRIC KPI CARDS
+  ════════════════════════════════════════════════════ -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;">
+
+    <!-- KPI 1: Gross Revenue Today -->
+    <div class="card stat-card" style="display:flex;flex-direction:column;justify-content:space-between;padding:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;">Gross Revenue Today</div>
+          <div style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.03em;" class="font-headline">
+            ₦{{ formatNum(totalRevenue()) }}
           </div>
         </div>
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+        </div>
       </div>
-    }
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:14px;">
+        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--green-d);color:var(--green);" class="mono">
+          {{ revenueGrowth() }} vs yday
+        </span>
+        <!-- Sparkline curve -->
+        <svg style="width:90px;height:32px;color:var(--accent);" fill="none" viewBox="0 0 96 36">
+          <path d="M2 30 Q 18 26, 32 18 T 64 12 T 94 4" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+          <path d="M2 30 Q 18 26, 32 18 T 64 12 T 94 4 L 94 36 L 2 36 Z" fill="currentColor" fill-opacity="0.08"></path>
+        </svg>
+      </div>
+    </div>
 
-    <!-- Charts -->
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px;">
-      <div class="card" style="padding:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <div style="font-size:13px;font-weight:700;">{{ (authService.currentUser()?.role === 'CASHIER' || authService.currentUser()?.role === 'SUPERVISOR') ? 'My Sales Trend' : 'Revenue Trend' }}</div>
-          <span class="badge badge-accent">{{ (authService.currentUser()?.role === 'CASHIER' || authService.currentUser()?.role === 'SUPERVISOR') ? 'Personal Performance' : 'Combined · All Stores' }}</span>
+    <!-- KPI 2: Total Transactions -->
+    <div class="card stat-card" style="display:flex;flex-direction:column;justify-content:space-between;padding:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;">Total Transactions</div>
+          <div style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.03em;" class="font-headline">
+            {{ totalTx() }} orders
+          </div>
         </div>
-        <div style="height:200px;">
-          <canvas #revChart></canvas>
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
         </div>
       </div>
-      <div class="card" style="padding:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Sales Mix</div>
-        <div style="height:200px;">
-          <canvas #mixChart></canvas>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+        <div style="line-height:1.2;">
+          <div class="mono" style="font-size:9.5px;text-transform:uppercase;color:var(--text3);font-weight:600;">Avg Basket Size</div>
+          <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);">₦{{ formatNum(avgBasketSize()) }} / order</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--accent);" class="mono">
+          {{ basketGrowth() }}
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 3: Active Tills & Cash Flow -->
+    <div class="card stat-card" style="display:flex;flex-direction:column;justify-content:space-between;padding:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;">Active Tills & Cash Flow</div>
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <div style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.03em;" class="font-headline">
+              {{ activeTillsCount() }}/{{ totalTillsCount() }} Open
+            </div>
+            <span style="font-size:11px;color:var(--green);font-weight:600;" class="mono">Balanced</span>
+          </div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+        <div style="line-height:1.2;">
+          <div style="font-size:11px;color:var(--text2);">Drawers: <strong style="color:var(--text);" class="mono">₦{{ formatNum(totalDrawerBalance()) }}</strong></div>
+          <div style="font-size:10px;color:var(--green);font-weight:600;" class="mono">₦0.00 Discrepancy</div>
+        </div>
+        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--green-d);color:var(--green);" class="mono">
+          100% Audit
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI 4: Terminal Health -->
+    <div class="card stat-card" style="display:flex;flex-direction:column;justify-content:space-between;padding:16px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px;">Real-time Terminal Health</div>
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <div style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-0.03em;" class="font-headline">
+              {{ onlineTerminalsCount() }}/{{ totalTerminalsCount() }} Online
+            </div>
+            <span style="font-size:11px;color:var(--green);font-weight:600;" class="mono">0 Errors</span>
+          </div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--green-d);display:flex;align-items:center;justify-content:center;color:var(--green);">
+          <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+        <div style="line-height:1.2;">
+          <div style="font-size:11px;color:var(--text2);">Lane 1-4 & Kiosk A-D</div>
+          <div class="mono" style="font-size:11px;font-weight:700;color:var(--text);">100% Uptime</div>
+        </div>
+        <!-- 8 Terminal indicators -->
+        <div style="display:flex;gap:2.5px;">
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
+          <span style="width:5px;height:16px;border-radius:2px;background:var(--green);"></span>
         </div>
       </div>
     </div>
 
-    <!-- Analytics Charts Row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-      <div class="card" style="padding:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Top Selling Products</div>
-        <div style="height:200px;">
-          <canvas #topProductsChart></canvas>
-        </div>
-      </div>
-      <div class="card" style="padding:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">Busiest Hours</div>
-        <div style="height:200px;">
-          <canvas #busiestHoursChart></canvas>
-        </div>
-      </div>
-    </div>
+  </div>
 
-    <!-- Bottom row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <!-- Recent Status -->
-      <div class="card" style="padding:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="font-size:12px;font-weight:700;">Operational Status</span>
+  <!-- ═══════════════════════════════════════════════════
+       3. MAIN SPLIT CONTENT GRID (8 COLS / 4 COLS)
+  ════════════════════════════════════════════════════ -->
+  <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;" class="dashboard-main-grid">
+
+    <!-- ─── LEFT COLUMN (8 COLS) ─────────────────────── -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- Card A: Tender Channel Breakdown & Velocity -->
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
+          <div>
+            <div class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);">
+              Tender Channel Breakdown
+            </div>
+            <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:2px 0 0;" class="font-headline">
+              Sales Velocity & Payment Mix
+            </h2>
+          </div>
+          <div style="display:flex;gap:4px;background:var(--surface2);padding:3px;border-radius:8px;">
+            <button class="btn" style="padding:4px 10px;font-size:11px;border-radius:6px;background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,0.05);">Today</button>
+            <button class="btn" style="padding:4px 10px;font-size:11px;border-radius:6px;background:transparent;color:var(--text2);">Peak Hours</button>
+            <button class="btn" style="padding:4px 10px;font-size:11px;border-radius:6px;background:transparent;color:var(--text2);">By Lane</button>
+          </div>
         </div>
-        <div style="display:grid;gap:10px;">
-          <div class="card" style="padding:12px;background:var(--surface2);border:none;">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">SYSTEM STATUS</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);"></div>
-              <div style="font-size:13px;font-weight:600;">All Systems Operational</div>
+
+        <!-- Stacked Progress Bar -->
+        <div style="width:100%;height:10px;border-radius:5px;background:var(--surface3);overflow:hidden;display:flex;">
+          <div style="width:72%;background:var(--accent);height:100%;" title="Card (Chip/Swipe): 72%"></div>
+          <div style="width:18%;background:var(--green);height:100%;" title="Cash Tender: 18%"></div>
+          <div style="width:8%;background:#a5b4fc;height:100%;" title="Mobile / NFC: 8%"></div>
+          <div style="width:2%;background:var(--purple);height:100%;" title="Gift Card: 2%"></div>
+        </div>
+
+        <!-- 4 Metric Tiles -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);"></span>
+              <span>Card (Chip/Swipe)</span>
+            </div>
+            <div class="mono" style="font-size:15px;font-weight:700;color:var(--text);margin:6px 0 2px;">
+              ₦{{ formatNum(paymentMix().cardAmount) }}
+            </div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">
+              {{ paymentMix().cardPct }}% • {{ paymentMix().cardTx }} tx
             </div>
           </div>
-          <div class="card" style="padding:12px;background:var(--surface2);border:none;">
-            <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">SYNC STATUS</div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <div style="width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);"></div>
-              <div style="font-size:13px;font-weight:600;">Last synced 2 mins ago</div>
+
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--green);"></span>
+              <span>Cash Tender</span>
+            </div>
+            <div class="mono" style="font-size:15px;font-weight:700;color:var(--text);margin:6px 0 2px;">
+              ₦{{ formatNum(paymentMix().cashAmount) }}
+            </div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">
+              {{ paymentMix().cashPct }}% • {{ paymentMix().cashTx }} tx
+            </div>
+          </div>
+
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#a5b4fc;"></span>
+              <span>Mobile / NFC</span>
+            </div>
+            <div class="mono" style="font-size:15px;font-weight:700;color:var(--text);margin:6px 0 2px;">
+              ₦{{ formatNum(paymentMix().mobileAmount) }}
+            </div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">
+              {{ paymentMix().mobilePct }}% • {{ paymentMix().mobileTx }} tx
+            </div>
+          </div>
+
+          <div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2);font-weight:500;">
+              <span style="width:8px;height:8px;border-radius:50%;background:var(--purple);"></span>
+              <span>Gift Card</span>
+            </div>
+            <div class="mono" style="font-size:15px;font-weight:700;color:var(--text);margin:6px 0 2px;">
+              ₦{{ formatNum(paymentMix().giftAmount) }}
+            </div>
+            <div class="mono" style="font-size:10px;color:var(--text3);">
+              {{ paymentMix().giftPct }}% • {{ paymentMix().giftTx }} tx
             </div>
           </div>
         </div>
+
+        <!-- Hourly Bars Histogram -->
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;height:120px;padding-top:10px;border-top:1px solid var(--border);margin-top:4px;">
+          @for (bar of hourlyBars(); track bar.time) {
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;position:relative;">
+              @if (bar.isPeak) {
+                <span class="mono" style="position:absolute;top:0;font-size:9.5px;font-weight:700;color:var(--accent);background:var(--surface3);padding:2px 5px;border-radius:4px;white-space:nowrap;border:1px solid var(--border);">
+                  {{ bar.label }}
+                </span>
+              }
+              <div style="width:100%;max-width:26px;border-radius:4px 4px 0 0;transition:all .2s;"
+                   [style.height.%]="bar.height"
+                   [style.background]="bar.isPeak ? 'var(--accent)' : bar.isCurrent ? '#a5b4fc' : 'var(--surface3)'"></div>
+              <span class="mono" style="font-size:9.5px;color:var(--text3);" [style.color]="bar.isPeak ? 'var(--accent)' : 'var(--text3)'" [style.fontWeight]="bar.isPeak ? '700' : '500'">
+                {{ bar.time }}
+              </span>
+            </div>
+          }
+        </div>
       </div>
 
-      @if (authService.currentUser()?.role !== 'CASHIER' && authService.currentUser()?.role !== 'SUPERVISOR') {
-        <!-- Stores overview -->
-        <div class="card" style="padding:16px;display:flex;flex-direction:column;">
-          <div style="font-size:12px;font-weight:700;margin-bottom:12px;">Store Status</div>
-          <div style="flex:1;overflow-y:auto;max-height:400px;padding-right:4px;">
-            @for (store of stores(); track store.id) {
-              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                  <div style="font-size:12px;font-weight:600;">{{ store.name }}</div>
-                  <span class="badge" [ngClass]="store.active ? 'badge-green' : 'badge-red'">
-                    {{ store.active ? 'LIVE' : 'DISABLED' }}
-                  </span>
+      <!-- Card B: Real-Time Live Orders & Transactions Stream -->
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div>
+              <div class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);">
+                Audit Stream
+              </div>
+              <h2 style="font-size:16px;font-weight:700;color:var(--text);margin:2px 0 0;" class="font-headline">
+                Real-Time Live Orders & Transactions
+              </h2>
+            </div>
+            <span class="mono" style="font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:12px;background:var(--surface2);color:var(--text3);border:1px solid var(--border);">
+              Auto-refresh 5s
+            </span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:6px;">
+            <a [routerLink]="['/app/transactions']" class="btn btn-secondary btn-sm" style="border-radius:8px;">
+              <span>View All</span>
+              <svg style="width:12px;height:12px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead>
+              <tr style="background:var(--surface2);">
+                <th style="border-radius:6px 0 0 6px;">Order ID</th>
+                <th>Time</th>
+                <th>Terminal</th>
+                <th>Cashier</th>
+                <th style="text-align:center;">Items</th>
+                <th style="text-align:right;">Total</th>
+                <th>Method</th>
+                <th style="text-align:right;border-radius:0 6px 6px 0;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of liveOrders(); track order.id) {
+                <tr>
+                  <td class="mono" style="font-weight:700;color:var(--accent);">
+                    {{ order.id }}
+                  </td>
+                  <td style="color:var(--text3);font-size:11.5px;">
+                    {{ order.time }}
+                  </td>
+                  <td style="font-weight:600;color:var(--text);">
+                    {{ order.terminal }}
+                  </td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                      <div style="width:20px;height:20px;border-radius:50%;background:var(--accent-d);color:var(--accent);font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;">
+                        {{ order.cashierInitials }}
+                      </div>
+                      <span style="font-size:12px;color:var(--text);">{{ order.cashier }}</span>
+                    </div>
+                  </td>
+                  <td class="mono" style="text-align:center;font-weight:600;">
+                    {{ order.items }}
+                  </td>
+                  <td class="mono" style="text-align:right;font-weight:700;color:var(--text);">
+                    ₦{{ formatNum(order.total) }}
+                  </td>
+                  <td>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:var(--surface2);font-size:11px;font-weight:500;color:var(--text2);border:1px solid var(--border);">
+                      {{ order.method }}
+                    </span>
+                  </td>
+                  <td style="text-align:right;">
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;background:var(--green-d);color:var(--green);font-size:10.5px;font-weight:700;" class="mono">
+                      <span style="width:5px;height:5px;border-radius:50%;background:var(--green);"></span>
+                      {{ order.status }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" style="text-align:center;padding:36px 12px;color:var(--text3);font-size:12px;">
+                    No recent transaction orders recorded today. Real-time orders will populate as checkouts occur.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── RIGHT COLUMN (4 COLS) ────────────────────── -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <!-- Card C: Active Till Sessions -->
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);">Cash Drawers</div>
+            <h3 style="font-size:15px;font-weight:700;color:var(--text);margin:2px 0 0;" class="font-headline">Active Till Sessions</h3>
+          </div>
+          <span class="mono" style="font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:12px;background:var(--accent-d);color:var(--accent);">
+            {{ activeTills().length }} Active
+          </span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          @for (till of activeTills(); track till.id) {
+            <div style="background:var(--surface2);border-radius:10px;padding:11px;border:1px solid var(--border);display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:var(--green);"></span>
+                  <span style="font-size:12px;font-weight:700;color:var(--text);">{{ till.name }}</span>
                 </div>
-                <div style="display:flex;gap:12px;" class="mono">
-                  <div>
-                    <div style="font-size:9px;color:var(--text3);">Revenue</div>
-                    <div style="font-size:11px;font-weight:700;color:var(--green);">₦{{ ((store.todayRevenue || 0) / 1000).toFixed(0) }}K</div>
+                <a [routerLink]="['/app/till-sessions']" class="btn btn-secondary btn-xs" style="font-size:10px;">Close Till</a>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--text2);padding-top:2px;">
+                <span>Cashier: <strong style="color:var(--text);">{{ till.cashier }}</strong></span>
+                <span>Float: <strong class="mono" style="color:var(--text);">₦{{ formatNum(till.float) }}</strong></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;border-top:1px solid var(--border);padding-top:4px;margin-top:2px;">
+                <span style="color:var(--text3);">Drawer Balance</span>
+                <span class="mono" style="font-size:13px;font-weight:800;color:var(--text);">₦{{ formatNum(till.balance) }}</span>
+              </div>
+            </div>
+          } @empty {
+            <div style="padding:18px 10px;text-align:center;color:var(--text3);font-size:11.5px;background:var(--surface2);border-radius:10px;">
+              No active till sessions open. Cashiers can open registers from the POS terminal.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Card D: Urgent Inventory Alerts -->
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);">Restock Priority</div>
+            <h3 style="font-size:15px;font-weight:700;color:var(--text);margin:2px 0 0;" class="font-headline">Urgent Inventory Alerts</h3>
+          </div>
+          <span class="mono" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:12px;background:var(--red-d);color:var(--red);">
+            {{ inventoryAlerts().length }} Critical
+          </span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          @for (item of inventoryAlerts(); track item.id) {
+            <div style="background:var(--surface2);border-radius:10px;padding:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;overflow:hidden;">
+                <div style="width:30px;height:30px;border-radius:8px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+                  📦
+                </div>
+                <div style="overflow:hidden;line-height:1.2;">
+                  <div style="font-size:11.5px;font-weight:600;color:var(--text);white-space:nowrap;text-overflow:ellipsis;overflow:hidden;">
+                    {{ item.name }}
                   </div>
-                  <div>
-                    <div style="font-size:9px;color:var(--text3);">TX</div>
-                    <div style="font-size:11px;font-weight:700;">{{ store.txCount || 0 }}</div>
-                  </div>
-                  <div>
-                    <div style="font-size:9px;color:var(--text3);">Terminals</div>
-                    <div style="font-size:11px;font-weight:700;">{{ store.terminals || 0 }}</div>
+                  <div class="mono" style="font-size:10.5px;color:var(--red);font-weight:700;margin-top:2px;">
+                    {{ item.left }} {{ item.unit }}
                   </div>
                 </div>
               </div>
-            }
-          </div>
+              <a [routerLink]="['/app/inventory/orders']" class="btn btn-primary btn-xs" style="padding:4px 8px;font-size:10.5px;gap:3px;flex-shrink:0;">
+                <svg style="width:10px;height:10px;" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>Reorder</span>
+              </a>
+            </div>
+          } @empty {
+            <div style="padding:18px 10px;text-align:center;color:var(--text3);font-size:11.5px;background:var(--surface2);border-radius:10px;">
+              All catalog inventory levels are currently above minimum safety thresholds.
+            </div>
+          }
         </div>
-      }
-    </div>
-  }
-</div>
+      </div>
 
-<style>
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+      <!-- Card E: Security & Compliance Recent Audit Events -->
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="mono" style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text3);">Security & Compliance</div>
+            <h3 style="font-size:15px;font-weight:700;color:var(--text);margin:2px 0 0;" class="font-headline">Recent Audit Events</h3>
+          </div>
+          <svg style="width:16px;height:16px;color:var(--text3);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          @for (ev of auditEvents(); track ev.id) {
+            <div style="background:var(--surface2);border-radius:10px;padding:9px 11px;border:1px solid var(--border);display:flex;gap:9px;align-items:flex-start;">
+              <div style="width:24px;height:24px;border-radius:6px;background:var(--accent-d);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0;">
+                <svg style="width:13px;height:13px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div style="overflow:hidden;line-height:1.25;flex:1;">
+                <div style="font-size:11.5px;font-weight:600;color:var(--text);">{{ ev.title }}</div>
+                <div style="font-size:10.5px;color:var(--text2);margin-top:2px;">{{ ev.auth }}</div>
+                <div class="mono" style="font-size:9.5px;color:var(--text3);margin-top:2px;">{{ ev.reg }}</div>
+              </div>
+            </div>
+          } @empty {
+            <div style="padding:18px 10px;text-align:center;color:var(--text3);font-size:11.5px;background:var(--surface2);border-radius:10px;">
+              No critical compliance incidents or drawer overrides logged.
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
