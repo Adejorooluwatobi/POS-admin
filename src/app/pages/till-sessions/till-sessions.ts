@@ -1,10 +1,11 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TillService } from '../../services/till.service';
 import { TerminalService } from '../../services/terminal.service';
 import { StaffService } from '../../services/staff.service';
+import { ContextService } from '../../services/context.service';
 import { TillSession, Terminal, Staff } from '../../models/pos.models';
 
 @Component({
@@ -51,6 +52,15 @@ export class TillSessionsComponent implements OnInit {
     const status = this.filterStatus();
     let list = this.sessions();
 
+    const storeId = this.contextService.selectedStoreId();
+    if (storeId) {
+      list = list.filter(s => {
+        if ((s as any).storeId) return (s as any).storeId === storeId;
+        const terminal = this.terminals().find(t => t.id === s.terminalId);
+        return terminal ? terminal.storeId === storeId : true;
+      });
+    }
+
     if (status === 'OPEN') {
       list = list.filter(s => this.isOpen(s));
     } else if (status === 'CLOSED') {
@@ -72,11 +82,18 @@ export class TillSessionsComponent implements OnInit {
   constructor(
     private tillService: TillService,
     private terminalService: TerminalService,
-    private staffService: StaffService
-  ) {}
+    private staffService: StaffService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadAll();
+    });
+  }
 
   ngOnInit() {
-    this.loadAll();
+    // Initial load handled by effect
   }
 
   async loadAll() {

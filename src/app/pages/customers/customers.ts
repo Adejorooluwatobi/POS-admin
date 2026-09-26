@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { Customer } from '../../models/pos.models';
 
 @Component({
@@ -50,14 +51,21 @@ export class CustomersComponent implements OnInit {
 
   constructor(
     private customerService: CustomerService,
-    private authService: AuthService
+    public authService: AuthService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'STORE_MANAGER');
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadCustomers();
+    });
   }
 
   ngOnInit() {
-    this.loadCustomers();
+    // Initial load handled by effect
   }
 
   async loadCustomers() {

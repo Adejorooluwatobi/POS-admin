@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
 import { TenantService } from '../../services/tenant.service';
+import { ContextService } from '../../services/context.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Store } from '../../models/pos.models';
 
@@ -55,19 +56,26 @@ export class StoresComponent implements OnInit {
     private storeService: StoreService, 
     private authService: AuthService,
     private tenantService: TenantService,
+    public contextService: ContextService,
     private route: ActivatedRoute
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'TENANT_ADMIN');
     this.isSuperAdmin.set(user?.role === 'SUPER_ADMIN');
+
+    effect(() => {
+      const activeTenant = this.contextService.selectedTenantId();
+      this.selectedTenantId.set(activeTenant);
+      this.loadStores();
+    });
   }
 
   async ngOnInit() {
     this.route.queryParams.subscribe(params => {
       if (params['tenantId']) {
         this.selectedTenantId.set(params['tenantId']);
+        this.contextService.switchTenant(params['tenantId']);
       }
-      this.loadStores();
     });
 
     if (this.isSuperAdmin()) {

@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StoreService } from '../../services/store.service';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { AnalyticsService } from '../../services/analytics.service';
 import { TillService } from '../../services/till.service';
 import { TerminalService } from '../../services/terminal.service';
@@ -83,6 +84,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     public authService: AuthService,
+    public contextService: ContextService,
     private storeService: StoreService,
     private transactionService: TransactionService,
     private analyticsService: AnalyticsService,
@@ -98,21 +100,28 @@ export class DashboardComponent implements OnInit {
       day: 'numeric',
       year: 'numeric'
     }));
+
+    // React to tenant or store context changes automatically
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadDashboardData();
+    });
   }
 
   ngOnInit() {
-    this.loadDashboardData();
+    // Initial load handled by effect
   }
 
   async loadDashboardData() {
     this.isLoading.set(true);
     try {
       const user = this.authService.currentUser();
-      const tenantId = user?.tenantId;
+      const tenantId = this.contextService.effectiveTenantId();
 
-      // Parallel execution of all real endpoints
+      // Parallel execution of all real endpoints (automatically scoped via interceptor headers)
       const [storesRes, txRes, tillsRes, terminalsRes, invRes, auditRes] = await Promise.allSettled([
-        this.storeService.getStores(),
+        this.storeService.getStores(1, 100, tenantId || undefined),
         this.transactionService.getTransactions(1, 20),
         this.tillService.getTillSessions(1, 10),
         this.terminalService.getTerminals(1, 50),
@@ -120,15 +129,13 @@ export class DashboardComponent implements OnInit {
         tenantId ? this.auditService.getAuditLogs(tenantId, 1, 5) : Promise.resolve({ items: [] })
       ]);
 
-      // 1. Process Stores
+      // 1. Process Stores & Context Headers
+      this.activeStoreName.set(this.contextService.selectedStoreName());
+      this.storeCode.set(this.contextService.isSuperAdmin() ? this.contextService.selectedTenantName() : (user?.businessName || 'HQ-01'));
+
       if (storesRes.status === 'fulfilled' && storesRes.value) {
         const storesList = storesRes.value.items || storesRes.value || [];
         this.stores.set(Array.isArray(storesList) ? storesList : []);
-        if (storesList.length > 0) {
-          const s = storesList[0];
-          this.activeStoreName.set(s.name || 'Main Flagship Store');
-          this.storeCode.set(s.code || 'HQ-01');
-        }
       }
 
       // 2. Process Transactions & Orders

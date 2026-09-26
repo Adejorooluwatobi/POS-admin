@@ -1,10 +1,11 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { GiftCardService } from '../../services/gift-card.service';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
+import { ContextService } from '../../services/context.service';
 import { GiftCard, GiftCardTransaction, Store } from '../../models/pos.models';
 
 @Component({
@@ -68,7 +69,8 @@ export class GiftCardsComponent implements OnInit {
   constructor(
     private giftCardService: GiftCardService,
     public authService: AuthService,
-    private storeService: StoreService
+    private storeService: StoreService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isAdmin.set(
@@ -77,10 +79,16 @@ export class GiftCardsComponent implements OnInit {
       user?.role === 'MANAGER' ||
       user?.role === 'STORE_MANAGER'
     );
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadAll();
+    });
   }
 
   ngOnInit() {
-    this.loadAll();
+    // Handled by effect
   }
 
   async loadAll() {

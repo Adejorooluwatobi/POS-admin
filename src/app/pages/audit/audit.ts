@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 
 @Component({
   selector: 'app-audit',
@@ -64,20 +65,27 @@ export class AuditComponent implements OnInit {
 
   constructor(
     private auditService: AuditService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadLogs();
+    });
+  }
 
   ngOnInit() {
-    this.loadLogs();
+    // Initial load handled by effect
   }
 
   async loadLogs() {
-    const user = this.authService.currentUser();
-    if (!user?.tenantId) return;
+    const tenantId = this.contextService.effectiveTenantId();
+    if (!tenantId) return;
 
     this.isLoading.set(true);
     try {
-      const data = await this.auditService.getAuditLogs(user.tenantId, 1, 100);
+      const data = await this.auditService.getAuditLogs(tenantId, 1, 100);
       const items = data.items || data;
       const rawList = Array.isArray(items) ? items : [];
       this.logs.set(rawList.map((l: any) => ({

@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -6,6 +6,7 @@ import { StaffService } from '../../services/staff.service';
 import { StoreService } from '../../services/store.service';
 import { RoleService } from '../../services/role.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { Staff, Store, Role } from '../../models/pos.models';
 
 @Component({
@@ -29,18 +30,18 @@ export class StaffComponent implements OnInit {
   public filterRole = signal<string>('ALL');
   public filterStore = signal<string>('ALL');
 
-  public totalStaff = computed(() => this.staff().length);
-  public activeStaff = computed(() => this.staff().filter(s => s.active !== false).length);
-  public totalCashiers = computed(() => this.staff().filter(s => {
+  public totalStaff = computed(() => this.filteredStaff().length);
+  public activeStaff = computed(() => this.filteredStaff().filter(s => s.active !== false).length);
+  public totalCashiers = computed(() => this.filteredStaff().filter(s => {
     const roleName = this.getRoleName(s.roleId || '').toLowerCase();
     return s.role === 'Cashier' || s.role === '3' || roleName.includes('cashier');
   }).length);
-  public totalShiftRevenue = computed(() => this.staff().reduce((sum, s) => sum + (s.sales || 0), 0));
+  public totalShiftRevenue = computed(() => this.filteredStaff().reduce((sum, s) => sum + (s.sales || 0), 0));
 
   public filteredStaff = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const roleF = this.filterRole();
-    const storeF = this.filterStore();
+    const storeF = this.contextService.selectedStoreId() || this.filterStore();
     let list = this.staff();
 
     if (roleF !== 'ALL') {
@@ -56,7 +57,7 @@ export class StaffComponent implements OnInit {
       }
     }
 
-    if (storeF !== 'ALL') {
+    if (storeF && storeF !== 'ALL') {
       list = list.filter(s => s.storeId === storeF);
     }
 
@@ -76,7 +77,8 @@ export class StaffComponent implements OnInit {
     private staffService: StaffService,
     private storeService: StoreService,
     private roleService: RoleService,
-    private authService: AuthService
+    public authService: AuthService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.currentUser.set(user);
@@ -84,12 +86,19 @@ export class StaffComponent implements OnInit {
     this.canDelete.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
     this.assignedStoreId.set(user?.store || null);
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.filterStore.set(sId || 'ALL');
+      this.loadStaff();
+      this.loadStores();
+      this.loadRoles();
+    });
   }
 
   ngOnInit() {
-    this.loadStaff();
-    this.loadStores();
-    this.loadRoles();
+    // Initial load handled by effect
   }
 
   async loadStaff() {
@@ -101,16 +110,20 @@ export class StaffComponent implements OnInit {
       const user = this.currentUser();
 
       let filteredItems = rawList;
+      const effectiveStoreId = this.contextService.selectedStoreId();
+      if (effectiveStoreId) {
+        filteredItems = filteredItems.filter((s: any) => s.storeId === effectiveStoreId);
+      }
       if (user) {
         if (user.role === 'CASHIER') {
-          filteredItems = rawList.filter((s: any) => s.id === user.sub || s.email === user.email);
+          filteredItems = filteredItems.filter((s: any) => s.id === user.sub || s.email === user.email);
         } else if (user.role === 'SUPERVISOR') {
-          filteredItems = rawList.filter((s: any) => 
+          filteredItems = filteredItems.filter((s: any) => 
             (s.id === user.sub || s.email === user.email) || 
             (s.storeId === user.store && s.systemRole === 3)
           );
         } else if (user.role === 'STORE_MANAGER') {
-          filteredItems = rawList.filter((s: any) => s.storeId === user.store);
+          filteredItems = filteredItems.filter((s: any) => s.storeId === user.store);
         }
       }
 

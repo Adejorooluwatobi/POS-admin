@@ -1,10 +1,11 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, effect } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PromotionService } from '../../services/promotion.service';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
+import { ContextService } from '../../services/context.service';
 import { Promotion, Store } from '../../models/pos.models';
 
 @Component({
@@ -51,18 +52,25 @@ export class PromotionsComponent implements OnInit {
   constructor(
     private promotionService: PromotionService,
     private authService: AuthService,
-    private storeService: StoreService
+    private storeService: StoreService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'SUPERVISOR');
     this.isAdmin.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER');
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.contextService.selectedStoreId();
+      this.loadPromotions();
+      if (this.isAdmin()) {
+        this.loadStores();
+      }
+    });
   }
 
   ngOnInit() {
-    this.loadPromotions();
-    if (this.isAdmin()) {
-      this.loadStores();
-    }
+    // Initial load handled by effect
   }
 
   async loadStores() {
