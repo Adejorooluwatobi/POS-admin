@@ -25,13 +25,24 @@ export class ContextService {
   public selectedTenant = computed(() => {
     const id = this.selectedTenantId();
     if (!id) return null;
-    return this.tenants().find(t => t.id === id) || null;
+    const lowerId = id.toLowerCase();
+    return this.tenants().find(t => 
+      t.id === id || 
+      (t.id && t.id.toLowerCase() === lowerId) || 
+      (t.slug && t.slug.toLowerCase() === lowerId)
+    ) || null;
   });
 
   public selectedStore = computed(() => {
     const id = this.selectedStoreId();
     if (!id) return null;
-    return this.stores().find(s => s.id === id) || null;
+    const lowerId = id.toLowerCase();
+    return this.stores().find(s => 
+      s.id === id || 
+      (s.id && s.id.toLowerCase() === lowerId) || 
+      s.code === id || 
+      (s.code && s.code.toLowerCase() === lowerId)
+    ) || null;
   });
 
   public selectedTenantName = computed(() => {
@@ -44,11 +55,13 @@ export class ContextService {
   public selectedStoreName = computed(() => {
     const s = this.selectedStore();
     if (s) return s.name;
+    const t = this.selectedTenant();
+    if (t) return t.businessName;
     if (this.isSuperAdmin()) {
       return this.selectedTenantId() ? 'All Stores (Tenant-wide)' : 'All Stores (Global)';
     }
     if (this.isTenantAdmin()) {
-      return 'All Stores (Company-wide)';
+      return this.authService.currentUser()?.businessName || 'All Stores';
     }
     return 'Assigned Store';
   });

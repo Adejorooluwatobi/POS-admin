@@ -20,7 +20,7 @@
           {{ activeStoreName() }} Overview
         </h1>
         <span class="mono" style="font-size:11px;color:var(--text3);font-weight:500;">
-          POS-NET ID: {{ storeCode() }}
+          {{ isStoreSelected() ? 'POS-NET ID:' : 'NETWORK ID:' }} {{ storeCode() }}
         </span>
       </div>
     </div>
