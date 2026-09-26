@@ -15,7 +15,7 @@
 
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
         <div>
-          <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <h1 style="font-size:24px;font-weight:800;color:var(--text1);margin:0;letter-spacing:-0.02em;">{{ tenant().businessName }}</h1>
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--text1);background:var(--surface2);padding:4px 8px;border-radius:6px;border:1px solid var(--border);">
               {{ tenant().slug }}
@@ -23,9 +23,15 @@
             <span class="badge" [class.badge-green]="tenant().isActive !== false" [class.badge-red]="tenant().isActive === false" style="font-size:10px;font-weight:700;">
               {{ tenant().isActive !== false ? 'ACTIVE' : 'SUSPENDED' }}
             </span>
+            @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+              <button (click)="openEditTenantModal()" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;" title="Edit Tenant Profile & Info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span>Edit Info</span>
+              </button>
+            }
           </div>
           <div style="font-size:13px;color:var(--text3);margin-top:4px;">
-            {{ tenant().contactEmail }} · Owner: {{ tenant().ownerEmail || '—' }}
+            {{ tenant().contactEmail }} · Owner: {{ tenant().ownerEmail || '—' }} @if (tenant().contactPhone) { · {{ tenant().contactPhone }} }
           </div>
         </div>
 
@@ -41,6 +47,10 @@
           </div>
 
           @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+            <button (click)="openEditTenantModal()" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 14px;border-radius:8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Edit Tenant Info
+            </button>
             <button (click)="showSubModal.set(true)" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 14px;border-radius:8px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
               Manage Quotas & Plan
@@ -281,6 +291,76 @@
             <span>Saving...</span>
           } @else {
             <span>Update Quotas</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- EDIT TENANT MODAL -->
+@if (showEditTenantModal()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:520px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text1);">Edit Tenant Information</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">Update business credentials, contacts, and account status.</div>
+        </div>
+        <button (click)="showEditTenantModal.set(false)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0;">✕</button>
+      </div>
+
+      <div style="display:grid;gap:16px;">
+        <div>
+          <label class="label">Business Name *</label>
+          <input type="text" class="inp" [(ngModel)]="tenantEdit.businessName" placeholder="e.g. RUCON SMART STORE" style="font-weight:700;">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Slug Identifier *</label>
+            <input type="text" class="inp mono" [(ngModel)]="tenantEdit.slug" placeholder="e.g. rucon-smart-store">
+          </div>
+          <div>
+            <label class="label">Country</label>
+            <input type="text" class="inp" [(ngModel)]="tenantEdit.country" placeholder="e.g. Nigeria">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Contact Email *</label>
+            <input type="email" class="inp" [(ngModel)]="tenantEdit.contactEmail" placeholder="contact@company.com">
+          </div>
+          <div>
+            <label class="label">Contact Phone</label>
+            <input type="text" class="inp mono" [(ngModel)]="tenantEdit.contactPhone" placeholder="+234 ...">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Account Status</label>
+            <select class="inp" [(ngModel)]="tenantEdit.isActive" style="font-weight:700;">
+              <option [ngValue]="true">Active (Normal Operation)</option>
+              <option [ngValue]="false">Suspended (Restricted Access)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Logo URL (Optional)</label>
+            <input type="text" class="inp" [(ngModel)]="tenantEdit.logoUrl" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid var(--border);padding-top:16px;">
+        <button (click)="showEditTenantModal.set(false)" class="btn btn-secondary">Cancel</button>
+        <button (click)="updateTenantInfo()" [disabled]="isUpdatingTenant()" class="btn btn-primary" style="min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;">
+          @if (isUpdatingTenant()) {
+            <span class="spinner-sm"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Changes</span>
           }
         </button>
       </div>

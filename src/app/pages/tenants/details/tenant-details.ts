@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../../services/tenant.service';
 import { AuthService } from '../../../services/auth.service';
+import { ContextService } from '../../../services/context.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -16,6 +17,19 @@ export class TenantDetailsComponent implements OnInit {
   public isLoading = signal<boolean>(false);
   public isUpdatingSub = signal<boolean>(false);
   public showSubModal = signal<boolean>(false);
+
+  // Tenant Editing
+  public showEditTenantModal = signal<boolean>(false);
+  public isUpdatingTenant = signal<boolean>(false);
+  public tenantEdit = {
+    businessName: '',
+    slug: '',
+    contactEmail: '',
+    contactPhone: '',
+    country: 'Nigeria',
+    isActive: true,
+    logoUrl: ''
+  };
 
   // Filtering
   public selectedYear = signal<number>(new Date().getFullYear());
@@ -40,6 +54,7 @@ export class TenantDetailsComponent implements OnInit {
 
   constructor(
     private tenantService: TenantService,
+    public contextService: ContextService,
     private route: ActivatedRoute,
     private router: Router,
     public authService: AuthService
@@ -104,6 +119,55 @@ export class TenantDetailsComponent implements OnInit {
       alert('Error updating subscription settings.');
     } finally {
       this.isUpdatingSub.set(false);
+    }
+  }
+
+  openEditTenantModal() {
+    const t = this.tenant();
+    if (!t) return;
+    this.tenantEdit = {
+      businessName: t.businessName || '',
+      slug: t.slug || '',
+      contactEmail: t.contactEmail || '',
+      contactPhone: t.contactPhone || '',
+      country: t.country || 'Nigeria',
+      isActive: t.isActive !== false,
+      logoUrl: t.logoUrl || ''
+    };
+    this.showEditTenantModal.set(true);
+  }
+
+  async updateTenantInfo() {
+    const t = this.tenant();
+    if (!t) return;
+
+    if (!this.tenantEdit.businessName?.trim()) {
+      alert('Business name is required.');
+      return;
+    }
+
+    if (!this.tenantEdit.slug?.trim()) {
+      alert('Slug identifier is required.');
+      return;
+    }
+
+    if (!this.tenantEdit.contactEmail?.trim()) {
+      alert('Contact email is required.');
+      return;
+    }
+
+    this.isUpdatingTenant.set(true);
+    try {
+      await this.tenantService.updateTenant(t.id, this.tenantEdit);
+      this.showEditTenantModal.set(false);
+      await this.loadDetails();
+      // Refresh global context so header/sidebar update immediately if this tenant is active
+      await this.contextService.loadTenants();
+    } catch (error: any) {
+      console.error('Failed to update tenant info', error);
+      alert(error?.error?.message || 'Error updating tenant details. Ensure slug and email are unique.');
+    } finally {
+      this.isUpdatingTenant.set(false);
     }
   }
 
