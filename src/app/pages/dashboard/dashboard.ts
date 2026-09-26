@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed, effect } from '@angular/core';
+import { Component, signal, OnInit, computed, effect, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { StoreService } from '../../services/store.service';
@@ -38,8 +38,54 @@ export class DashboardComponent implements OnInit {
 
   // Store & Tenant Context
   public stores = signal<Store[]>([]);
-  public activeStoreName = signal<string>('Main Flagship Store');
-  public storeCode = signal<string>('HQ-01');
+  public isStoreSelected = computed(() => !!this.contextService.selectedStore());
+
+  public activeStoreName = computed(() => {
+    // 1. If a specific store is selected, show that store's name
+    const store = this.contextService.selectedStore();
+    if (store) {
+      return store.name;
+    }
+
+    // 2. If a tenant is selected (Super Admin viewing a tenant), show the tenant's business name
+    const tenant = this.contextService.selectedTenant();
+    if (tenant) {
+      return tenant.businessName;
+    }
+
+    // 3. For Tenant Admin, use their business name
+    const user = this.authService.currentUser();
+    if (user?.businessName && !this.contextService.isSuperAdmin()) {
+      return user.businessName;
+    }
+
+    // 4. Super Admin fallback when tenant object is still loading
+    if (this.contextService.isSuperAdmin() && this.contextService.selectedTenantId()) {
+      return this.contextService.selectedTenantName();
+    }
+
+    // 5. Global Super Admin scope (no tenant selected)
+    return 'All Stores (Global Network)';
+  });
+
+  public storeCode = computed(() => {
+    const store = this.contextService.selectedStore();
+    if (store) {
+      return store.code || (store.id ? `STORE-${store.id.slice(0, 6).toUpperCase()}` : 'HQ-01');
+    }
+
+    const tenant = this.contextService.selectedTenant();
+    if (tenant) {
+      return tenant.slug ? tenant.slug.toUpperCase() : (tenant.id ? `TNT-${tenant.id.slice(0, 8).toUpperCase()}` : tenant.businessName);
+    }
+
+    if (this.contextService.isSuperAdmin()) {
+      return 'GLOBAL-HQ';
+    }
+
+    const user = this.authService.currentUser();
+    return user?.businessName || 'HQ-01';
+  });
 
   // Tender breakdown
   public paymentMix = signal({
@@ -105,7 +151,9 @@ export class DashboardComponent implements OnInit {
     effect(() => {
       this.contextService.selectedTenantId();
       this.contextService.selectedStoreId();
-      this.loadDashboardData();
+      untracked(() => {
+        this.loadDashboardData();
+      });
     });
   }
 
@@ -129,13 +177,14 @@ export class DashboardComponent implements OnInit {
         tenantId ? this.auditService.getAuditLogs(tenantId, 1, 5) : Promise.resolve({ items: [] })
       ]);
 
-      // 1. Process Stores & Context Headers
-      this.activeStoreName.set(this.contextService.selectedStoreName());
-      this.storeCode.set(this.contextService.isSuperAdmin() ? this.contextService.selectedTenantName() : (user?.businessName || 'HQ-01'));
-
+      // 1. Process Stores & Context Sync
       if (storesRes.status === 'fulfilled' && storesRes.value) {
         const storesList = storesRes.value.items || storesRes.value || [];
-        this.stores.set(Array.isArray(storesList) ? storesList : []);
+        const arr = Array.isArray(storesList) ? storesList : [];
+        this.stores.set(arr);
+        if (this.contextService.stores().length === 0 && arr.length > 0) {
+          this.contextService.stores.set(arr);
+        }
       }
 
       // 2. Process Transactions & Orders
