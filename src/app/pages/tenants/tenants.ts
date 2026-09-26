@@ -17,6 +17,20 @@ export class TenantsComponent implements OnInit {
   public isCreating = signal<boolean>(false);
   public showCreateModal = signal<boolean>(false);
 
+  // Edit Tenant
+  public showEditModal = signal<boolean>(false);
+  public isUpdating = signal<boolean>(false);
+  public editingTenantId: string | null = null;
+  public editTenant = {
+    businessName: '',
+    slug: '',
+    contactEmail: '',
+    contactPhone: '',
+    country: 'Nigeria',
+    isActive: true,
+    logoUrl: ''
+  };
+
   public searchQuery = signal<string>('');
   public statusFilter = signal<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL');
 
@@ -135,6 +149,54 @@ export class TenantsComponent implements OnInit {
     } catch (error) {
       console.error('Failed to update tenant status', error);
       alert('Error updating status. Please check your permissions.');
+    }
+  }
+
+  openEditModal(tenant: any) {
+    this.editingTenantId = tenant.id;
+    this.editTenant = {
+      businessName: tenant.businessName || '',
+      slug: tenant.slug || '',
+      contactEmail: tenant.contactEmail || '',
+      contactPhone: tenant.contactPhone || '',
+      country: tenant.country || 'Nigeria',
+      isActive: tenant.isActive !== false,
+      logoUrl: tenant.logoUrl || ''
+    };
+    this.showEditModal.set(true);
+  }
+
+  async updateTenant() {
+    if (!this.editingTenantId) return;
+
+    if (!this.editTenant.businessName?.trim()) {
+      alert('Business name is required.');
+      return;
+    }
+
+    if (!this.editTenant.slug?.trim()) {
+      alert('Slug identifier is required.');
+      return;
+    }
+
+    if (!this.editTenant.contactEmail?.trim()) {
+      alert('Contact email is required.');
+      return;
+    }
+
+    this.isUpdating.set(true);
+    try {
+      await this.tenantService.updateTenant(this.editingTenantId, this.editTenant);
+      this.showEditModal.set(false);
+      this.editingTenantId = null;
+      await this.loadTenants();
+      // Also update contextService so header and sidebar reflect any renamed tenant immediately
+      await this.contextService.loadTenants();
+    } catch (error: any) {
+      console.error('Failed to update tenant', error);
+      alert(error?.error?.message || 'Error updating tenant. Ensure slug and email are unique.');
+    } finally {
+      this.isUpdating.set(false);
     }
   }
 
