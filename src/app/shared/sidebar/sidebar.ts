@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
-import { DataService } from '../../services/data.service';
+import { ContextService } from '../../services/context.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -17,8 +17,8 @@ export class SidebarComponent {
   constructor(
     public authService: AuthService,
     public themeService: ThemeService,
-    public router: Router,
-    private dataService: DataService
+    public contextService: ContextService,
+    public router: Router
   ) {
     this.setupNav();
   }
@@ -80,12 +80,36 @@ export class SidebarComponent {
     });
   }
 
-  getStoreName(): string {
-    const user = this.authService.currentUser();
-    if (user && user.store) {
-      return this.dataService.stores[user.store]?.name || 'Store Assigned';
+  getScopeTitle(): string {
+    if (this.contextService.isSuperAdmin()) {
+      return this.contextService.selectedTenantName();
     }
-    return 'Downtown Flagship #01';
+    if (this.contextService.isTenantAdmin()) {
+      const user = this.authService.currentUser();
+      const store = this.contextService.selectedStore();
+      return store?.name || user?.businessName || 'All Stores';
+    }
+    return this.contextService.selectedStoreName();
+  }
+
+  getScopeSubtitle(): string {
+    if (this.contextService.isSuperAdmin()) {
+      if (this.contextService.selectedTenantId()) {
+        const store = this.contextService.selectedStore();
+        return store ? `${store.name} · Super Admin` : 'All Stores · Super Admin';
+      }
+      return 'Global Network · Super Admin';
+    }
+    if (this.contextService.isTenantAdmin()) {
+      const user = this.authService.currentUser();
+      const store = this.contextService.selectedStore();
+      return store ? `${user?.businessName || 'Tenant'} Admin` : `${this.contextService.stores().length} Branches · Tenant Admin`;
+    }
+    return this.authService.currentUser()?.role?.replace('_', ' ') || 'Store Operations';
+  }
+
+  getStoreName(): string {
+    return this.getScopeTitle();
   }
 
   logout() {

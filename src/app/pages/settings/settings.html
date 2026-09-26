@@ -5,14 +5,34 @@
     <div>
       <div style="display:flex;align-items:center;gap:10px;">
         <span class="badge badge-accent" style="font-size:11px;padding:3px 8px;font-weight:700;">SYSTEM CONFIGURATION</span>
-        <span style="font-size:12px;color:var(--text3);font-family:var(--mono);">Tenant & Hardware Rules</span>
+        <span style="font-size:12px;color:var(--text3);font-family:var(--mono);">Loyalty, Receipts & Hardware Peripherals</span>
+        @if (isSuperAdmin()) {
+          <span class="badge" style="background:rgba(234,179,8,0.1);color:#eab308;font-size:10px;font-weight:700;">
+            SUPERADMIN VIEW-ONLY
+          </span>
+        }
       </div>
       <h1 style="font-size:22px;font-weight:800;color:var(--text);margin:6px 0 2px;letter-spacing:-0.02em;">
         Settings & Peripherals
       </h1>
       <p style="font-size:13px;color:var(--text3);margin:0;">
-        Manage organization profile, customer loyalty point economics, 80mm receipt thermal templates, and ESC/POS network hardware.
+        Manage company loyalty point economics, 80mm thermal receipt templates, and ESC/POS network hardware.
       </p>
+    </div>
+
+    <!-- Active Context Scope Indicator / Quick Switcher -->
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:6px 12px;border-radius:10px;">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;">
+        <span style="font-size:10px;text-transform:uppercase;color:var(--text3);font-weight:700;letter-spacing:0.04em;">Active Context</span>
+        <span style="font-size:12px;font-weight:800;color:var(--text);">
+          {{ selectedStore() ? selectedStore()?.name : 'All Stores (Tenant-wide)' }}
+        </span>
+      </div>
+      @if (selectedStoreId()) {
+        <button (click)="selectStore(null)" class="btn btn-secondary btn-sm" style="font-size:11px;padding:4px 8px;cursor:pointer;" title="Switch to All Stores view">
+          Show All Stores
+        </button>
+      }
     </div>
   </div>
 
@@ -30,20 +50,8 @@
     </div>
   }
 
-  <!-- Tab Navigation Buttons -->
+  <!-- Tab Navigation Buttons (3 Clean Tabs) -->
   <div style="display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);padding-bottom:12px;overflow-x:auto;">
-    <button (click)="activeTab.set('profile')"
-            [style.background]="activeTab() === 'profile' ? 'var(--accent)' : 'var(--surface)'"
-            [style.color]="activeTab() === 'profile' ? '#fff' : 'var(--text2)'"
-            [style.border]="activeTab() === 'profile' ? '1px solid var(--accent)' : '1px solid var(--border)'"
-            style="display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.15s;">
-      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      Store Profile & Regional
-    </button>
-
     <button (click)="activeTab.set('loyalty')"
             [style.background]="activeTab() === 'loyalty' ? 'var(--accent)' : 'var(--surface)'"
             [style.color]="activeTab() === 'loyalty' ? '#fff' : 'var(--text2)'"
@@ -83,137 +91,58 @@
     </button>
   </div>
 
-  @if (isLoading()) {
-    <div style="display:flex;align-items:center;justify-content:center;padding:80px;color:var(--text3);">
-      <div style="width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;"></div>
-      <span style="margin-left:12px;font-size:13px;">Loading system configurations...</span>
-    </div>
-  } @else {
 
-    <!-- TAB 1: Store Profile & Regional -->
-    @if (activeTab() === 'profile') {
-      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;">
-        
-        <!-- Store Identification -->
-        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">Store Branch Profile</div>
-              <div style="font-size:12px;color:var(--text3);">Primary operational identity, physical address, and contact details</div>
-            </div>
-          </div>
 
-          <div style="display:grid;gap:16px;margin-top:6px;">
-            <div>
-              <label class="label">Store Outlet Name</label>
-              <input class="inp" [(ngModel)]="store().name" placeholder="e.g. Lagos Mainland Flagship">
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div>
-                <label class="label">Branch Code</label>
-                <input class="inp" [(ngModel)]="store().code" readonly style="background:var(--surface2);color:var(--text3);font-family:var(--mono);">
-              </div>
-              <div>
-                <label class="label">Telephone Contact</label>
-                <input class="inp" [(ngModel)]="store().phone" placeholder="+234 800 000 0000">
-              </div>
-            </div>
-
-            <div>
-              <label class="label">Physical Street Address</label>
-              <textarea class="inp" [(ngModel)]="store().address" style="height:76px;resize:none;" placeholder="Enter street address, building, or landmark..."></textarea>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div>
-                <label class="label">City</label>
-                <input class="inp" [(ngModel)]="store().city" placeholder="e.g. Victoria Island">
-              </div>
-              <div>
-                <label class="label">State</label>
-                <input class="inp" [(ngModel)]="store().state" placeholder="e.g. Lagos State">
-              </div>
-            </div>
-
-            <div style="padding-top:10px;">
-              <button (click)="saveStore()" [disabled]="isSavingStore()" class="btn btn-primary" style="padding:10px 24px;">
-                {{ isSavingStore() ? 'Saving...' : 'Save Store Profile' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Regional & Statutory Settings -->
-        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">Regional & Fiscal Rules</div>
-              <div style="font-size:12px;color:var(--text3);">Currency display, timezone offset, and Value Added Tax</div>
-            </div>
-          </div>
-
-          <div style="display:grid;gap:16px;margin-top:6px;">
-            <div>
-              <label class="label">Operational Currency</label>
-              <select class="inp" style="cursor:pointer;">
-                <option value="NGN" selected>Nigerian Naira (₦ / NGN)</option>
-                <option value="USD">United States Dollar ($ / USD)</option>
-                <option value="GBP">British Pound (£ / GBP)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="label">Timezone</label>
-              <input class="inp" [(ngModel)]="store().timezone" placeholder="Africa/Lagos">
-            </div>
-
-            <div>
-              <label class="label">Statutory Value Added Tax Rate (%)</label>
-              <input class="inp" type="number" step="0.5" value="7.5" placeholder="7.5">
-              <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
-                Federal Inland Revenue Service (FIRS) standard rate: 7.5%.
-              </span>
-            </div>
-
-            <div style="padding-top:10px;">
-              <button (click)="saveStore()" [disabled]="isSavingStore()" class="btn btn-primary" style="padding:10px 24px;">
-                {{ isSavingStore() ? 'Saving...' : 'Save Regional Rules' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    }
-
-    <!-- TAB 2: Loyalty & Rewards Rules -->
+    <!-- ========================================== -->
+    <!-- TAB 1: Loyalty & Rewards Rules             -->
+    <!-- ========================================== -->
     @if (activeTab() === 'loyalty') {
       <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+        
+        <!-- Header & Scope Note -->
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
             <div>
               <div style="font-size:16px;font-weight:800;color:var(--text);">Customer Loyalty & Rewards Economics</div>
-              <div style="font-size:12px;color:var(--text3);">Configure chain-wide points accrual, currency redemption values, and minimum discount thresholds.</div>
+              <div style="font-size:12px;color:var(--text3);">
+                Configure points accrual, currency redemption values, and minimum discount thresholds.
+              </div>
             </div>
           </div>
-          <div>
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span class="badge" [style.background]="selectedStoreId() ? 'rgba(79,70,229,0.1)' : 'rgba(16,185,129,0.1)'"
+                  [style.color]="selectedStoreId() ? 'var(--accent)' : '#10b981'" style="font-size:11px;font-weight:700;">
+              {{ selectedStoreId() ? 'Store: ' + (store().name || selectedStore()?.name) : '🌐 Chain-Wide Program (All Stores)' }}
+            </span>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text);">
-              <input type="checkbox" [(ngModel)]="loyaltySettings().loyaltyProgramEnabled" style="width:16px;height:16px;accent-color:var(--accent);">
+              <input type="checkbox" [(ngModel)]="loyaltySettings().loyaltyProgramEnabled" [disabled]="!canEditStore()" style="width:16px;height:16px;accent-color:var(--accent);">
               Loyalty Program Active
             </label>
           </div>
         </div>
+
+        @if (!canEditStore()) {
+          <div style="padding:10px 14px;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:8px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;">
+            <span>👁️</span>
+            <span><strong>View-Only SuperAdmin Mode:</strong> Customer loyalty points and redemption rules apply chain-wide across all store branches under {{ selectedTenant()?.businessName || 'this company' }}. Only tenant administrators can adjust loyalty rates.</span>
+          </div>
+        } @else if (selectedStoreId()) {
+          <div style="padding:10px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;">
+            <span>ℹ️</span>
+            <span>Customer loyalty points and redemption rules apply chain-wide across all store branches under <strong>{{ selectedTenant()?.businessName || 'this company' }}</strong>. Any changes saved here update rules across all registers.</span>
+          </div>
+        }
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;padding-top:10px;">
           <div>
             <label class="label">Points Accrual Spend Rate (₦ per Point)</label>
             <div style="position:relative;">
               <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--text3);font-size:13px;">₦</span>
-              <input class="inp" type="number" step="10" min="1" [(ngModel)]="loyaltySettings().loyaltyPointsEarnRate" style="padding-left:28px;" placeholder="100">
+              <input class="inp" type="number" step="10" min="1" [(ngModel)]="loyaltySettings().loyaltyPointsEarnRate"
+                     [readonly]="!canEditStore()" [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                     style="padding-left:28px;" placeholder="100">
             </div>
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
               Customer spend required to earn 1 reward point (e.g. ₦100 spend = 1 point).
@@ -224,7 +153,9 @@
             <label class="label">Redemption Point Value (₦ per Point)</label>
             <div style="position:relative;">
               <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--text3);font-size:13px;">₦</span>
-              <input class="inp" type="number" step="0.5" min="0.1" [(ngModel)]="loyaltySettings().loyaltyPointRedeemRate" style="padding-left:28px;" placeholder="1">
+              <input class="inp" type="number" step="0.5" min="0.1" [(ngModel)]="loyaltySettings().loyaltyPointRedeemRate"
+                     [readonly]="!canEditStore()" [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                     style="padding-left:28px;" placeholder="1">
             </div>
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
               Cash discount given at checkout per point redeemed (e.g. 1 point = ₦1).
@@ -233,7 +164,9 @@
 
           <div>
             <label class="label">Minimum Points Required to Redeem</label>
-            <input class="inp" type="number" step="10" min="0" [(ngModel)]="loyaltySettings().loyaltyMinRedemptionPoints" placeholder="50">
+            <input class="inp" type="number" step="10" min="0" [(ngModel)]="loyaltySettings().loyaltyMinRedemptionPoints"
+                   [readonly]="!canEditStore()" [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                   placeholder="50">
             <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block;">
               Minimum points balance a customer must hold before applying discount at register.
             </span>
@@ -247,76 +180,124 @@
             <strong style="color:var(--accent);">{{ 10000 / (loyaltySettings().loyaltyPointsEarnRate || 100) | number:'1.0-0' }} loyalty points</strong>, 
             which can later be redeemed for <strong>₦{{ (10000 / (loyaltySettings().loyaltyPointsEarnRate || 100)) * (loyaltySettings().loyaltyPointRedeemRate || 1) | number:'1.2-2' }}</strong> in instant checkout savings.
           </div>
-          <button (click)="saveLoyaltySettings()" [disabled]="isSavingLoyalty()" class="btn btn-primary" style="padding:10px 24px;">
-            {{ isSavingLoyalty() ? 'Saving...' : 'Save Loyalty Rules' }}
-          </button>
+          @if (canEditStore()) {
+            <button (click)="saveLoyaltySettings()" [disabled]="isSavingLoyalty()" class="btn btn-primary" style="padding:10px 24px;">
+              {{ isSavingLoyalty() ? 'Saving...' : 'Save Loyalty Rules' }}
+            </button>
+          }
         </div>
       </div>
     }
 
-    <!-- TAB 3: Thermal Receipt Customizer (with live 80mm preview!) -->
+    <!-- ========================================== -->
+    <!-- TAB 2: Thermal Receipt Customizer          -->
+    <!-- ========================================== -->
     @if (activeTab() === 'receipt') {
       <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:start;">
         
         <!-- Controls Column -->
         <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">80mm Thermal Receipt Layout</div>
-              <div style="font-size:12px;color:var(--text3);">Customize header branding, fiscal VAT details, and return policy footer</div>
+          
+          @if (!canEditStore()) {
+            <div style="padding:10px 14px;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:8px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;">
+              <span>👁️</span>
+              <span><strong>View-Only SuperAdmin Mode:</strong> You are inspecting receipt layouts. Customization is reserved for tenant administrators.</span>
+            </div>
+          }
+
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+              <div>
+                <div style="font-size:15px;font-weight:800;color:var(--text);">80mm Thermal Receipt Layout</div>
+                <div style="font-size:12px;color:var(--text3);">Customize header branding, fiscal VAT details, and return policy footer</div>
+              </div>
+            </div>
+
+            <!-- Store Customization Switcher Dropdown -->
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:11px;color:var(--text3);font-weight:700;">Scope:</span>
+              <select class="inp" style="width:180px;font-size:12px;padding:4px 8px;cursor:pointer;" [value]="selectedStoreId() || ''" (change)="selectStore($any($event.target).value || null)">
+                <option value="">Master Template (All Stores)</option>
+                @for (s of storesList(); track s.id) {
+                  <option [value]="s.id">{{ s.name }}</option>
+                }
+              </select>
             </div>
           </div>
+
+          @if (!selectedStoreId()) {
+            <div style="padding:10px 14px;background:rgba(79,70,229,0.06);border:1px solid rgba(79,70,229,0.2);border-radius:8px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px;">
+              <span>🧾</span>
+              <span><strong>Chain Master Template:</strong> This layout acts as the default template for all current and future stores under {{ selectedTenant()?.businessName }}. Select a store above to view a branch-specific receipt.</span>
+            </div>
+          } @else {
+            <div style="padding:10px 14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:12px;color:#10b981;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span>🏬 Viewing receipt format for <strong>{{ store().name || selectedStore()?.name }}</strong>.</span>
+              <button (click)="selectStore(null)" class="btn btn-secondary btn-sm" style="font-size:10px;padding:2px 6px;">
+                Reset to Master
+              </button>
+            </div>
+          }
 
           <div style="display:grid;gap:16px;margin-top:4px;">
             <div>
               <label class="label">Business Trading Name</label>
-              <input class="inp" [(ngModel)]="receiptSettings().storeName" placeholder="Trading Name">
+              <input class="inp" [(ngModel)]="receiptSettings().storeName" [readonly]="!canEditStore()"
+                     [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" placeholder="Trading Name">
             </div>
 
             <div>
               <label class="label">Receipt Subtitle / Tagline</label>
-              <input class="inp" [(ngModel)]="receiptSettings().headerSubtitle" placeholder="Tagline">
+              <input class="inp" [(ngModel)]="receiptSettings().headerSubtitle" [readonly]="!canEditStore()"
+                     [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" placeholder="Tagline">
             </div>
 
             <div>
               <label class="label">Store Location on Slip</label>
-              <input class="inp" [(ngModel)]="receiptSettings().address" placeholder="Physical Address">
+              <input class="inp" [(ngModel)]="receiptSettings().address" [readonly]="!canEditStore()"
+                     [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" placeholder="Physical Address">
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
               <div>
                 <label class="label">Support Phone</label>
-                <input class="inp" [(ngModel)]="receiptSettings().phone" placeholder="Support Phone">
+                <input class="inp" [(ngModel)]="receiptSettings().phone" [readonly]="!canEditStore()"
+                       [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" placeholder="Support Phone">
               </div>
               <div>
                 <label class="label">VAT Tax Registration #</label>
-                <input class="inp" [(ngModel)]="receiptSettings().vatNumber" placeholder="Tax ID">
+                <input class="inp" [(ngModel)]="receiptSettings().vatNumber" [readonly]="!canEditStore()"
+                       [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" placeholder="Tax ID">
               </div>
             </div>
 
             <div>
               <label class="label">Custom Footer Greeting & Return Policy</label>
-              <textarea class="inp" [(ngModel)]="receiptSettings().footerMessage" style="height:76px;resize:none;" placeholder="Return policy message..."></textarea>
+              <textarea class="inp" [(ngModel)]="receiptSettings().footerMessage" [readonly]="!canEditStore()"
+                        [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                        style="height:76px;resize:none;" placeholder="Return policy message..."></textarea>
             </div>
 
             <div style="display:flex;gap:20px;padding-top:4px;">
               <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
-                <input type="checkbox" [(ngModel)]="receiptSettings().showBarcode" style="width:16px;height:16px;accent-color:var(--accent);">
+                <input type="checkbox" [(ngModel)]="receiptSettings().showBarcode" [disabled]="!canEditStore()" style="width:16px;height:16px;accent-color:var(--accent);">
                 Print Order Barcode
               </label>
 
               <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
-                <input type="checkbox" [(ngModel)]="receiptSettings().showCashier" style="width:16px;height:16px;accent-color:var(--accent);">
+                <input type="checkbox" [(ngModel)]="receiptSettings().showCashier" [disabled]="!canEditStore()" style="width:16px;height:16px;accent-color:var(--accent);">
                 Show Cashier Name
               </label>
             </div>
 
-            <div style="padding-top:10px;">
-              <button (click)="saveReceiptSettings()" [disabled]="isSavingReceipt()" class="btn btn-primary" style="padding:10px 24px;">
-                {{ isSavingReceipt() ? 'Saving...' : 'Save Receipt Design' }}
-              </button>
-            </div>
+            @if (canEditStore()) {
+              <div style="padding-top:10px;">
+                <button (click)="saveReceiptSettings()" [disabled]="isSavingReceipt()" class="btn btn-primary" style="padding:10px 24px;">
+                  {{ isSavingReceipt() ? 'Saving...' : (selectedStoreId() ? 'Save Store Receipt' : 'Save Chain Master Receipt') }}
+                </button>
+              </div>
+            }
           </div>
         </div>
 
@@ -324,7 +305,9 @@
         <div style="display:flex;flex-direction:column;gap:10px;">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
             <span style="font-size:12px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:0.04em;">Live 80mm Thermal Preview</span>
-            <span class="badge" style="font-size:10px;">ESC/POS Standard</span>
+            <span class="badge" style="font-size:10px;">
+              {{ selectedStoreId() ? (store().name || 'Store Slip') : 'Chain Master Slip' }}
+            </span>
           </div>
 
           <!-- Thermal Ticket Container -->
@@ -428,108 +411,214 @@
       </div>
     }
 
-    <!-- TAB 4: Hardware & ESC/POS Network Printers -->
+    <!-- ========================================== -->
+    <!-- TAB 3: Hardware & ESC/POS Printers         -->
+    <!-- ========================================== -->
     @if (activeTab() === 'hardware') {
-      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;">
-        
-        <!-- Hardware Settings Form -->
-        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">ESC/POS Thermal Network Printer</div>
-              <div style="font-size:12px;color:var(--text3);">LAN / Wi-Fi raw TCP socket communication (Port 9100)</div>
+
+      @if (selectedStoreId()) {
+        <!-- A Specific Store is Selected: Render Physical Device Configuration -->
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:start;">
+          
+          <!-- Hardware Settings Form -->
+          <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+            
+            @if (!canEditStore()) {
+              <div style="padding:10px 14px;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:8px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <span>👁️</span>
+                <span><strong>View-Only SuperAdmin Mode:</strong> You are inspecting hardware configurations. Only store branch administrators can modify physical register peripherals.</span>
+              </div>
+            }
+
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:4px;height:20px;background:var(--accent);border-radius:2px;"></span>
+                <div>
+                  <div style="font-size:15px;font-weight:800;color:var(--text);">ESC/POS Thermal Network Printer</div>
+                  <div style="font-size:12px;color:var(--text3);">LAN / Wi-Fi raw TCP socket communication (Port 9100)</div>
+                </div>
+              </div>
+              <span class="badge badge-accent" style="font-size:11px;">
+                Store: {{ store().name || selectedStore()?.name }}
+              </span>
+            </div>
+
+            <div style="display:grid;gap:16px;margin-top:4px;">
+              <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;">
+                <div>
+                  <label class="label">Printer IP Address</label>
+                  <input class="inp" [(ngModel)]="hardwareSettings().printerIp" [readonly]="!canEditStore()"
+                         [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                         style="font-family:var(--mono);" placeholder="192.168.1.200">
+                </div>
+                <div>
+                  <label class="label">TCP Port</label>
+                  <input class="inp" type="number" [(ngModel)]="hardwareSettings().printerPort" [readonly]="!canEditStore()"
+                         [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'"
+                         style="font-family:var(--mono);" placeholder="9100">
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                  <label class="label">Serial Baud Rate</label>
+                  <select class="inp" [(ngModel)]="hardwareSettings().baudRate" [disabled]="!canEditStore()"
+                          [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'" style="font-family:var(--mono);">
+                    <option [value]="9600">9600 baud</option>
+                    <option [value]="19200">19200 baud</option>
+                    <option [value]="38400">38400 baud</option>
+                    <option [value]="115200">115200 baud (Standard)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="label">Paper Roll Width</label>
+                  <select class="inp" [(ngModel)]="receiptSettings().paperWidth" [disabled]="!canEditStore()"
+                          [style.background]="!canEditStore() ? 'var(--surface2)' : 'var(--surface)'">
+                    <option value="80mm">80mm (Standard Kitchen/Retail)</option>
+                    <option value="58mm">58mm (Compact Mobile)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                  <input type="checkbox" [(ngModel)]="hardwareSettings().autoCutter" [disabled]="!canEditStore()" style="width:16px;height:16px;accent-color:var(--accent);">
+                  Enable Automatic Guillotine Cutter (GS V 66 0)
+                </label>
+
+                <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
+                  <input type="checkbox" [(ngModel)]="hardwareSettings().drawerKickPulse" [disabled]="!canEditStore()" style="width:16px;height:16px;accent-color:var(--accent);">
+                  Auto-Kick Cash Drawer On Cash Tender (ESC p 0 25 250)
+                </label>
+              </div>
+
+              <div style="padding-top:10px;display:flex;align-items:center;gap:12px;">
+                @if (canEditStore()) {
+                  <button (click)="saveHardwareSettings()" [disabled]="isSavingHardware()" class="btn btn-primary" style="padding:10px 24px;">
+                    {{ isSavingHardware() ? 'Saving...' : 'Save Hardware Config' }}
+                  </button>
+                }
+                <button (click)="selectStore(null)" class="btn btn-secondary" style="padding:10px 18px;">
+                  View All Store Devices
+                </button>
+              </div>
             </div>
           </div>
 
-          <div style="display:grid;gap:16px;margin-top:4px;">
-            <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;">
+          <!-- Hardware Peripheral Diagnostics -->
+          <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
               <div>
-                <label class="label">Printer IP Address</label>
-                <input class="inp" [(ngModel)]="hardwareSettings().printerIp" style="font-family:var(--mono);" placeholder="192.168.1.200">
-              </div>
-              <div>
-                <label class="label">TCP Port</label>
-                <input class="inp" type="number" [(ngModel)]="hardwareSettings().printerPort" style="font-family:var(--mono);" placeholder="9100">
+                <div style="font-size:15px;font-weight:800;color:var(--text);">Hardware Diagnostics & Test Pulse</div>
+                <div style="font-size:12px;color:var(--text3);">Transmit diagnostic commands directly to connected register peripherals at {{ store().name || selectedStore()?.name }}</div>
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div>
-                <label class="label">Serial Baud Rate</label>
-                <select class="inp" [(ngModel)]="hardwareSettings().baudRate" style="font-family:var(--mono);">
-                  <option [value]="9600">9600 baud</option>
-                  <option [value]="19200">19200 baud</option>
-                  <option [value]="38400">38400 baud</option>
-                  <option [value]="115200">115200 baud (Standard)</option>
-                </select>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:6px;">
+              <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text);">Cash Drawer Solenoid Kick</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:2px;">Transmits 24V solenoid pulse through RJ12 printer connector</div>
+                </div>
+                <button (click)="testDrawerKick()" [disabled]="!canEditStore()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+                  Kick Drawer
+                </button>
               </div>
-              <div>
-                <label class="label">Paper Roll Width</label>
-                <select class="inp" [(ngModel)]="receiptSettings().paperWidth">
-                  <option value="80mm">80mm (Standard Kitchen/Retail)</option>
-                  <option value="58mm">58mm (Compact Mobile)</option>
-                </select>
+
+              <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text);">Print Test Diagnostic Slip</div>
+                  <div style="font-size:11px;color:var(--text3);margin-top:2px;">Sends ASCII diagnostic characters and triggers paper cutter</div>
+                </div>
+                <button (click)="testPrinter()" [disabled]="!canEditStore()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
+                  Test Print
+                </button>
               </div>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
-              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
-                <input type="checkbox" [(ngModel)]="hardwareSettings().autoCutter" style="width:16px;height:16px;accent-color:var(--accent);">
-                Enable Automatic Guillotine Cutter (GS V 66 0)
-              </label>
-
-              <label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;">
-                <input type="checkbox" [(ngModel)]="hardwareSettings().drawerKickPulse" style="width:16px;height:16px;accent-color:var(--accent);">
-                Auto-Kick Cash Drawer On Cash Tender (ESC p 0 25 250)
-              </label>
-            </div>
-
-            <div style="padding-top:10px;display:flex;align-items:center;gap:10px;">
-              <button (click)="saveHardwareSettings()" [disabled]="isSavingHardware()" class="btn btn-primary" style="padding:10px 24px;">
-                {{ isSavingHardware() ? 'Saving...' : 'Save Hardware Config' }}
-              </button>
             </div>
           </div>
+
         </div>
-
-        <!-- Hardware Peripheral Diagnostics -->
-        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:16px;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">Hardware Diagnostics & Test Pulse</div>
-              <div style="font-size:12px;color:var(--text3);">Transmit diagnostic commands directly to connected register peripherals</div>
+      } @else {
+        <!-- "All Stores" Selected: Multi-Store Hardware Status Directory -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          
+          <div class="card" style="padding:22px 26px;background:var(--surface);border-left:4px solid #10b981;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;">
+            <div style="max-width:650px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:18px;">🖨️</span>
+                <h3 style="font-size:16px;font-weight:800;color:var(--text);margin:0;">
+                  Store-Specific Hardware & ESC/POS Devices
+                </h3>
+              </div>
+              <p style="font-size:13px;color:var(--text2);margin:6px 0 0;line-height:1.5;">
+                Physical ESC/POS thermal printers (Port 9100) and RJ12 cash drawers operate on each branch's local network.
+                Please select a branch below to {{ canEditStore() ? 'configure' : 'view' }} its LAN IP, serial baud rate, and hardware status.
+              </p>
             </div>
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:14px;margin-top:6px;">
-            <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div style="font-size:13px;font-weight:700;color:var(--text);">Cash Drawer Solenoid Kick</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px;">Transmits 24V solenoid pulse through RJ12 printer connector</div>
-              </div>
-              <button (click)="testDrawerKick()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
-                Kick Drawer
-              </button>
+          <!-- Store Hardware Status Directory -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-size:14px;font-weight:800;color:var(--text);text-transform:uppercase;letter-spacing:0.04em;">
+                Store Register Hardware Configurations ({{ storesList().length }})
+              </span>
             </div>
 
-            <div style="padding:16px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div style="font-size:13px;font-weight:700;color:var(--text);">Print Test Diagnostic Slip</div>
-                <div style="font-size:11px;color:var(--text3);margin-top:2px;">Sends ASCII diagnostic characters and triggers paper cutter</div>
+            @if (storesList().length === 0) {
+              <div class="card" style="padding:40px;text-align:center;color:var(--text3);">
+                <div style="font-size:28px;margin-bottom:8px;">🔌</div>
+                <div style="font-size:15px;font-weight:700;color:var(--text);">No Store Branches Available</div>
+                <p style="font-size:13px;margin:4px 0;">Create a store branch in Stores & Branches first to configure hardware peripherals.</p>
               </div>
-              <button (click)="testPrinter()" class="btn btn-secondary btn-sm" style="flex-shrink:0;">
-                Test Print
-              </button>
-            </div>
+            } @else {
+              <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:16px;">
+                @for (s of storesList(); track s.id) {
+                  <div class="card" style="padding:20px;display:flex;flex-direction:column;justify-content:space-between;gap:14px;border:1px solid var(--border);">
+                    <div>
+                      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                        <div>
+                          <div style="font-size:16px;font-weight:800;color:var(--text);">{{ s.name }}</div>
+                          <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;">
+                            CODE: {{ s.code }} | {{ s.city }}
+                          </div>
+                        </div>
+                        <span class="badge" [style.background]="getStoreHardwareConfig(s.id).isConfigured ? 'rgba(16,185,129,0.1)' : 'rgba(234,179,8,0.1)'"
+                              [style.color]="getStoreHardwareConfig(s.id).isConfigured ? '#10b981' : '#eab308'" style="font-size:10px;font-weight:700;">
+                          {{ getStoreHardwareConfig(s.id).isConfigured ? 'READY' : 'UNCONFIGURED' }}
+                        </span>
+                      </div>
+
+                      <div style="margin-top:14px;padding:12px;background:var(--surface2);border-radius:8px;display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                        <div style="display:flex;justify-content:space-between;">
+                          <span style="color:var(--text3);">Thermal Printer:</span>
+                          <span style="font-family:var(--mono);font-weight:700;color:var(--text);">
+                            {{ getStoreHardwareConfig(s.id).ip }}
+                          </span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;">
+                          <span style="color:var(--text3);">Cash Drawer Pulse:</span>
+                          <span style="font-weight:600;color:var(--text);">ESC p 0 25 250</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;justify-content:flex-end;">
+                      <button (click)="selectStore(s.id || null)" class="btn btn-primary btn-sm" style="font-size:12px;padding:6px 14px;cursor:pointer;">
+                        {{ canEditStore() ? 'Configure Devices & Test →' : 'View Hardware Config →' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
+
         </div>
+      }
 
-      </div>
     }
-
-  }
 
 </div>
 

@@ -25,8 +25,12 @@ export class LoyaltyService {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/entry/${id}`));
   }
 
-  async getLoyaltySettings(): Promise<LoyaltySettings> {
-    return await firstValueFrom(this.http.get<LoyaltySettings>(`${this.apiUrl}/settings`));
+  async getLoyaltySettings(tenantId?: string): Promise<LoyaltySettings> {
+    let params = new HttpParams();
+    if (tenantId) {
+      params = params.set('tenantId', tenantId);
+    }
+    return await firstValueFrom(this.http.get<LoyaltySettings>(`${this.apiUrl}/settings`, { params }));
   }
 
   async updateLoyaltySettings(dto: LoyaltySettings): Promise<LoyaltySettings> {

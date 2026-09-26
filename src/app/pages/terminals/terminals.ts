@@ -1,10 +1,11 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, effect } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TerminalService } from '../../services/terminal.service';
 import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { Terminal, Store } from '../../models/pos.models';
 
 export interface PeripheralStatus {
@@ -93,17 +94,25 @@ export class TerminalsComponent implements OnInit {
   constructor(
     private terminalService: TerminalService,
     private storeService: StoreService,
-    private authService: AuthService
+    public authService: AuthService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'TENANT_ADMIN' || user?.role === 'MANAGER' || user?.role === 'STORE_MANAGER' || user?.role === 'SUPER_ADMIN');
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
     this.assignedStoreId.set(user?.store || null);
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.selectedStoreId.set(sId || 'ALL');
+      this.loadTerminals();
+      this.loadStores();
+    });
   }
 
   ngOnInit() {
-    this.loadTerminals();
-    this.loadStores();
+    // Initial load handled by effect
   }
 
   async loadTerminals() {

@@ -2,6 +2,7 @@ import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../services/tenant.service';
+import { ContextService } from '../../services/context.service';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
@@ -60,6 +61,7 @@ export class TenantsComponent implements OnInit {
 
   constructor(
     private tenantService: TenantService,
+    public contextService: ContextService,
     private router: Router
   ) {}
 
@@ -136,7 +138,12 @@ export class TenantsComponent implements OnInit {
     }
   }
 
-  viewStores(tenant: any) {
+  async selectTenant(tenant: any) {
+    await this.contextService.switchTenant(tenant.id);
+  }
+
+  async viewStores(tenant: any) {
+    await this.contextService.switchTenant(tenant.id);
     this.router.navigate(['/app/stores'], { queryParams: { tenantId: tenant.id } });
   }
 }

@@ -12,8 +12,11 @@ export class RoleService {
 
   constructor(private http: HttpClient) {}
 
-  async getRoles(page: number = 1, size: number = 100): Promise<any> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  async getRoles(page: number = 1, size: number = 100, tenantId?: string): Promise<any> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (tenantId) {
+      params = params.set('tenantId', tenantId);
+    }
     return await firstValueFrom(this.http.get<any>(this.apiUrl, { params }));
   }
 

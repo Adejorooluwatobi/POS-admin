@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, effect } from '@angular/core';
 import { CommonModule, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -6,6 +6,7 @@ import { ProductService } from '../../services/product.service';
 import { CategoryService } from '../../services/category.service';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
+import { ContextService } from '../../services/context.service';
 import { Product, Category, Store } from '../../models/pos.models';
 import { BarcodeScannerComponent } from '../../components/barcode-scanner/barcode-scanner';
 
@@ -121,6 +122,7 @@ export class ProductsComponent implements OnInit {
     private categoryService: CategoryService,
     private storeService: StoreService,
     public authService: AuthService,
+    public contextService: ContextService,
     private router: Router
   ) {
     const user = this.authService.currentUser();
@@ -132,11 +134,19 @@ export class ProductsComponent implements OnInit {
       user?.role === 'CASHIER'
     );
     this.isOwner.set(!!user);
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.selectedStore.set(sId || 'ALL');
+      this.loadCategories();
+      this.loadStores();
+      this.loadProducts();
+    });
   }
 
   async ngOnInit() {
-    await Promise.all([this.loadCategories(), this.loadStores()]);
-    await this.loadProducts();
+    // Initial load handled by effect
   }
 
   async loadCategories() {

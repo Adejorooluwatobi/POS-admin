@@ -10,6 +10,34 @@ export interface Account {
   businessName?: string | null;
 }
 
+export interface Tenant {
+  id: string;
+  businessName: string;
+  slug: string;
+  ownerEmail?: string;
+  contactEmail?: string;
+  isActive: boolean;
+  maxStores?: number;
+  storesCount?: number;
+  subscription?: {
+    plan: number;
+    status: number;
+    maxStores: number;
+    maxStaff: number;
+    maxTerminals: number;
+    monthlyPrice: number;
+    currentPeriodEnd: string;
+  };
+  stores?: Store[];
+  revenue?: {
+    daily: number;
+    weekly: number;
+    monthly: number;
+    yearly: number;
+    lifetime: number;
+  };
+}
+
 export interface Store {
   id?: string;
   code: string;

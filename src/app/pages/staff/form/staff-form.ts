@@ -6,6 +6,7 @@ import { StaffService } from '../../../services/staff.service';
 import { StoreService } from '../../../services/store.service';
 import { RoleService } from '../../../services/role.service';
 import { AuthService } from '../../../services/auth.service';
+import { ContextService } from '../../../services/context.service';
 
 @Component({
   selector: 'app-staff-form',
@@ -60,7 +61,8 @@ export class StaffFormComponent implements OnInit {
     private staffService: StaffService,
     private storeService: StoreService,
     private roleService: RoleService,
-    public authService: AuthService
+    public authService: AuthService,
+    public contextService: ContextService
   ) {}
 
   async ngOnInit() {
@@ -70,6 +72,11 @@ export class StaffFormComponent implements OnInit {
       this.isEditMode.set(true);
       this.staffId.set(id);
       await this.loadStaffMember(id);
+    } else {
+      const activeStore = this.contextService.selectedStoreId();
+      if (activeStore) {
+        this.staff.update(s => ({ ...s, storeId: activeStore }));
+      }
     }
   }
 

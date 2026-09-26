@@ -1,8 +1,8 @@
-import { Component, signal, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { DataService } from '../../services/data.service';
+import { ContextService } from '../../services/context.service';
 import { ThemeService } from '../../services/theme.service';
 
 @Component({
@@ -20,12 +20,16 @@ export class HeaderComponent implements OnDestroy {
 
   constructor(
     public authService: AuthService,
-    public dataService: DataService,
+    public contextService: ContextService,
     public themeService: ThemeService,
     private router: Router
   ) {
     this.startClock();
-    this.updateTitles();
+    
+    // Automatically keep subtitle in sync with selected tenant/store context
+    effect(() => {
+      this.updateTitles();
+    });
   }
 
   startClock() {
@@ -40,17 +44,34 @@ export class HeaderComponent implements OnDestroy {
     const user = this.authService.currentUser();
     if (!user) return;
 
-    if (user.role === 'SUPER_ADMIN') {
-      this.pageSubtitle.set('All Stores · Super Admin');
+    if (this.contextService.isSuperAdmin()) {
+      const tenant = this.contextService.selectedTenant();
+      const store = this.contextService.selectedStore();
+      if (tenant && store) {
+        this.pageSubtitle.set(`${tenant.businessName} · ${store.name}`);
+      } else if (tenant) {
+        this.pageSubtitle.set(`${tenant.businessName} · All Stores`);
+      } else {
+        this.pageSubtitle.set('Global Network · All Tenants');
+      }
+    } else if (this.contextService.isTenantAdmin()) {
+      const store = this.contextService.selectedStore();
+      const bizName = user.businessName || 'Business';
+      if (store) {
+        this.pageSubtitle.set(`${bizName} · ${store.name}`);
+      } else {
+        this.pageSubtitle.set(`${bizName} · All Stores`);
+      }
     } else {
-      const storeName = this.dataService.stores[user.store!]?.name || '';
-      this.pageSubtitle.set(`${storeName} · Store Manager`);
+      const storeName = this.contextService.selectedStoreName();
+      this.pageSubtitle.set(`${storeName} · Store Operations`);
     }
   }
 
   getUserDisplayName(): string {
     const user = this.authService.currentUser();
     if (!user) return 'User';
+    if (user.name) return user.name;
     if (user.email) {
       const namePart = user.email.split('@')[0];
       return namePart.charAt(0).toUpperCase() + namePart.slice(1);
@@ -75,14 +96,21 @@ export class HeaderComponent implements OnDestroy {
     return name.slice(0, 2).toUpperCase();
   }
 
-  switchStore(v: string) {
-    console.log('Switching to store:', v);
+  onTenantChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const value = target.value;
+    this.contextService.switchTenant(value === 'all' ? null : value);
+  }
+
+  onStoreChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const value = target.value;
+    this.contextService.switchStore(value === 'all' ? null : value);
   }
 
   onSearch(event: any) {
     const q = event.target.value;
     this.searchQuery.set(q);
-    // Future expansion: navigate or filter based on query
   }
 
   ngOnDestroy() {

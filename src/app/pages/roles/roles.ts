@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { RoleService } from '../../services/role.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { Role } from '../../models/pos.models';
 
 @Component({
@@ -52,30 +53,44 @@ export class RolesComponent implements OnInit {
 
   constructor(
     private roleService: RoleService,
-    private authService: AuthService
+    public authService: AuthService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isOwner.set(user?.role === 'SUPER_ADMIN' || user?.role === 'TENANT_ADMIN');
+
+    effect(() => {
+      this.contextService.selectedTenantId();
+      this.loadRoles();
+    });
   }
 
   ngOnInit() {
-    this.loadRoles();
+    // Initial load handled by effect
   }
 
   async loadRoles() {
     this.isLoading.set(true);
     try {
-      const data = await this.roleService.getRoles();
+      const activeTenant = this.contextService.effectiveTenantId();
+      const data = await this.roleService.getRoles(1, 100, activeTenant || undefined);
       const raw = data.items || data;
       const rawList = Array.isArray(raw) ? raw : [];
-      const items = rawList.map((r: any) => ({
+      let items = rawList.map((r: any) => ({
         ...r,
         systemRole: this.mapSystemRoleToId(r.systemRole),
         isActive: r.isActive !== undefined ? r.isActive : true
       }));
+
+      // Scoping safety defense: if a specific tenant is active, filter to only roles belonging to that tenant
+      if (activeTenant) {
+        items = items.filter((r: any) => !r.tenantId || r.tenantId === activeTenant);
+      }
+
       this.roles.set(items);
     } catch (error) {
       console.error('Failed to load roles', error);
+      this.roles.set([]);
     } finally {
       this.isLoading.set(false);
     }
