@@ -34,6 +34,10 @@ export class TenantService {
     return await firstValueFrom(this.http.post<any>(this.apiUrl, dto));
   }
 
+  async updateTenant(id: string, dto: any): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${this.apiUrl}/${id}`, dto));
+  }
+
   async updateSubscription(tenantId: string, dto: any): Promise<any> {
     // Note: This uses the /api/subscriptions endpoint
     const subUrl = `${environment.apiUrl}/subscriptions`;

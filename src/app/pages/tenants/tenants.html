@@ -186,6 +186,10 @@
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       Details
                     </a>
+                    <button (click)="openEditModal(tenant)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;" title="Edit Tenant Profile & Info">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      Edit
+                    </button>
                     <button (click)="viewStores(tenant)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;" title="View Branches">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                       Stores
@@ -320,6 +324,76 @@
             <span>Provisioning...</span>
           } @else {
             <span>Create Tenant</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- EDIT TENANT MODAL -->
+@if (showEditModal()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:520px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--text1);">Edit Tenant Information</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px;">Update company profile, contact channels, and status.</div>
+        </div>
+        <button (click)="showEditModal.set(false)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0;">✕</button>
+      </div>
+
+      <div style="display:grid;gap:16px;">
+        <div>
+          <label class="label">Business Name *</label>
+          <input type="text" class="inp" [(ngModel)]="editTenant.businessName" placeholder="e.g. RUCON SMART STORE" style="font-weight:700;">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Slug Identifier *</label>
+            <input type="text" class="inp mono" [(ngModel)]="editTenant.slug" placeholder="e.g. rucon-smart-store">
+          </div>
+          <div>
+            <label class="label">Country</label>
+            <input type="text" class="inp" [(ngModel)]="editTenant.country" placeholder="e.g. Nigeria">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Contact Email *</label>
+            <input type="email" class="inp" [(ngModel)]="editTenant.contactEmail" placeholder="contact@company.com">
+          </div>
+          <div>
+            <label class="label">Contact Phone</label>
+            <input type="text" class="inp mono" [(ngModel)]="editTenant.contactPhone" placeholder="+234 ...">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <label class="label">Account Status</label>
+            <select class="inp" [(ngModel)]="editTenant.isActive" style="font-weight:700;">
+              <option [ngValue]="true">Active (Normal Access)</option>
+              <option [ngValue]="false">Suspended (Restricted Access)</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Logo URL (Optional)</label>
+            <input type="text" class="inp" [(ngModel)]="editTenant.logoUrl" placeholder="https://...">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;border-top:1px solid var(--border);padding-top:16px;">
+        <button (click)="showEditModal.set(false)" class="btn btn-secondary">Cancel</button>
+        <button (click)="updateTenant()" [disabled]="isUpdating()" class="btn btn-primary" style="min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;">
+          @if (isUpdating()) {
+            <span class="spinner-sm"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Changes</span>
           }
         </button>
       </div>
