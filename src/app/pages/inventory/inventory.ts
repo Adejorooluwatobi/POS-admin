@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { StockMovementService } from '../../services/stock-movement.service';
 import { ProductService } from '../../services/product.service';
 import { StoreService } from '../../services/store.service';
 import { AuthService } from '../../services/auth.service';
+import { ContextService } from '../../services/context.service';
 import { InventoryItem, Product, Store } from '../../models/pos.models';
 
 @Component({
@@ -109,12 +110,19 @@ export class InventoryComponent implements OnInit {
     private stockService: StockMovementService,
     private productService: ProductService,
     private storeService: StoreService,
-    private authService: AuthService
-  ) {}
+    public authService: AuthService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.selectedStoreFilter.set(sId || 'ALL');
+      this.loadAll();
+    });
+  }
 
   ngOnInit() {
     this.checkUserRole();
-    this.loadAll();
   }
 
   checkUserRole() {
@@ -153,7 +161,7 @@ export class InventoryComponent implements OnInit {
   }
 
   async loadAlerts() {
-    const storeId = this.authService.getStoreId();
+    const storeId = this.contextService.selectedStoreId() || this.authService.getStoreId();
     if (storeId) {
       try {
         const alerts = await this.stockService.getLowStockAlerts(storeId);
@@ -161,6 +169,8 @@ export class InventoryComponent implements OnInit {
       } catch (error) {
         this.lowStockAlerts.set([]);
       }
+    } else {
+      this.lowStockAlerts.set([]);
     }
   }
 

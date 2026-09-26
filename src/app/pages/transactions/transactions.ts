@@ -1,10 +1,11 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TransactionService } from '../../services/transaction.service';
 import { StoreService } from '../../services/store.service';
 import { TerminalService } from '../../services/terminal.service';
+import { ContextService } from '../../services/context.service';
 
 @Component({
   selector: 'app-transactions',
@@ -51,14 +52,20 @@ export class TransactionsComponent implements OnInit {
   constructor(
     private transactionService: TransactionService,
     private storeService: StoreService,
-    private terminalService: TerminalService
-  ) {}
+    private terminalService: TerminalService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.selectedStore.set(sId || 'all');
+      this.loadTransactions();
+      this.loadFilterMetadata();
+    });
+  }
 
   async ngOnInit() {
-    await Promise.all([
-      this.loadTransactions(),
-      this.loadFilterMetadata()
-    ]);
+    // Initial load handled by effect
   }
 
   async loadFilterMetadata() {

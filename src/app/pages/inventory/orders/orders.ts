@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { StockMovementService } from '../../../services/stock-movement.service';
 import { AuthService } from '../../../services/auth.service';
 import { StoreService } from '../../../services/store.service';
 import { ProductService } from '../../../services/product.service';
+import { ContextService } from '../../../services/context.service';
 
 @Component({
   selector: 'app-orders',
@@ -77,16 +78,23 @@ export class OrdersComponent implements OnInit {
     private stockService: StockMovementService,
     private storeService: StoreService,
     private productService: ProductService,
-    public authService: AuthService
-  ) {}
+    public authService: AuthService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const sId = this.contextService.selectedStoreId();
+      this.userStoreId.set(sId || this.authService.getStoreId());
+      this.loadOrders();
+      this.loadStoresAndVariants();
+    });
+  }
 
   ngOnInit() {
-    this.userStoreId.set(this.authService.getStoreId());
+    this.userStoreId.set(this.contextService.selectedStoreId() || this.authService.getStoreId());
     const role = this.authService.getSystemRole();
     this.isGeneral.set(role === 'TenantAdmin' || role === 'Manager');
     this.isSuperAdmin.set(role === 'SuperAdmin');
-    this.loadOrders();
-    this.loadStoresAndVariants();
   }
 
   async loadStoresAndVariants() {

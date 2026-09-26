@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, AfterViewInit, ViewChild, ElementRef, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { AnalyticsService, TopSellingProduct, BusiestHour, ProfitMarginReport } 
 import { TillService } from '../../services/till.service';
 import { StoreService } from '../../services/store.service';
 import { TransactionService } from '../../services/transaction.service';
+import { ContextService } from '../../services/context.service';
 
 Chart.register(...registerables);
 
@@ -90,12 +91,24 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     private analyticsService: AnalyticsService,
     private tillService: TillService,
     private storeService: StoreService,
-    private transactionService: TransactionService
-  ) {}
+    private transactionService: TransactionService,
+    public contextService: ContextService
+  ) {
+    effect(() => {
+      this.contextService.selectedTenantId();
+      const storeId = this.contextService.selectedStoreId();
+      if (storeId) {
+        this.selectedStoreId.set(storeId);
+      } else {
+        this.selectedStoreId.set('');
+      }
+      this.loadStores();
+      this.loadAllReportData();
+    });
+  }
 
   async ngOnInit() {
-    await this.loadStores();
-    await this.loadAllReportData();
+    // Initial load handled by effect
   }
 
   ngAfterViewInit() {

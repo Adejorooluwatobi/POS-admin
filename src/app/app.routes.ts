@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { authGuard, superAdminGuard } from './guards/auth.guard';
 import { LoginComponent } from './pages/login/login';
 import { LayoutComponent } from './shared/layout/layout';
 import { DashboardComponent } from './pages/dashboard/dashboard';
@@ -57,10 +58,11 @@ export const routes: Routes = [
   {
     path: 'app',
     component: LayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard', title: 'Dashboard — RetailOS', component: DashboardComponent },
-      { path: 'tenants', title: 'Tenants — RetailOS', component: TenantsComponent },
-      { path: 'tenants/:id', title: 'Tenant Details — RetailOS', component: TenantDetailsComponent },
+      { path: 'tenants', title: 'Tenants — RetailOS', component: TenantsComponent, canActivate: [superAdminGuard] },
+      { path: 'tenants/:id', title: 'Tenant Details — RetailOS', component: TenantDetailsComponent, canActivate: [superAdminGuard] },
 
       // Stores
       { path: 'stores', title: 'All Stores — RetailOS', component: StoresComponent },

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TerminalService } from '../../../services/terminal.service';
 import { StoreService } from '../../../services/store.service';
 import { AuthService } from '../../../services/auth.service';
+import { ContextService } from '../../../services/context.service';
 import { Store } from '../../../models/pos.models';
 
 @Component({
@@ -49,7 +50,8 @@ export class TerminalFormComponent implements OnInit {
     private router: Router,
     private terminalService: TerminalService,
     private storeService: StoreService,
-    private authService: AuthService
+    private authService: AuthService,
+    public contextService: ContextService
   ) {
     const user = this.authService.currentUser();
     this.isStoreManager.set(user?.role === 'STORE_MANAGER');
@@ -66,7 +68,8 @@ export class TerminalFormComponent implements OnInit {
       await this.loadTerminal(id);
     } else {
       // Default store assignment
-      const defaultStore = this.isStoreManager() ? (this.assignedStoreId() || '') : (this.stores()[0]?.id || '');
+      const activeStore = this.contextService.selectedStoreId();
+      const defaultStore = activeStore || (this.isStoreManager() ? (this.assignedStoreId() || '') : (this.stores()[0]?.id || ''));
       this.terminal.update(t => ({ ...t, storeId: defaultStore }));
     }
   }
