@@ -278,7 +278,14 @@
         </div>
 
         <div>
-          <label class="label">Subscription Period End Date</label>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label class="label" style="margin-bottom:0;">Subscription Period End Date</label>
+            <div style="display:flex;gap:4px;">
+              <button type="button" (click)="extendSubscription(30)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+30 Days</button>
+              <button type="button" (click)="extendSubscription(60)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+60 Days</button>
+              <button type="button" (click)="extendSubscription(365)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+1 Year</button>
+            </div>
+          </div>
           <input type="date" class="inp" [(ngModel)]="subEdit.currentPeriodEnd">
         </div>
       </div>

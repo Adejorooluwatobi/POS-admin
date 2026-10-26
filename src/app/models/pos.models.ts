@@ -230,8 +230,12 @@ export interface Terminal {
   name: string;
   storeId: string;
   ipAddress?: string;
-  status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE';
+  status: 'ONLINE' | 'OFFLINE' | 'MAINTENANCE' | 'DISCONNECTED' | string;
   pairingCode?: string;
+  leaseExpiresAt?: string | Date;
+  disconnectedAt?: string | Date;
+  disconnectedBy?: string;
+  isLeaseActive?: boolean;
   lastPingAt?: Date;
   createdAt: Date;
 }

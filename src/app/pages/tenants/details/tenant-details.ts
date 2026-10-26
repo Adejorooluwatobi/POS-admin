@@ -122,6 +122,13 @@ export class TenantDetailsComponent implements OnInit {
     }
   }
 
+  extendSubscription(days: number) {
+    const base = this.subEdit.currentPeriodEnd ? new Date(this.subEdit.currentPeriodEnd) : new Date();
+    const effectiveBase = isNaN(base.getTime()) || base.getTime() < Date.now() ? new Date() : base;
+    effectiveBase.setDate(effectiveBase.getDate() + days);
+    this.subEdit.currentPeriodEnd = effectiveBase.toISOString().split('T')[0];
+  }
+
   openEditTenantModal() {
     const t = this.tenant();
     if (!t) return;

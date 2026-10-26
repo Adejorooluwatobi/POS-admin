@@ -77,9 +77,9 @@
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text3); font-weight: 500;">
-        <span>{{ activeSessionsCount() }} Active Sessions</span>
-        <span [style.color]="maintenanceCount() > 0 ? 'var(--red)' : 'var(--text3)'">
-          {{ maintenanceCount() }} In Maintenance / Offline
+        <span style="color: var(--green); font-weight: 600;">{{ activeCount() }} Active Quota Leases</span>
+        <span [style.color]="disconnectedCount() > 0 ? 'var(--accent)' : 'var(--text3)'">
+          {{ disconnectedCount() }} Disconnected (Slots Freed)
         </span>
       </div>
     </div>
@@ -267,17 +267,21 @@
                       <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
                     <span style="position: absolute; top: -2px; right: -2px; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--surface);"
-                          [style.background]="t.status === 'ONLINE' ? 'var(--green)' : t.status === 'OFFLINE' ? 'var(--red)' : 'var(--amber)'"
+                          [style.background]="t.status === 'ONLINE' ? 'var(--green)' : t.status === 'DISCONNECTED' ? 'var(--text3)' : t.status === 'OFFLINE' ? 'var(--red)' : 'var(--amber)'"
                           [class.animate-pulse]="t.status === 'ONLINE'"></span>
                   </div>
                   <div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                       <h3 style="font-size: 13.5px; font-weight: 700; color: var(--text); margin: 0;">{{ t.name }}</h3>
                       <span class="badge" [ngClass]="{
                         'badge-green': t.status === 'ONLINE',
                         'badge-red': t.status === 'OFFLINE',
-                        'badge-amber': t.status === 'MAINTENANCE'
+                        'badge-amber': t.status === 'MAINTENANCE',
+                        'badge-outline': t.status === 'DISCONNECTED'
                       }">{{ t.status }}</span>
+                      <span class="badge" [ngClass]="getLeaseStatus(t).badgeClass" style="font-size: 9.5px;">
+                        {{ getLeaseStatus(t).text }}
+                      </span>
                     </div>
                     <span style="font-size: 11px; color: var(--text3);">{{ t.zone }} • {{ getStoreName(t.storeId) }}</span>
                   </div>
@@ -324,9 +328,27 @@
               </div>
             </div>
 
-            <!-- Card Footer Actions: Ping, Lock, Inspect -->
-            <div style="padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; margin: 0 -16px -16px; padding: 10px 16px; background: var(--surface2); border-radius: 0 0 12px 12px;">
-              <div style="display: flex; align-items: center; gap: 6px;">
+            <!-- Card Footer Actions: Disconnect, Reconnect PIN, Ping, Lock, Inspect -->
+            <div style="padding-top: 10px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; margin: 0 -16px -16px; padding: 10px 16px; background: var(--surface2); border-radius: 0 0 12px 12px; flex-wrap: wrap; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                @if (isOwner()) {
+                  @if (t.status === 'DISCONNECTED' || getLeaseStatus(t).isExpiringSoon) {
+                    <button type="button" (click)="openReconnectPinModal(t)" class="btn btn-primary btn-xs" style="gap: 4px; background: var(--accent);">
+                      <svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                      </svg>
+                      <span>Reconnect PIN</span>
+                    </button>
+                  }
+                  @if (t.status !== 'DISCONNECTED') {
+                    <button type="button" (click)="disconnectTerminal(t)" class="btn btn-secondary btn-xs" style="gap: 4px; color: var(--red);" title="Disconnect PC & Free Quota Slot">
+                      <svg style="width: 11px; height: 11px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      </svg>
+                      <span>Disconnect</span>
+                    </button>
+                  }
+                }
                 <button type="button" (click)="quickPing(t)" class="btn btn-secondary btn-xs" style="gap: 4px;">
                   <svg style="width: 11px; height: 11px; color: var(--accent);" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -401,15 +423,31 @@
                     {{ t.ipAddress || '192.168.4.110' }}
                   </td>
                   <td>
-                    <span class="badge" [ngClass]="{
-                      'badge-green': t.status === 'ONLINE',
-                      'badge-red': t.status === 'OFFLINE',
-                      'badge-amber': t.status === 'MAINTENANCE'
-                    }">{{ t.status }}</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                      <span class="badge" [ngClass]="{
+                        'badge-green': t.status === 'ONLINE',
+                        'badge-red': t.status === 'OFFLINE',
+                        'badge-amber': t.status === 'MAINTENANCE',
+                        'badge-outline': t.status === 'DISCONNECTED'
+                      }">{{ t.status }}</span>
+                      <span class="badge" [ngClass]="getLeaseStatus(t).badgeClass" style="font-size: 9.5px;">
+                        {{ getLeaseStatus(t).text }}
+                      </span>
+                    </div>
                   </td>
                   <td style="text-align: right;">
                     <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
                       @if (isOwner()) {
+                        @if (t.status === 'DISCONNECTED' || getLeaseStatus(t).isExpiringSoon) {
+                          <button type="button" (click)="openReconnectPinModal(t)" class="btn btn-primary btn-xs" style="gap: 4px; background: var(--accent);">
+                            Reconnect PIN
+                          </button>
+                        }
+                        @if (t.status !== 'DISCONNECTED') {
+                          <button type="button" (click)="disconnectTerminal(t)" class="btn btn-secondary btn-xs" style="color: var(--red);" title="Disconnect PC & Free Quota Slot">
+                            Disconnect
+                          </button>
+                        }
                         <a [routerLink]="['/app/terminals', t.id, 'edit']" class="btn btn-secondary btn-xs" style="text-decoration: none;">
                           Edit
                         </a>
@@ -688,6 +726,56 @@
           Close Report
         </button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════
+     7. RECONNECT 6-DIGIT PIN MODAL
+════════════════════════════════════════════════════ -->
+@if (showPinModal()) {
+  <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div class="card" style="width: 100%; max-width: 440px; padding: 24px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;">
+      <div style="width: 50px; height: 50px; border-radius: 12px; background: rgba(99,102,241,0.15); color: var(--accent); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center;">
+        <svg style="width: 24px; height: 24px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+      </div>
+
+      <h3 class="font-headline" style="font-size: 18px; font-weight: 800; color: var(--text); margin: 0 0 6px;">
+        Workstation Reconnect PIN
+      </h3>
+      <p style="font-size: 12.5px; color: var(--text3); margin: 0 0 20px;">
+        Enter this 6-digit PIN on <strong>{{ selectedTerminalForPin()?.name }}</strong> to re-authorize the workstation for another 30-day lease.
+      </p>
+
+      @if (isGeneratingPin()) {
+        <div style="padding: 30px; text-align: center;">
+          <div class="spinner" style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+          <span style="font-size: 12px; color: var(--text3);">Generating secure PIN...</span>
+        </div>
+      } @else {
+        <div style="background: var(--surface2); border: 2px dashed var(--accent); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+          <span class="mono" style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: var(--accent); display: block;">
+            {{ generatedPin() || '••••••' }}
+          </span>
+          <div style="font-size: 11px; color: var(--text3); margin-top: 8px;">
+            Valid for 48 hours • Expires {{ pinExpiresAt() }}
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button type="button" (click)="copyPinToClipboard()" class="btn btn-secondary" style="gap: 6px;">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+            <span>{{ pinCopied() ? 'Copied!' : 'Copy PIN' }}</span>
+          </button>
+          <button type="button" (click)="closeReconnectPinModal()" class="btn btn-primary" style="min-width: 100px;">
+            Done
+          </button>
+        </div>
+      }
     </div>
   </div>
 }
