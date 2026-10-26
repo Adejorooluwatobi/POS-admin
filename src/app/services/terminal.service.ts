@@ -36,4 +36,12 @@ export class TerminalService {
   async deleteTerminal(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
   }
+
+  async disconnectTerminal(id: string): Promise<any> {
+    return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/${id}/disconnect`, {}));
+  }
+
+  async generateReconnectPin(id: string): Promise<{ pin: string; expiresAt: string; terminal: any }> {
+    return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/${id}/reconnect-pin`, {}));
+  }
 }

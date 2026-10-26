@@ -70,7 +70,11 @@ export class TenantsComponent implements OnInit {
     adminPassword: '',
     maxStores: 1,
     maxStaff: 5,
-    maxTerminals: 2
+    maxTerminals: 2,
+    plan: 0, // 0 = Starter, 1 = Pro, 2 = Enterprise
+    durationType: '30_DAYS', // 14_DAYS, 30_DAYS, 60_DAYS, 90_DAYS, 1_YEAR, CUSTOM
+    customExpiryDate: '',
+    isTrial: true
   };
 
   constructor(
@@ -131,8 +135,41 @@ export class TenantsComponent implements OnInit {
       adminPassword: '',
       maxStores: 1,
       maxStaff: 5,
-      maxTerminals: 2
+      maxTerminals: 2,
+      plan: 0,
+      durationType: '30_DAYS',
+      customExpiryDate: '',
+      isTrial: true
     };
+  }
+
+  getSubscriptionInfo(tenant: any): { text: string; badgeClass: string; isExpired: boolean } {
+    if (!tenant.subscription) {
+      return { text: 'Active Plan', badgeClass: 'badge-green', isExpired: false };
+    }
+
+    const sub = tenant.subscription;
+    const isCancelledOrSuspended = sub.status === 'Cancelled' || sub.status === 'Suspended' || sub.status === 3 || sub.status === 4;
+
+    if (isCancelledOrSuspended) {
+      return { text: 'Suspended', badgeClass: 'badge-red', isExpired: true };
+    }
+
+    if (sub.currentPeriodEnd) {
+      const diffMs = new Date(sub.currentPeriodEnd).getTime() - Date.now();
+      const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+      if (days <= 0) {
+        return { text: 'Subscription Expired', badgeClass: 'badge-red', isExpired: true };
+      } else if (days <= 7) {
+        return { text: `Expiring: ${days}d left`, badgeClass: 'badge-amber', isExpired: false };
+      } else {
+        const isTrial = sub.status === 'Trial' || sub.status === 0;
+        return { text: `${isTrial ? 'Trial: ' : ''}${days}d remaining`, badgeClass: 'badge-green', isExpired: false };
+      }
+    }
+
+    return { text: 'Active Plan', badgeClass: 'badge-green', isExpired: false };
   }
 
   async toggleStatus(tenant: any) {

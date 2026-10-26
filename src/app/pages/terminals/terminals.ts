@@ -57,7 +57,20 @@ export class TerminalsComponent implements OnInit {
 
   // Computed Metrics
   public onlineCount = computed(() => {
-    return this.terminals().filter(t => t.status === 'ONLINE').length;
+    return this.terminals().filter(t => (t.status || '').toUpperCase() === 'ONLINE').length;
+  });
+
+  public activeCount = computed(() => {
+    return this.terminals().filter(t => {
+      const s = (t.status || '').toUpperCase();
+      if (s === 'DISCONNECTED') return false;
+      if (t.leaseExpiresAt && new Date(t.leaseExpiresAt).getTime() < Date.now()) return false;
+      return true;
+    }).length;
+  });
+
+  public disconnectedCount = computed(() => {
+    return this.terminals().filter(t => (t.status || '').toUpperCase() === 'DISCONNECTED').length;
   });
 
   public totalCount = computed(() => {
@@ -65,12 +78,20 @@ export class TerminalsComponent implements OnInit {
   });
 
   public activeSessionsCount = computed(() => {
-    return this.terminals().filter(t => t.cashierName && t.status === 'ONLINE').length;
+    return this.terminals().filter(t => t.cashierName && (t.status || '').toUpperCase() === 'ONLINE').length;
   });
 
   public maintenanceCount = computed(() => {
-    return this.terminals().filter(t => t.status !== 'ONLINE').length;
+    return this.terminals().filter(t => (t.status || '').toUpperCase() !== 'ONLINE' && (t.status || '').toUpperCase() !== 'DISCONNECTED').length;
   });
+
+  // Reconnect PIN Modal State
+  public showPinModal = signal<boolean>(false);
+  public selectedTerminalForPin = signal<EnrichedTerminal | null>(null);
+  public generatedPin = signal<string>('');
+  public pinExpiresAt = signal<string>('');
+  public isGeneratingPin = signal<boolean>(false);
+  public pinCopied = signal<boolean>(false);
 
   public filteredTerminals = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -286,5 +307,82 @@ export class TerminalsComponent implements OnInit {
     if (store) return store.name;
     if (storeId && storeId === this.assignedStoreId()) return 'My Store';
     return 'Downtown Flagship #04';
+  }
+
+  // ── Terminal Disconnect & Reconnect Actions ─────────────────────────
+  async disconnectTerminal(terminal: EnrichedTerminal) {
+    const confirmed = confirm(
+      `Are you sure you want to disconnect "${terminal.name}"?\n\n` +
+      `• All historical sales, till sessions, and audit records will remain preserved.\n` +
+      `• This physical PC will be blocked from making sales until reconnected.\n` +
+      `• This will immediately free 1 active terminal slot in your store quota.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await this.terminalService.disconnectTerminal(terminal.id);
+      this.triggerToast(`Disconnected ${terminal.name}`, 'Active terminal quota slot released successfully');
+      await this.loadTerminals();
+    } catch (err: any) {
+      console.error('Failed to disconnect terminal', err);
+      alert(err?.error?.message || 'Failed to disconnect terminal.');
+    }
+  }
+
+  async openReconnectPinModal(terminal: EnrichedTerminal) {
+    this.selectedTerminalForPin.set(terminal);
+    this.isGeneratingPin.set(true);
+    this.pinCopied.set(false);
+    this.showPinModal.set(true);
+
+    try {
+      const res = await this.terminalService.generateReconnectPin(terminal.id);
+      this.generatedPin.set(res.pin);
+      this.pinExpiresAt.set(res.expiresAt ? new Date(res.expiresAt).toLocaleDateString() : 'in 48 hours');
+      await this.loadTerminals();
+    } catch (err: any) {
+      console.error('Failed to generate reconnect PIN', err);
+      alert(err?.error?.message || 'Failed to generate reconnect PIN.');
+      this.showPinModal.set(false);
+    } finally {
+      this.isGeneratingPin.set(false);
+    }
+  }
+
+  closeReconnectPinModal() {
+    this.showPinModal.set(false);
+    this.selectedTerminalForPin.set(null);
+    this.generatedPin.set('');
+    this.pinCopied.set(false);
+  }
+
+  copyPinToClipboard() {
+    if (this.generatedPin()) {
+      navigator.clipboard.writeText(this.generatedPin());
+      this.pinCopied.set(true);
+      setTimeout(() => this.pinCopied.set(false), 2000);
+    }
+  }
+
+  getLeaseStatus(terminal: EnrichedTerminal): { text: string; badgeClass: string; isExpiringSoon: boolean } {
+    const status = (terminal.status || '').toUpperCase();
+    if (status === 'DISCONNECTED') {
+      return { text: 'Disconnected • Slot Freed', badgeClass: 'badge-outline', isExpiringSoon: false };
+    }
+
+    if (!terminal.leaseExpiresAt) {
+      return { text: '30-Day Lease Active', badgeClass: 'badge-green', isExpiringSoon: false };
+    }
+
+    const diffMs = new Date(terminal.leaseExpiresAt).getTime() - Date.now();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (days <= 0) {
+      return { text: 'Lease Expired • Reconnect Needed', badgeClass: 'badge-red', isExpiringSoon: true };
+    } else if (days <= 5) {
+      return { text: `Lease: ${days} day${days > 1 ? 's' : ''} left`, badgeClass: 'badge-amber', isExpiringSoon: true };
+    } else {
+      return { text: `Lease: ${days} days left`, badgeClass: 'badge-green', isExpiringSoon: false };
+    }
   }
 }
