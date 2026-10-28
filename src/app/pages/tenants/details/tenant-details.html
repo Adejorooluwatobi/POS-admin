@@ -13,6 +13,37 @@
         </div>
       }
 
+      <!-- Soft Deleted / Bin Alert Banner -->
+      @if (tenant().isDeleted) {
+        <div style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--red);">This Organization is in the Recycle Bin</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:2px;">
+                Soft-deleted on {{ tenant().deletedAt ? (tenant().deletedAt | date:'medium') : 'recently' }}. All branches and staff logins are disabled.
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button (click)="restoreTenant()" class="btn btn-secondary btn-sm" style="color:var(--green);border-color:rgba(16,185,129,0.3);font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              Restore Tenant
+            </button>
+            <button (click)="exportTenantCsv()" class="btn btn-secondary btn-sm" style="color:var(--accent);border-color:rgba(99,102,241,0.3);font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+            <button (click)="openPurgeModal()" class="btn btn-sm" style="background:var(--red);color:#fff;border:none;font-size:12px;display:inline-flex;align-items:center;gap:6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Purge Completely
+            </button>
+          </div>
+        </div>
+      }
+
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
         <div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -20,18 +51,31 @@
             <span class="mono" style="font-size:12px;font-weight:700;color:var(--text1);background:var(--surface2);padding:4px 8px;border-radius:6px;border:1px solid var(--border);">
               {{ tenant().slug }}
             </span>
-            <span class="badge" [class.badge-green]="tenant().isActive !== false" [class.badge-red]="tenant().isActive === false" style="font-size:10px;font-weight:700;">
-              {{ tenant().isActive !== false ? 'ACTIVE' : 'SUSPENDED' }}
-            </span>
-            @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+            @if (tenant().isDeleted) {
+              <span class="badge badge-red" style="font-size:10px;font-weight:700;">IN RECYCLE BIN</span>
+            } @else {
+              <span class="badge" [class.badge-green]="tenant().isActive !== false" [class.badge-red]="tenant().isActive === false" style="font-size:10px;font-weight:700;">
+                {{ tenant().isActive !== false ? 'ACTIVE' : 'SUSPENDED' }}
+              </span>
+            }
+            @if (authService.currentUser()?.role === 'SUPER_ADMIN' && !tenant().isDeleted) {
               <button (click)="openEditTenantModal()" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 9px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;" title="Edit Tenant Profile & Info">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 <span>Edit Info</span>
               </button>
             }
           </div>
-          <div style="font-size:13px;color:var(--text3);margin-top:4px;">
-            {{ tenant().contactEmail }} · Owner: {{ tenant().ownerEmail || '—' }} @if (tenant().contactPhone) { · {{ tenant().contactPhone }} }
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text3);margin-top:6px;">
+            <span>{{ tenant().contactEmail }}</span>
+            <span>·</span>
+            <span>Owner: <strong style="color:var(--text1);">{{ tenant().ownerName || tenant().ownerEmail || '—' }}</strong></span>
+            @if (tenant().ownerStaffId && authService.isSuperAdmin() && !tenant().isDeleted) {
+              <button (click)="generateOwnerPassword()" [disabled]="isGeneratingPassword()" class="btn btn-secondary btn-xs" style="font-size:10.5px;padding:2px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;color:var(--accent);border-color:rgba(99,102,241,0.3);" title="Generate Temporary Password for Tenant Admin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:11px;height:11px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Reset Admin Password</span>
+              </button>
+            }
+            @if (tenant().contactPhone) { <span>· {{ tenant().contactPhone }}</span> }
           </div>
         </div>
 
@@ -46,15 +90,26 @@
             </select>
           </div>
 
-          @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
+          <button (click)="exportTenantCsv()" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 12px;border-radius:8px;" title="Export Tenant Data CSV">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Export CSV</span>
+          </button>
+
+          @if (authService.currentUser()?.role === 'SUPER_ADMIN' && !tenant().isDeleted) {
             <button (click)="openEditTenantModal()" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 14px;border-radius:8px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              Edit Tenant Info
+              Edit Info
             </button>
             <button (click)="showSubModal.set(true)" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:8px 14px;border-radius:8px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-              Manage Quotas & Plan
+              Quotas & Plan
             </button>
+            @if (tenant().slug !== 'system') {
+              <button (click)="moveToBin()" class="btn btn-secondary" style="color:var(--red);border-color:rgba(239,68,68,0.3);font-size:12px;padding:8px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;" title="Move Tenant to Recycle Bin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>Move to Bin</span>
+              </button>
+            }
           }
           <button (click)="loadDetails()" class="btn btn-secondary" style="padding:8px 12px;border-radius:8px;" title="Refresh Data">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;" [style.animation]="isLoading() ? 'spin 1s linear infinite' : 'none'"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
@@ -106,120 +161,90 @@
       </div>
     </div>
 
-    <!-- Subscription & Quota Card (SuperAdmin only) -->
-    @if (authService.currentUser()?.role === 'SUPER_ADMIN') {
-      <div class="card" style="padding:20px 24px;border-radius:14px;background:var(--surface);border:1px solid var(--border);margin-bottom:24px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.05em;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            SaaS Plan & Resource Allocation
-          </div>
+    <!-- SaaS Subscription Details Card -->
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);padding:22px;margin-bottom:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--accent);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span style="font-size:14px;font-weight:800;color:var(--text1);text-transform:uppercase;letter-spacing:.05em;">SaaS Plan & Resource Allocation</span>
+        </div>
+        @if (authService.currentUser()?.role === 'SUPER_ADMIN' && !tenant().isDeleted) {
           <button (click)="showSubModal.set(true)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">
             Edit Quotas
           </button>
-        </div>
-
-        @if (tenant().subscription) {
-          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:14px;">
-            <div style="background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);">
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Subscription Status</div>
-              <div style="margin-top:4px;">
-                <span class="badge" [class.badge-green]="tenant().subscription.status === 1" [class.badge-red]="tenant().subscription.status !== 1" style="font-size:11px;font-weight:800;">
-                  {{ tenant().subscription.status === 1 ? '● ACTIVE' : '● SUSPENDED' }}
-                </span>
-              </div>
-            </div>
-
-            <div style="background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);">
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Capacity Limits</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-top:4px;">
-                {{ tenant().subscription.maxStores }} Stores · {{ tenant().subscription.maxStaff }} Staff · {{ tenant().subscription.maxTerminals }} Terminals
-              </div>
-            </div>
-
-            <div style="background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);">
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Renewal Date</div>
-              <div style="font-size:13px;font-weight:700;color:var(--text1);margin-top:4px;">
-                {{ tenant().subscription.currentPeriodEnd | date:'mediumDate' }}
-              </div>
-            </div>
-
-            <div style="background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);">
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;">Monthly Billing</div>
-              <div style="font-size:14px;font-weight:900;color:var(--accent);margin-top:4px;" class="mono">
-                ₦{{ (tenant().subscription.monthlyPrice || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
-              </div>
-            </div>
-          </div>
-        } @else {
-          <div style="padding:16px;border-radius:10px;background:var(--surface2);border:1px dashed var(--border);display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <div style="font-size:13px;font-weight:700;color:var(--text1);">No Plan Configured</div>
-              <div style="font-size:11px;color:var(--text3);margin-top:2px;">Resource quotas and store caps are currently unconstrained.</div>
-            </div>
-            <button (click)="showSubModal.set(true)" class="btn btn-primary btn-xs">Assign Plan</button>
-          </div>
         }
       </div>
-    }
 
-    <!-- Stores Table Card -->
-    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);overflow:hidden;">
-      <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-weight:800;font-size:14px;color:var(--text1);">Tenant Retail Branches</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px;">
-            {{ tenant().stores?.length ?? 0 }} of {{ tenant().subscription?.maxStores ?? '∞' }} stores deployed
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:16px;">
+        <div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;">Subscription Status</div>
+          <div style="margin-top:4px;">
+            @if (tenant().subscription?.status === 'Active' || tenant().subscription?.status === 1) {
+              <span class="badge badge-green" style="font-size:11px;">Active License</span>
+            } @else if (tenant().subscription?.status === 'Trial' || tenant().subscription?.status === 0) {
+              <span class="badge badge-amber" style="font-size:11px;">Free Trial Active</span>
+            } @else {
+              <span class="badge badge-red" style="font-size:11px;">Suspended / Overdue</span>
+            }
           </div>
         </div>
-        <span class="badge badge-accent" style="font-size:10px;font-weight:700;">{{ (tenant().stores || []).length }} Branches</span>
+
+        <div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;">Capacity Limits</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);margin-top:4px;" class="mono">
+            {{ tenant().subscription?.maxStores || 1 }} Stores · {{ tenant().subscription?.maxStaff || 5 }} Staff · {{ tenant().subscription?.maxTerminals || 2 }} POS
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;">Renewal Date</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);margin-top:4px;" class="mono">
+            {{ tenant().subscription?.currentPeriodEnd ? (tenant().subscription?.currentPeriodEnd | date:'mediumDate') : 'No Expiry Set' }}
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border);">
+          <div style="font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;">Monthly Billing</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);margin-top:4px;" class="mono">
+            {{ formatCurrency(tenant().subscription?.monthlyPrice || 0) }} / mo
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Stores List Card -->
+    <div class="card" style="border-radius:14px;background:var(--surface);border:1px solid var(--border);padding:22px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;color:var(--accent);"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span style="font-size:14px;font-weight:800;color:var(--text1);text-transform:uppercase;letter-spacing:.05em;">Branches & Stores ({{ tenant().stores?.length || 0 }})</span>
+        </div>
       </div>
 
       <div style="overflow-x:auto;">
         <table class="tbl" style="width:100%;border-collapse:collapse;">
           <thead>
             <tr>
-              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Branch Name</th>
-              <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Code</th>
-              <th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Status</th>
-              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">This Month</th>
-              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Lifetime</th>
-              <th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Action</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Store Code</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Name</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Location</th>
+              <th style="padding:10px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Status</th>
+              <th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Action</th>
             </tr>
           </thead>
           <tbody>
-            @for (s of tenant().stores || []; track s.id) {
-              <tr style="border-top:1px solid var(--border);transition:background .15s ease;">
-                <td style="padding:12px 16px;">
-                  <div style="font-weight:700;font-size:13px;color:var(--text1);">{{ s.name }}</div>
-                </td>
-                <td style="padding:12px 16px;">
-                  <span class="mono" style="font-size:11px;font-weight:700;color:var(--text1);background:var(--surface2);padding:3px 8px;border-radius:6px;border:1px solid var(--border);">
-                    {{ s.code }}
+            @for (store of tenant().stores || []; track store.id) {
+              <tr style="border-top:1px solid var(--border);">
+                <td style="padding:10px 14px;"><span class="mono" style="font-weight:700;color:var(--text1);">{{ store.code }}</span></td>
+                <td style="padding:10px 14px;font-weight:600;color:var(--text1);">{{ store.name }}</td>
+                <td style="padding:10px 14px;color:var(--text2);font-size:12px;">{{ store.city || '—' }}</td>
+                <td style="padding:10px 14px;text-align:center;">
+                  <span class="badge" [class.badge-green]="store.active !== false" [class.badge-dim]="store.active === false" style="font-size:10px;">
+                    {{ store.active !== false ? 'ACTIVE' : 'INACTIVE' }}
                   </span>
                 </td>
-                <td style="padding:12px 16px;text-align:center;">
-                  <span class="badge" [class.badge-green]="s.isActive !== false" [class.badge-red]="s.isActive === false" style="font-size:10px;font-weight:700;">
-                    {{ s.isActive !== false ? 'ACTIVE' : 'INACTIVE' }}
-                  </span>
-                </td>
-                <td style="padding:12px 16px;text-align:right;" class="mono">
-                  <span style="font-weight:700;color:var(--green);font-size:12px;">₦{{ (s.monthlyRevenue || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
-                </td>
-                <td style="padding:12px 16px;text-align:right;" class="mono">
-                  <span style="font-weight:700;color:var(--text1);font-size:12px;">₦{{ (s.lifetimeRevenue || 0).toLocaleString('en-NG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
-                </td>
-                <td style="padding:12px 16px;text-align:right;">
-                  <button (click)="viewStore(s.id)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">
-                    Details →
-                  </button>
-                </td>
-              </tr>
-            }
-            @if (!tenant().stores || tenant().stores.length === 0) {
-              <tr>
-                <td colspan="6" style="text-align:center;padding:40px;color:var(--text3);font-size:12px;">
-                  No store branches created yet for this tenant.
+                <td style="padding:10px 14px;text-align:right;">
+                  <button (click)="viewStore(store.id)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:3px 8px;border-radius:6px;">View Store</button>
                 </td>
               </tr>
             }
@@ -227,66 +252,172 @@
         </table>
       </div>
     </div>
-  } @else if (isLoading()) {
-    <div style="padding:80px 20px;text-align:center;color:var(--text3);">
-      <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="font-size:13px;font-weight:600;">Loading tenant insights...</div>
-    </div>
   }
 </div>
 
-<!-- SUBSCRIPTION MODAL -->
+<!-- GENERATED ADMIN PASSWORD MODAL -->
+@if (generatedCredentials()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:500px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:var(--text1);">New Temporary Password Generated</div>
+          <div style="font-size:12px;color:var(--text3);">Provide these credentials to the tenant administrator.</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:grid;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Administrator</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);">{{ generatedCredentials()?.fullName }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Login Email</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);" class="mono">{{ generatedCredentials()?.email }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Generated Temporary Password</div>
+          <div style="font-size:16px;font-weight:800;color:var(--accent);letter-spacing:1px;margin-top:2px;" class="mono">{{ generatedCredentials()?.password }}</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:20px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);padding:10px 12px;border-radius:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>The administrator must change this temporary password immediately upon their next login.</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <button (click)="copyGeneratedCredentials()" class="btn btn-secondary" style="font-size:12px;padding:8px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;">
+          @if (copiedNotice()) {
+            <span style="color:var(--green);font-weight:700;">✓ Copied to Clipboard!</span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy Password</span>
+          }
+        </button>
+        <button (click)="closeCredentialsModal()" class="btn btn-primary" style="font-size:12px;padding:8px 20px;border-radius:8px;">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- PERMANENT PURGE CONFIRMATION MODAL -->
+@if (showPurgeModal()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:480px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid rgba(239,68,68,0.4);box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;color:var(--red);flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:var(--red);">Permanently Purge Tenant</div>
+          <div style="font-size:12px;color:var(--text3);">Irreversible database cascade operation</div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;">
+        You are about to completely erase <strong>{{ tenant()?.businessName }}</strong> from the database. All stores, inventory, transactions, and staff data will be permanently purged.
+      </div>
+
+      <div style="background:var(--surface2);padding:12px 14px;border-radius:10px;border:1px solid var(--border);margin-bottom:16px;">
+        <label class="label" style="color:var(--red);">To confirm, type the tenant slug identifier: <strong class="mono" style="color:var(--text1);">{{ tenant()?.slug }}</strong></label>
+        <input 
+          type="text" 
+          class="inp mono" 
+          [(ngModel)]="purgeInputSlug" 
+          [placeholder]="tenant()?.slug" 
+          style="width:100%;font-weight:700;">
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;">
+        <button (click)="closePurgeModal()" class="btn btn-secondary" [disabled]="isPurging()">Cancel</button>
+        <button 
+          (click)="confirmPurge()" 
+          [disabled]="purgeInputSlug().trim().toLowerCase() !== tenant()?.slug?.toLowerCase() || isPurging()" 
+          class="btn" 
+          style="background:var(--red);color:#fff;border:none;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:6px;">
+          @if (isPurging()) {
+            <span class="spinner-sm"></span>
+            <span>Purging...</span>
+          } @else {
+            <span>Purge Completely</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- SUBSCRIPTION MANAGEMENT MODAL -->
 @if (showSubModal()) {
   <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;">
-    <div class="card" style="width:100%;max-width:480px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+    <div class="card" style="width:100%;max-width:540px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:var(--text1);">Manage Subscription & Quotas</div>
+        <div style="font-size:18px;font-weight:800;color:var(--text1);">Manage SaaS License & Quotas</div>
         <button (click)="showSubModal.set(false)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0;">✕</button>
       </div>
 
       <div style="display:grid;gap:16px;">
-        <div>
-          <label class="label">Subscription Status</label>
-          <select class="inp" [(ngModel)]="subEdit.status" style="font-weight:700;">
-            <option [value]="1">Active</option>
-            <option [value]="2">Suspended</option>
-            <option [value]="0">Trial</option>
-            <option [value]="3">Cancelled</option>
-          </select>
-        </div>
-
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
+            <label class="label">Plan Tier</label>
+            <select class="inp" [(ngModel)]="subEdit.plan">
+              <option [ngValue]="0">Starter Plan</option>
+              <option [ngValue]="1">Pro Plan</option>
+              <option [ngValue]="2">Enterprise Plan</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Account Status</label>
+            <select class="inp" [(ngModel)]="subEdit.status">
+              <option [ngValue]="0">Trial</option>
+              <option [ngValue]="1">Active</option>
+              <option [ngValue]="2">Past Due</option>
+              <option [ngValue]="3">Cancelled</option>
+              <option [ngValue]="4">Suspended</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div>
             <label class="label">Max Stores</label>
-            <input type="number" class="inp mono" min="1" [(ngModel)]="subEdit.maxStores">
+            <input type="number" class="inp mono" [(ngModel)]="subEdit.maxStores" min="1">
+          </div>
+          <div>
+            <label class="label">Max Staff</label>
+            <input type="number" class="inp mono" [(ngModel)]="subEdit.maxStaff" min="1">
           </div>
           <div>
             <label class="label">Max Terminals</label>
-            <input type="number" class="inp mono" min="1" [(ngModel)]="subEdit.maxTerminals">
+            <input type="number" class="inp mono" [(ngModel)]="subEdit.maxTerminals" min="1">
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div>
-            <label class="label">Max Staff Members</label>
-            <input type="number" class="inp mono" min="1" [(ngModel)]="subEdit.maxStaff">
+            <label class="label">Monthly Rate (NGN)</label>
+            <input type="number" class="inp mono" [(ngModel)]="subEdit.monthlyPrice" min="0">
           </div>
           <div>
-            <label class="label">Monthly Rate (₦)</label>
-            <input type="number" class="inp mono" min="0" [(ngModel)]="subEdit.monthlyPrice">
+            <label class="label">Expiry / Renewal Date</label>
+            <input type="date" class="inp mono" [(ngModel)]="subEdit.currentPeriodEnd">
           </div>
         </div>
 
-        <div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <label class="label" style="margin-bottom:0;">Subscription Period End Date</label>
-            <div style="display:flex;gap:4px;">
-              <button type="button" (click)="extendSubscription(30)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+30 Days</button>
-              <button type="button" (click)="extendSubscription(60)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+60 Days</button>
-              <button type="button" (click)="extendSubscription(365)" class="btn btn-secondary btn-xs" style="font-size:10px;padding:2px 8px;border-radius:4px;">+1 Year</button>
-            </div>
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:6px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px;">Quick Extension</div>
+          <div style="display:flex;gap:8px;">
+            <button (click)="extendSubscription(30)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">+30 Days</button>
+            <button (click)="extendSubscription(60)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">+60 Days</button>
+            <button (click)="extendSubscription(90)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">+90 Days</button>
+            <button (click)="extendSubscription(365)" class="btn btn-secondary btn-xs" style="font-size:11px;padding:4px 10px;border-radius:6px;">+1 Year</button>
           </div>
-          <input type="date" class="inp" [(ngModel)]="subEdit.currentPeriodEnd">
         </div>
       </div>
 

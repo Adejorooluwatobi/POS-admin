@@ -17,6 +17,11 @@ export class StaffService {
     return await firstValueFrom(this.http.get<any>(this.apiUrl, { params }));
   }
 
+  async getStaffBin(page: number = 1, size: number = 50): Promise<any> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/bin`, { params }));
+  }
+
   async getStaffById(id: string): Promise<any> {
     return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/${id}`));
   }
@@ -31,6 +36,18 @@ export class StaffService {
 
   async deleteStaff(id: string): Promise<void> {
     await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
+
+  async restoreStaff(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.apiUrl}/${id}/restore`, {}));
+  }
+
+  async purgeStaff(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}/purge`));
+  }
+
+  async generatePassword(id: string): Promise<any> {
+    return await firstValueFrom(this.http.post<any>(`${this.apiUrl}/${id}/generate-password`, {}));
   }
 
   async getStaffStats(id: string, year?: number, month?: number): Promise<any> {

@@ -16,8 +16,12 @@ export class TenantService {
     return await firstValueFrom(this.http.get<any>(this.apiUrl, { params }));
   }
 
+  async getTenantsBin(page: number = 1, size: number = 50): Promise<any> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return await firstValueFrom(this.http.get<any>(`${this.apiUrl}/bin`, { params }));
+  }
+
   async setTenantStatus(id: string, isActive: boolean): Promise<void> {
-    // We send the boolean directly as the body for PATCH status
     await firstValueFrom(this.http.patch<void>(`${this.apiUrl}/${id}/status`, isActive, {
       headers: { 'Content-Type': 'application/json' }
     }));
@@ -38,8 +42,31 @@ export class TenantService {
     await firstValueFrom(this.http.put<void>(`${this.apiUrl}/${id}`, dto));
   }
 
+  async deleteTenant(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}`));
+  }
+
+  async restoreTenant(id: string): Promise<void> {
+    await firstValueFrom(this.http.post<void>(`${this.apiUrl}/${id}/restore`, {}));
+  }
+
+  async purgeTenant(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete<void>(`${this.apiUrl}/${id}/purge`));
+  }
+
+  async exportTenantCsv(id: string, slug: string): Promise<void> {
+    const blob = await firstValueFrom(
+      this.http.get(`${this.apiUrl}/${id}/export`, { responseType: 'blob' })
+    );
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tenant_${slug}_archive.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  }
+
   async updateSubscription(tenantId: string, dto: any): Promise<any> {
-    // Note: This uses the /api/subscriptions endpoint
     const subUrl = `${environment.apiUrl}/subscriptions`;
     return await firstValueFrom(this.http.put<any>(`${subUrl}/${tenantId}`, dto));
   }

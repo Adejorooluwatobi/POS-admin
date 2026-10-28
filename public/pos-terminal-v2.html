@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RetailOS POS — Terminal LG-01-T3</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── CSS VARIABLES ───────────────────────────────────── */
+:root[data-theme="dark"] {
+  --bg:          #07090e;
+  --surface:     #0d1117;
+  --surface2:    #131920;
+  --surface3:    #1a2333;
+  --border:      #1e2d40;
+  --border2:     #253347;
+  --text:        #dde5f0;
+  --text2:       #8ba3bc;
+  --text3:       #4d6a84;
+  --accent:      #00c2ff;
+  --accent-dim:  rgba(0,194,255,0.08);
+  --accent-glow: rgba(0,194,255,0.18);
+  --green:       #00d68f;
+  --green-dim:   rgba(0,214,143,0.08);
+  --amber:       #f5a623;
+  --amber-dim:   rgba(245,166,35,0.08);
+  --red:         #ff4b6e;
+  --red-dim:     rgba(255,75,110,0.08);
+  --purple:      #a78bfa;
+  --scanner-bg:  #061018;
+}
+:root[data-theme="light"] {
+  --bg:          #f4f6f9;
+  --surface:     #ffffff;
+  --surface2:    #f0f3f7;
+  --surface3:    #e5eaf0;
+  --border:      #dde3ec;
+  --border2:     #c8d3df;
+  --text:        #0f1923;
+  --text2:       #4a6074;
+  --text3:       #8fa5b8;
+  --accent:      #0088cc;
+  --accent-dim:  rgba(0,136,204,0.08);
+  --accent-glow: rgba(0,136,204,0.15);
+  --green:       #00a86b;
+  --green-dim:   rgba(0,168,107,0.08);
+  --amber:       #d4860a;
+  --amber-dim:   rgba(212,134,10,0.08);
+  --red:         #e5284a;
+  --red-dim:     rgba(229,40,74,0.08);
+  --purple:      #7c3aed;
+  --scanner-bg:  #eef1f5;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  transition: background .25s, color .25s;
+}
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+/* ─── UTILITY ─────────────────────────────────────────── */
+.mono { font-family:'Geist Mono',monospace; }
+.surface { background:var(--surface); }
+.surface2 { background:var(--surface2); }
+.border-c { border:1px solid var(--border); }
+.border2-c { border:1px solid var(--border2); }
+.text-muted { color:var(--text2); }
+.text-dim { color:var(--text3); }
+.text-accent { color:var(--accent); }
+.text-green { color:var(--green); }
+.text-amber { color:var(--amber); }
+.text-red { color:var(--red); }
+
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+@keyframes scanPulse { 0%,100%{box-shadow:0 0 0 0 var(--accent-glow)} 50%{box-shadow:0 0 0 6px transparent} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+@keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes scanLine { 0%{top:0%} 100%{top:100%} }
+.fade-up { animation:fadeUp .18s ease forwards; }
+.slide-in { animation:slideIn .15s ease forwards; }
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn { display:inline-flex; align-items:center; gap:5px; border:none; cursor:pointer; font-family:'Geist',sans-serif; font-weight:500; border-radius:7px; transition:all .12s; white-space:nowrap; }
+.btn:active { transform:scale(0.96); }
+.btn-accent { background:var(--accent); color:#000; }
+.btn-accent:hover { filter:brightness(1.1); }
+.btn-ghost { background:var(--surface2); color:var(--text2); border:1px solid var(--border); }
+.btn-ghost:hover { border-color:var(--border2); color:var(--text); }
+.btn-danger { background:var(--red-dim); color:var(--red); border:1px solid rgba(255,75,110,.2); }
+.btn-danger:hover { background:rgba(255,75,110,.14); }
+.btn-green { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,214,143,.2); }
+.btn-amber { background:var(--amber-dim); color:var(--amber); border:1px solid rgba(245,166,35,.2); }
+.btn-xs { padding:4px 9px; font-size:11px; border-radius:5px; }
+.btn-sm { padding:5px 11px; font-size:12px; }
+.btn-md { padding:7px 14px; font-size:13px; }
+
+/* ─── NUMPAD ──────────────────────────────────────────── */
+.nk { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'Geist Mono',monospace; font-size:14px; font-weight:600; border-radius:6px; cursor:pointer; transition:all .1s; display:flex; align-items:center; justify-content:center; }
+.nk:active { background:var(--surface3); transform:scale(0.93); }
+.nk:hover { border-color:var(--border2); }
+.nk-special { background:var(--surface); color:var(--text3); font-size:11px; }
+.nk-action { background:var(--accent-dim); color:var(--accent); border-color:rgba(0,194,255,.2); font-size:11px; font-family:'Geist',sans-serif; }
+.nk-action:hover { background:rgba(0,194,255,.12); }
+
+/* ─── PRODUCT CARD ────────────────────────────────────── */
+.prod-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; cursor:pointer; transition:all .12s; padding:9px; }
+.prod-card:hover { border-color:var(--accent); background:var(--surface2); box-shadow:0 0 14px var(--accent-glow); }
+.prod-card:active { transform:scale(0.96); }
+
+/* ─── CART ITEM ───────────────────────────────────────── */
+.cart-item { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:7px; transition:background .1s; cursor:default; }
+.cart-item:hover { background:var(--surface2); }
+.cart-item.selected { background:var(--accent-dim); border-left:2px solid var(--accent); padding-left:8px; }
+
+/* ─── INPUT ───────────────────────────────────────────── */
+.inp { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:'Geist',sans-serif; font-size:12px; border-radius:7px; padding:7px 11px; outline:none; width:100%; transition:border .15s; }
+.inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); }
+.inp::placeholder { color:var(--text3); }
+
+/* ─── TAG / BADGE ─────────────────────────────────────── */
+.tag { display:inline-flex; align-items:center; font-size:10px; font-weight:600; padding:2px 7px; border-radius:4px; font-family:'Geist Mono',monospace; letter-spacing:.02em; }
+.tag-green { background:var(--green-dim); color:var(--green); }
+.tag-amber { background:var(--amber-dim); color:var(--amber); }
+.tag-red { background:var(--red-dim); color:var(--red); }
+.tag-accent { background:var(--accent-dim); color:var(--accent); }
+.tag-dim { background:var(--surface3); color:var(--text3); }
+.tag-purple { background:rgba(167,139,250,.1); color:var(--purple); }
+
+/* ─── MODAL ───────────────────────────────────────────── */
+.modal-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60; background:rgba(0,0,0,.6); backdrop-filter:blur(5px); }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; width:100%; box-shadow:0 24px 60px rgba(0,0,0,.4); animation:fadeUp .2s ease; }
+
+/* ─── SCANNER BAR ─────────────────────────────────────── */
+.scanner-bar { background:var(--scanner-bg); border:1px solid var(--border); border-radius:8px; display:flex; align-items:center; gap:8px; padding:6px 10px; position:relative; overflow:hidden; }
+.scanner-bar.active { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-glow); animation:scanPulse 1.5s infinite; }
+.scanner-cursor { width:1.5px; height:14px; background:var(--accent); display:inline-block; animation:blink .8s infinite; }
+.scanner-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:dot-pulse 2s infinite; }
+.scanner-dot.inactive { background:var(--text3); animation:none; }
+
+/* ─── STATUS BAR ──────────────────────────────────────── */
+.status-bar { height:2px; border-radius:1px; }
+
+/* ─── SCROLLBAR ───────────────────────────────────────── */
+.thin-scroll::-webkit-scrollbar { width:2px; }
+.thin-scroll::-webkit-scrollbar-thumb { background:var(--border2); }
+
+/* ─── DIVIDER ─────────────────────────────────────────── */
+.divider { height:1px; background:var(--border); }
+.divider-dashed { border-top:1px dashed var(--border); }
+
+/* ─── MODALS hidden by default ─────────────────────────── */
+.hidden { display:none !important; }
+
+/* ─── THEME TOGGLE ─────────────────────────────────────── */
+.theme-toggle { width:36px; height:20px; border-radius:10px; background:var(--surface3); border:1px solid var(--border2); cursor:pointer; position:relative; transition:background .2s; }
+.theme-toggle .knob { position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:50%; background:var(--text2); transition:transform .2s, background .2s; }
+[data-theme="light"] .theme-toggle .knob { transform:translateX(16px); background:var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 1 — STAFF LOGIN
+════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
+  <div style="width:340px;">
+    <!-- Terminal badge -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 12px;margin-bottom:16px;">
+        <span class="scanner-dot"></span>
+        <span class="mono" style="font-size:10px;color:var(--text3);">TERMINAL · LG-01-T3</span>
+        <span class="tag tag-dim" style="margin-left:2px;">VI Store</span>
+      </div>
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;color:var(--text);">RetailOS</div>
+      <div class="mono" style="font-size:10px;color:var(--text3);margin-top:3px;letter-spacing:.06em;">POINT OF SALE · v2.4</div>
+    </div>
+
+    <!-- Login card -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+      <!-- Staff selector -->
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border);">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">Select Staff</div>
+        <div id="staffSelector" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;"></div>
+      </div>
+
+      <!-- PIN area -->
+      <div style="padding:16px 18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">Enter PIN</div>
+          <div id="selectedStaffName" style="font-size:11px;color:var(--accent);font-weight:600;"></div>
+        </div>
+
+        <!-- PIN display -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div id="pinDots" style="display:flex;gap:10px;">
+            <div class="pin-dot" style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--border2);transition:all .1s;"></div>
+            <div class="pin-dot" style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--border2);transition:all .1s;"></div>
+            <div class="pin-dot" style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--border2);transition:all .1s;"></div>
+            <div class="pin-dot" style="width:10px;height:10px;border-radius:50%;border:1.5px solid var(--border2);transition:all .1s;"></div>
+          </div>
+          <div id="pinStars" class="mono" style="font-size:18px;letter-spacing:4px;color:var(--text);flex:1;text-align:center;"> </div>
+          <button onclick="pinBackspace()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;">⌫</button>
+        </div>
+
+        <!-- PIN numpad -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+          <div class="nk" style="height:38px;" onclick="pinInput('1')">1</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('2')">2</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('3')">3</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('4')">4</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('5')">5</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('6')">6</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('7')">7</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('8')">8</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('9')">9</div>
+          <div class="nk nk-special" style="height:38px;" onclick="pinClear()">CLR</div>
+          <div class="nk" style="height:38px;" onclick="pinInput('0')">0</div>
+          <div class="nk nk-action" style="height:38px;" onclick="attemptLogin()">→</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Theme toggle -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;">
+      <span style="font-size:10px;color:var(--text3);">☀</span>
+      <div class="theme-toggle" onclick="toggleTheme()"><div class="knob"></div></div>
+      <span style="font-size:10px;color:var(--text3);">☾</span>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--text3);" class="mono">Demo PIN for any staff: 1234</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 2 — FLOAT SETUP
+════════════════════════════════════════════════════════ -->
+<div id="floatScreen" class="hidden fixed inset-0 flex items-center justify-center" style="background:var(--bg);">
+  <div style="width:320px;">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">Open Till</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:20px;">Count the opening float and enter below</div>
+      <div id="floatStaffBadge" style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:16px;"></div>
+      <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Opening Float (₦)</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:8px;padding:9px 12px;margin-bottom:16px;">
+        <span class="mono" style="color:var(--accent);font-size:15px;">₦</span>
+        <input id="floatInput" type="number" class="mono" style="background:none;border:none;outline:none;color:var(--text);font-size:16px;width:100%;" value="10000">
+      </div>
+      <button onclick="openTill()" class="btn btn-accent btn-md" style="width:100%;justify-content:center;font-size:13px;padding:10px;">Open Till & Begin Shift →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     SCREEN 3 — MAIN POS APP
+════════════════════════════════════════════════════════ -->
+<div id="posApp" class="hidden" style="height:100vh;display:flex;flex-direction:column;">
+
+  <!-- TOP STATUS BAR -->
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;">
+    <!-- Left: branding -->
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="mono" style="font-size:11px;font-weight:700;color:var(--accent);">RETAILOS</span>
+      <span style="color:var(--border2);">|</span>
+      <span class="mono" style="font-size:10px;color:var(--text3);">LG-01-T3</span>
+      <span class="tag tag-green">ONLINE</span>
+    </div>
+
+    <!-- Center: scanner bar -->
+    <div style="flex:1;max-width:340px;margin:0 auto;">
+      <div class="scanner-bar" id="scannerBarEl">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text3);flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="3" x2="8" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="16" y1="3" x2="16" y2="21"/></svg>
+        <input id="scannerInput" class="mono" placeholder="Scan barcode or type SKU — press Enter" style="background:none;border:none;outline:none;color:var(--text);font-size:11px;width:100%;" onkeydown="handleScannerKey(event)" onfocus="document.getElementById('scannerBarEl').classList.add('active')" onblur="document.getElementById('scannerBarEl').classList.remove('active')">
+        <span class="scanner-cursor" id="scanCursor" style="display:none;"></span>
+      </div>
+    </div>
+
+    <!-- Right: info + controls -->
+    <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+      <div class="mono" style="font-size:10px;color:var(--text3);" id="clockEl">--:--:--</div>
+      <div id="staffBadgeTop" style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 9px;"></div>
+      <button onclick="openSessionSummary()" class="btn btn-ghost btn-xs">Summary</button>
+      <div class="theme-toggle" onclick="toggleTheme()" style="flex-shrink:0;"><div class="knob"></div></div>
+      <button onclick="confirmLogout()" class="btn btn-danger btn-xs">End Shift</button>
+    </div>
+  </div>
+
+  <!-- MAIN BODY -->
+  <div style="flex:1;display:flex;overflow:hidden;">
+
+    <!-- ── LEFT: PRODUCT BROWSER ──────────────────────────── -->
+    <div style="width:380px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--surface);">
+
+      <!-- Search -->
+      <div style="padding:10px;border-bottom:1px solid var(--border);">
+        <div style="position:relative;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="productSearch" class="inp" style="padding-left:28px;font-size:12px;" placeholder="Search product name or SKU…" oninput="filterProducts(this.value)">
+        </div>
+      </div>
+
+      <!-- Category tabs -->
+      <div style="display:flex;gap:4px;padding:8px 10px;border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0;" id="catTabs">
+        <button class="cat-tab active-tab btn btn-xs" onclick="filterCat('all',this)" style="white-space:nowrap;">All</button>
+        <button class="cat-tab btn btn-ghost btn-xs" onclick="filterCat('beverages',this)" style="white-space:nowrap;">Beverages</button>
+        <button class="cat-tab btn btn-ghost btn-xs" onclick="filterCat('dairy',this)" style="white-space:nowrap;">Dairy</button>
+        <button class="cat-tab btn btn-ghost btn-xs" onclick="filterCat('snacks',this)" style="white-space:nowrap;">Snacks</button>
+        <button class="cat-tab btn btn-ghost btn-xs" onclick="filterCat('household',this)" style="white-space:nowrap;">Household</button>
+        <button class="cat-tab btn btn-ghost btn-xs" onclick="filterCat('personal',this)" style="white-space:nowrap;">Personal Care</button>
+      </div>
+
+      <!-- Products grid -->
+      <div id="productsGrid" class="thin-scroll" style="flex:1;overflow-y:auto;padding:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-content:start;"></div>
+
+      <!-- Recently scanned -->
+      <div style="padding:8px;border-top:1px solid var(--border);flex-shrink:0;">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;">Recently Scanned</div>
+        <div id="recentScanned" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <!-- ── CENTER: TRANSACTION ─────────────────────────────── -->
+    <div style="flex:1;display:flex;flex-direction:column;background:var(--bg);">
+
+      <!-- TX header -->
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:12px;font-weight:600;">Transaction</span>
+            <span class="tag tag-accent mono" id="txNumEl">LG01-001</span>
+            <span class="tag tag-dim mono" id="txDateEl">—</span>
+          </div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+          <!-- Customer -->
+          <button onclick="openCustomerModal()" class="btn btn-ghost btn-xs" id="customerBtn">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0116 0"/></svg>
+            <span id="customerLabel">Walk-in</span>
+          </button>
+          <button onclick="holdTransaction()" class="btn btn-ghost btn-xs">Hold</button>
+          <button onclick="voidTransaction()" class="btn btn-danger btn-xs">Void TX</button>
+          <button onclick="clearCart()" class="btn btn-danger btn-xs">Clear</button>
+        </div>
+      </div>
+
+      <!-- Cart items -->
+      <div id="cartContainer" class="thin-scroll" style="flex:1;overflow-y:auto;padding:8px 12px;">
+        <!-- Empty state -->
+        <div id="emptyState" style="height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+          <div style="width:48px;height:48px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text3);"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          </div>
+          <div style="font-size:12px;color:var(--text2);">Cart is empty</div>
+          <div style="font-size:10px;color:var(--text3);">Scan a barcode or select a product</div>
+        </div>
+        <!-- Items -->
+        <div id="cartList" style="display:none;"></div>
+      </div>
+
+      <!-- Coupon row -->
+      <div style="padding:6px 12px;border-top:1px solid var(--border);display:flex;gap:6px;background:var(--surface);flex-shrink:0;">
+        <input id="couponInput" class="inp" style="flex:1;" placeholder="Coupon code…">
+        <button onclick="applyCoupon()" class="btn btn-amber btn-xs">Apply</button>
+        <span id="couponTag" class="hidden tag tag-amber" style="align-self:center;"></span>
+      </div>
+
+      <!-- Totals panel -->
+      <div style="padding:10px 14px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;">
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text2);">Subtotal</span>
+            <span class="mono" style="font-size:11px;" id="subtotalEl">₦0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;" id="discRow" class="hidden">
+            <span style="font-size:11px;color:var(--amber);">Discount</span>
+            <span class="mono" style="font-size:11px;color:var(--amber);" id="discEl">-₦0.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:11px;color:var(--text2);">VAT (7.5%)</span>
+            <span class="mono" style="font-size:11px;" id="vatEl">₦0.00</span>
+          </div>
+          <div class="divider" style="margin:4px 0;"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:15px;font-weight:700;">TOTAL</span>
+            <span class="mono" style="font-size:22px;font-weight:700;color:var(--green);" id="totalEl">₦0.00</span>
+          </div>
+        </div>
+        <button id="chargeBtn" onclick="openPayModal()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;" disabled>
+          Charge ₦0.00
+        </button>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: NUMPAD + CONTROLS ───────────────────────── -->
+    <div style="width:190px;flex-shrink:0;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;">
+
+      <!-- Display -->
+      <div style="padding:10px 10px 8px;">
+        <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;">Qty / Override</div>
+        <div class="mono" id="numDisplay" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:16px;text-align:right;color:var(--text);min-height:36px;line-height:1.2;">—</div>
+      </div>
+
+      <!-- Numpad -->
+      <div style="padding:0 8px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;">
+        <div class="nk" style="height:34px;" onclick="numPad('7')">7</div>
+        <div class="nk" style="height:34px;" onclick="numPad('8')">8</div>
+        <div class="nk" style="height:34px;" onclick="numPad('9')">9</div>
+        <div class="nk" style="height:34px;" onclick="numPad('4')">4</div>
+        <div class="nk" style="height:34px;" onclick="numPad('5')">5</div>
+        <div class="nk" style="height:34px;" onclick="numPad('6')">6</div>
+        <div class="nk" style="height:34px;" onclick="numPad('1')">1</div>
+        <div class="nk" style="height:34px;" onclick="numPad('2')">2</div>
+        <div class="nk" style="height:34px;" onclick="numPad('3')">3</div>
+        <div class="nk nk-special" style="height:34px;font-size:10px;" onclick="numClear()">CLR</div>
+        <div class="nk" style="height:34px;" onclick="numPad('0')">0</div>
+        <div class="nk nk-special" style="height:34px;" onclick="numBack()">⌫</div>
+      </div>
+
+      <!-- Action buttons -->
+      <div style="padding:8px;display:flex;flex-direction:column;gap:4px;">
+        <div class="nk nk-action" style="height:30px;font-size:11px;" onclick="applyQty()">↳ Set Quantity</div>
+        <div class="nk" style="height:30px;background:var(--amber-dim);color:var(--amber);border-color:rgba(245,166,35,.2);font-size:11px;" onclick="openDiscModal()">% Manual Discount</div>
+        <div class="nk" style="height:30px;background:var(--red-dim);color:var(--red);border-color:rgba(255,75,110,.2);font-size:11px;" onclick="removeSelected()">✕ Remove Item</div>
+      </div>
+
+      <!-- Divider -->
+      <div class="divider"></div>
+
+      <!-- Session stats -->
+      <div style="padding:10px;flex:1;display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;">Session Stats</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;">
+            <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Cart Items</div>
+            <div class="mono" id="cartCountEl" style="font-size:18px;font-weight:700;color:var(--text);">0</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;">
+            <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Sales Today</div>
+            <div class="mono" id="sessionSalesEl" style="font-size:13px;font-weight:700;color:var(--green);">₦0</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;">
+            <div style="font-size:9px;color:var(--text3);margin-bottom:2px;">Transactions</div>
+            <div class="mono" id="sessionTxEl" style="font-size:18px;font-weight:700;color:var(--text);">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Held transactions -->
+      <div style="padding:8px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+          <span style="font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;">Held</span>
+          <span id="heldCount" class="tag tag-dim mono" style="font-size:9px;">0</span>
+        </div>
+        <div id="heldList" style="display:flex;flex-direction:column;gap:3px;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════════ -->
+
+<!-- Payment Modal -->
+<div id="payModal" class="modal-wrap hidden">
+  <div class="modal" style="max-width:440px;">
+    <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:14px;font-weight:700;">Payment</div>
+        <div class="mono" style="font-size:10px;color:var(--text3);" id="payModalTxNum">TX: —</div>
+      </div>
+      <button onclick="closePayModal()" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div style="padding:16px 18px;">
+      <!-- Amount due -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;margin-bottom:14px;">
+        <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Amount Due</div>
+        <div class="mono" style="font-size:32px;font-weight:700;color:var(--green);" id="payDueEl">₦0.00</div>
+      </div>
+      <!-- Methods -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px;">
+        <button class="pay-mth btn btn-accent btn-xs" data-m="CASH" onclick="selPayMethod('CASH')" style="justify-content:center;">Cash</button>
+        <button class="pay-mth btn btn-ghost btn-xs" data-m="CARD" onclick="selPayMethod('CARD')" style="justify-content:center;">Card</button>
+        <button class="pay-mth btn btn-ghost btn-xs" data-m="MOBILE" onclick="selPayMethod('MOBILE')" style="justify-content:center;">Mobile</button>
+        <button class="pay-mth btn btn-ghost btn-xs" data-m="SPLIT" onclick="selPayMethod('SPLIT')" style="justify-content:center;">Split</button>
+      </div>
+      <!-- Cash section -->
+      <div id="cashSection">
+        <div style="font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;">Tendered</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;gap:6px;padding:8px 12px;margin-bottom:8px;">
+          <span class="mono" style="color:var(--accent);font-size:14px;">₦</span>
+          <input id="tenderInput" type="number" class="mono" style="background:none;border:none;outline:none;color:var(--text);font-size:18px;width:100%;" oninput="calcChange()">
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:10px;">
+          <button class="btn btn-ghost btn-xs" style="flex:1;justify-content:center;" onclick="setTender(500)">₦500</button>
+          <button class="btn btn-ghost btn-xs" style="flex:1;justify-content:center;" onclick="setTender(1000)">₦1K</button>
+          <button class="btn btn-ghost btn-xs" style="flex:1;justify-content:center;" onclick="setTender(2000)">₦2K</button>
+          <button class="btn btn-ghost btn-xs" style="flex:1;justify-content:center;" onclick="setTender(5000)">₦5K</button>
+          <button class="btn btn-accent btn-xs" style="flex:1;justify-content:center;" onclick="setExact()">Exact</button>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <span style="font-size:12px;color:var(--text2);">Change</span>
+          <span class="mono" style="font-size:18px;font-weight:700;color:var(--amber);" id="changeEl">₦0.00</span>
+        </div>
+      </div>
+      <!-- Card/Mobile section -->
+      <div id="cardSection" class="hidden" style="text-align:center;padding:20px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:12px;">
+        <div style="font-size:28px;margin-bottom:8px;">💳</div>
+        <div style="font-size:12px;color:var(--text2);">Present card/phone to terminal</div>
+        <div class="mono" style="font-size:10px;color:var(--text3);margin-top:4px;">Awaiting gateway…</div>
+      </div>
+      <button onclick="processPayment()" class="btn btn-accent" style="width:100%;justify-content:center;font-size:14px;font-weight:700;padding:11px;border-radius:8px;">
+        ✓ Confirm Payment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Receipt Modal -->
+<div id="receiptModal" class="modal-wrap hidden">
+  <div class="modal" style="max-width:340px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">Receipt</span>
+      <button onclick="document.getElementById('receiptModal').classList.add('hidden')" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div id="receiptBody" class="mono thin-scroll" style="padding:16px;font-size:11px;line-height:1.7;max-height:380px;overflow-y:auto;"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:6px;">
+      <button onclick="printReceipt()" class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;">🖨 Print</button>
+      <button onclick="newTransaction()" class="btn btn-accent btn-sm" style="flex:1;justify-content:center;">New TX →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div id="customerModal" class="modal-wrap hidden">
+  <div class="modal" style="max-width:360px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">Customer Lookup</span>
+      <button onclick="document.getElementById('customerModal').classList.add('hidden')" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div style="padding:14px 16px;">
+      <input id="custSearchInput" class="inp" placeholder="Phone, email, or loyalty #…" oninput="searchCust(this.value)" style="margin-bottom:10px;">
+      <div id="custResults" style="display:flex;flex-direction:column;gap:5px;"></div>
+      <button onclick="setWalkin()" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-top:10px;">Continue as Walk-in</button>
+    </div>
+  </div>
+</div>
+
+<!-- Discount Modal -->
+<div id="discModal" class="modal-wrap hidden">
+  <div class="modal" style="max-width:300px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">Manual Discount</span>
+      <button onclick="document.getElementById('discModal').classList.add('hidden')" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div style="padding:14px 16px;">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;" class="mono">Requires supervisor approval · Logged to audit trail</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+        <button class="disc-type btn btn-accent btn-sm" data-t="pct" onclick="selDiscType('pct')" style="justify-content:center;">% Off</button>
+        <button class="disc-type btn btn-ghost btn-sm" data-t="fixed" onclick="selDiscType('fixed')" style="justify-content:center;">₦ Off</button>
+      </div>
+      <input id="discValue" type="number" class="inp mono" placeholder="Enter value" style="margin-bottom:10px;font-size:15px;">
+      <button onclick="applyDisc()" class="btn btn-amber" style="width:100%;justify-content:center;padding:9px;">Apply Discount</button>
+    </div>
+  </div>
+</div>
+
+<!-- Session Summary Modal -->
+<div id="summaryModal" class="modal-wrap hidden">
+  <div class="modal" style="max-width:420px;">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:700;">Session Summary</span>
+      <button onclick="document.getElementById('summaryModal').classList.add('hidden')" class="btn btn-ghost btn-xs">✕</button>
+    </div>
+    <div id="summaryBody" style="padding:16px;"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:fadeUp .2s ease;"></div>
+<div id="errToast" class="hidden" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--red-dim);border:1px solid rgba(255,75,110,.3);color:var(--red);padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:200;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:fadeUp .2s ease;"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════
+const STAFF_LIST = [
+  { id:'EMP-001', name:'Gold Adejoro',  initials:'GA', role:'MANAGER',    pin:'1234', store:'VI Store', color:'#00c2ff' },
+  { id:'EMP-002', name:'Sola Fashola',  initials:'SF', role:'CASHIER',    pin:'1234', store:'VI Store', color:'#00d68f' },
+  { id:'EMP-003', name:'Bola Adekunle', initials:'BA', role:'CASHIER',    pin:'1234', store:'VI Store', color:'#f5a623' },
+  { id:'EMP-004', name:'Temi Oladipo',  initials:'TO', role:'SUPERVISOR', pin:'1234', store:'VI Store', color:'#a78bfa' },
+];
+
+const PRODUCTS = [
+  { id:1,  name:'Coca-Cola 50cl',     sku:'BEV-001', barcode:'5000112637987', cat:'beverages', price:350,  cost:220, emoji:'🥤', tax:.075 },
+  { id:2,  name:'Malt Drink 33cl',    sku:'BEV-002', barcode:'5000112637988', cat:'beverages', price:420,  cost:260, emoji:'🍺', tax:.075 },
+  { id:3,  name:'Water 75cl',         sku:'BEV-003', barcode:'5000112637989', cat:'beverages', price:150,  cost:80,  emoji:'💧', tax:0    },
+  { id:4,  name:'Zobo Drink 50cl',    sku:'BEV-004', barcode:'5000112637990', cat:'beverages', price:200,  cost:120, emoji:'🧃', tax:0    },
+  { id:5,  name:'Lipton Tea 50s',     sku:'BEV-005', barcode:'5000112637991', cat:'beverages', price:700,  cost:420, emoji:'🍵', tax:.075 },
+  { id:6,  name:'Peak Milk 400g',     sku:'DAI-001', barcode:'5000212637001', cat:'dairy',     price:1800, cost:1200,emoji:'🥛', tax:0    },
+  { id:7,  name:'Butter 250g',        sku:'DAI-002', barcode:'5000212637002', cat:'dairy',     price:950,  cost:600, emoji:'🧈', tax:0    },
+  { id:8,  name:'Cheese Slices 200g', sku:'DAI-003', barcode:'5000212637003', cat:'dairy',     price:1200, cost:750, emoji:'🧀', tax:0    },
+  { id:9,  name:'Digestive Biscuit',  sku:'SNK-001', barcode:'5000312637001', cat:'snacks',    price:650,  cost:400, emoji:'🍪', tax:.075 },
+  { id:10, name:'Pringles Original',  sku:'SNK-002', barcode:'5000312637002', cat:'snacks',    price:1800, cost:1100,emoji:'🍿', tax:.075 },
+  { id:11, name:'Chin Chin 200g',     sku:'SNK-003', barcode:'5000312637003', cat:'snacks',    price:500,  cost:300, emoji:'🫘', tax:.075 },
+  { id:12, name:'Indomie 5-pack',     sku:'SNK-004', barcode:'5000312637004', cat:'snacks',    price:750,  cost:450, emoji:'🍜', tax:0    },
+  { id:13, name:'Omo Detergent 1kg',  sku:'HSH-001', barcode:'5000412637001', cat:'household', price:1100, cost:700, emoji:'🧺', tax:.075 },
+  { id:14, name:'Hypo Bleach 750ml',  sku:'HSH-002', barcode:'5000412637002', cat:'household', price:650,  cost:380, emoji:'🧴', tax:.075 },
+  { id:15, name:'Dettol Soap 3-pack', sku:'PER-001', barcode:'5000512637001', cat:'personal',  price:1400, cost:850, emoji:'🧼', tax:0    },
+  { id:16, name:'Vaseline 250ml',     sku:'PER-002', barcode:'5000512637002', cat:'personal',  price:900,  cost:540, emoji:'💊', tax:0    },
+];
+
+const CUSTOMERS = [
+  { id:1, name:'Amara Okafor',  phone:'08012345678', loyalty:'LOY-001', tier:'GOLD',     points:3200 },
+  { id:2, name:'Tunde Adeyemi', phone:'08098765432', loyalty:'LOY-002', tier:'SILVER',   points:1100 },
+  { id:3, name:'Ngozi Eze',     phone:'07031234567', loyalty:'LOY-003', tier:'BRONZE',   points:450  },
+  { id:4, name:'Chidi Obi',     phone:'08155443322', loyalty:'LOY-004', tier:'PLATINUM', points:7800 },
+];
+
+const COUPONS = { 'SAVE10':{ type:'pct', val:10 }, 'SAVE500':{ type:'fixed', val:500 }, 'FLAT20':{ type:'pct', val:20 } };
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let currentStaff   = null;
+let selectedStaffId = null;
+let pin            = '';
+let cart           = [];
+let heldTxs        = [];
+let selectedItemIdx = -1;
+let numBuffer      = '';
+let couponDisc     = 0;
+let couponCode     = '';
+let currentCustomer= null;
+let txCounter      = 1;
+let sessionRevenue = 0;
+let sessionTxCount = 0;
+let lastTx         = null;
+let payMethod      = 'CASH';
+let discType       = 'pct';
+let recentBarcodes = [];
+
+// ═══════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme')==='dark' ? 'light' : 'dark');
+}
+
+// ═══════════════════════════════════════════════════
+// STAFF LOGIN
+// ═══════════════════════════════════════════════════
+function renderStaffSelector() {
+  document.getElementById('staffSelector').innerHTML = STAFF_LIST.map(s => `
+    <div onclick="selectStaff('${s.id}')" id="staff-chip-${s.id}" style="display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .12s;">
+      <div style="width:26px;height:26px;border-radius:50%;background:${s.color}22;border:1.5px solid ${s.color}55;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${s.color};flex-shrink:0;">${s.initials}</div>
+      <div style="overflow:hidden;">
+        <div style="font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s.name.split(' ')[0]}</div>
+        <div style="font-size:9px;color:var(--text3);">${s.role}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectStaff(id) {
+  selectedStaffId = id;
+  pin = '';
+  updatePinDots();
+  const s = STAFF_LIST.find(x=>x.id===id);
+  document.getElementById('selectedStaffName').textContent = s.name.split(' ')[0];
+  document.querySelectorAll('[id^=staff-chip-]').forEach(el => {
+    el.style.borderColor = 'var(--border)';
+    el.style.background  = 'var(--surface2)';
+  });
+  const chip = document.getElementById(`staff-chip-${id}`);
+  chip.style.borderColor = s.color+'88';
+  chip.style.background  = s.color+'11';
+}
+
+function pinInput(d) {
+  if (!selectedStaffId) { showErr('Select a staff member first'); return; }
+  if (pin.length >= 4) return;
+  pin += d;
+  updatePinDots();
+  if (pin.length === 4) setTimeout(attemptLogin, 200);
+}
+function pinBackspace() { pin = pin.slice(0,-1); updatePinDots(); }
+function pinClear()     { pin = ''; updatePinDots(); }
+
+function updatePinDots() {
+  const stars = '●'.repeat(pin.length) + '○'.repeat(4-pin.length);
+  document.getElementById('pinStars').textContent = stars;
+  document.querySelectorAll('.pin-dot').forEach((d,i) => {
+    d.style.background = i < pin.length ? 'var(--accent)' : 'transparent';
+    d.style.borderColor= i < pin.length ? 'var(--accent)' : 'var(--border2)';
+  });
+}
+
+function attemptLogin() {
+  if (!selectedStaffId) { showErr('Select staff first'); return; }
+  const s = STAFF_LIST.find(x=>x.id===selectedStaffId);
+  if (pin === s.pin) {
+    currentStaff = s;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('floatScreen').classList.remove('hidden');
+    renderFloatScreen();
+  } else {
+    document.querySelectorAll('.pin-dot').forEach(d => { d.style.background='var(--red)'; d.style.borderColor='var(--red)'; });
+    setTimeout(pinClear, 600);
+    showErr('Incorrect PIN');
+  }
+}
+
+function renderFloatScreen() {
+  document.getElementById('floatStaffBadge').innerHTML = `
+    <div style="width:30px;height:30px;border-radius:50%;background:${currentStaff.color}22;border:1.5px solid ${currentStaff.color}66;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${currentStaff.color};">${currentStaff.initials}</div>
+    <div>
+      <div style="font-size:12px;font-weight:600;">${currentStaff.name}</div>
+      <div style="font-size:10px;color:var(--text3);">${currentStaff.role} · ${currentStaff.store}</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// TILL OPEN
+// ═══════════════════════════════════════════════════
+function openTill() {
+  document.getElementById('floatScreen').classList.add('hidden');
+  document.getElementById('posApp').classList.remove('hidden');
+  document.getElementById('posApp').style.display = 'flex';
+  renderStaffTop();
+  renderProducts(PRODUCTS);
+  setTxHeader();
+  startClock();
+  focusScanner();
+  toast(`Shift started — Welcome, ${currentStaff.name.split(' ')[0]}!`);
+}
+
+function renderStaffTop() {
+  document.getElementById('staffBadgeTop').innerHTML = `
+    <div style="width:22px;height:22px;border-radius:50%;background:${currentStaff.color}22;border:1.5px solid ${currentStaff.color}66;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${currentStaff.color};">${currentStaff.initials}</div>
+    <span style="font-size:11px;font-weight:600;">${currentStaff.name.split(' ')[0]}</span>
+    <span style="font-size:10px;color:var(--text3);">· ${currentStaff.role}</span>
+  `;
+}
+
+function startClock() {
+  function tick() { document.getElementById('clockEl').textContent = new Date().toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+  tick(); setInterval(tick, 1000);
+}
+
+function setTxHeader() {
+  document.getElementById('txNumEl').textContent = `LG01-${String(txCounter).padStart(3,'0')}`;
+  document.getElementById('txDateEl').textContent = new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short'});
+}
+
+// ═══════════════════════════════════════════════════
+// BARCODE SCANNER
+// ═══════════════════════════════════════════════════
+function focusScanner() { document.getElementById('scannerInput').focus(); }
+
+function handleScannerKey(e) {
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    if (val) processBarcode(val);
+    e.target.value = '';
+  }
+}
+
+function processBarcode(val) {
+  const p = PRODUCTS.find(x => x.barcode === val || x.sku.toLowerCase() === val.toLowerCase());
+  if (p) {
+    addToCart(p.id);
+    addToRecentScanned(p);
+    toast(`${p.emoji} ${p.name}`);
+  } else {
+    showErr(`No product found: ${val}`);
+  }
+  focusScanner();
+}
+
+function addToRecentScanned(p) {
+  recentBarcodes = [p, ...recentBarcodes.filter(x=>x.id!==p.id)].slice(0, 5);
+  document.getElementById('recentScanned').innerHTML = recentBarcodes.map(p => `
+    <button onclick="addToCart(${p.id})" class="tag tag-dim" style="cursor:pointer;font-size:10px;border:1px solid var(--border);">${p.emoji} ${p.sku}</button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// PRODUCTS
+// ═══════════════════════════════════════════════════
+function renderProducts(list) {
+  document.getElementById('productsGrid').innerHTML = list.map(p => `
+    <div class="prod-card" onclick="addToCart(${p.id})">
+      <div style="font-size:20px;margin-bottom:5px;text-align:center;">${p.emoji}</div>
+      <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:3px;color:var(--text);">${p.name}</div>
+      <div class="mono" style="font-size:11px;font-weight:700;color:var(--green);">₦${p.price.toLocaleString()}</div>
+      <div class="mono" style="font-size:9px;color:var(--text3);margin-top:1px;">${p.sku}</div>
+    </div>
+  `).join('');
+}
+
+function filterProducts(q) {
+  const filtered = q ? PRODUCTS.filter(p => p.name.toLowerCase().includes(q.toLowerCase()) || p.sku.toLowerCase().includes(q)) : PRODUCTS;
+  renderProducts(filtered);
+}
+
+function filterCat(cat, btn) {
+  document.querySelectorAll('.cat-tab').forEach(b => { b.classList.remove('active-tab','btn-accent'); b.classList.add('btn-ghost'); });
+  btn.classList.add('active-tab','btn-accent'); btn.classList.remove('btn-ghost');
+  renderProducts(cat==='all' ? PRODUCTS : PRODUCTS.filter(p=>p.cat===cat));
+}
+
+// ═══════════════════════════════════════════════════
+// CART
+// ═══════════════════════════════════════════════════
+function addToCart(productId) {
+  const p = PRODUCTS.find(x=>x.id===productId);
+  if (!p) return;
+  const qty = numBuffer ? parseInt(numBuffer) : 1;
+  numBuffer = ''; document.getElementById('numDisplay').textContent = '—';
+  const ex = cart.find(i=>i.id===productId);
+  if (ex) { ex.qty += qty; } else { cart.push({...p, qty, discount:0}); }
+  selectedItemIdx = cart.findIndex(i=>i.id===productId);
+  renderCart();
+}
+
+function renderCart() {
+  const empty = document.getElementById('emptyState');
+  const list  = document.getElementById('cartList');
+  if (cart.length === 0) { empty.style.display='flex'; list.style.display='none'; }
+  else {
+    empty.style.display='none'; list.style.display='block';
+    list.innerHTML = cart.map((item,idx) => `
+      <div class="cart-item ${idx===selectedItemIdx?'selected':''} fade-up" onclick="selectItem(${idx})" style="border-left:2px solid transparent;">
+        <span style="font-size:16px;flex-shrink:0;">${item.emoji}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+          <div class="mono" style="font-size:10px;color:var(--text2);">₦${item.price.toLocaleString()} × ${item.qty}</div>
+        </div>
+        ${item.discount > 0 ? `<span class="tag tag-amber" style="font-size:10px;">-₦${item.discount.toLocaleString()}</span>` : ''}
+        <div style="text-align:right;flex-shrink:0;">
+          <div class="mono" style="font-size:12px;font-weight:700;color:var(--text);">₦${((item.price*item.qty)-item.discount).toLocaleString()}</div>
+          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:3px;">
+            <button onclick="event.stopPropagation();changeQty(${idx},-1)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);">−</button>
+            <span class="mono" style="font-size:11px;width:20px;text-align:center;font-weight:700;">${item.qty}</span>
+            <button onclick="event.stopPropagation();changeQty(${idx},1)" style="width:18px;height:18px;border-radius:4px;background:var(--surface3);border:1px solid var(--border);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--text2);">+</button>
+            <button onclick="event.stopPropagation();removeItem(${idx})" style="width:18px;height:18px;border-radius:4px;background:var(--red-dim);border:1px solid rgba(255,75,110,.2);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;color:var(--red);margin-left:2px;">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  calcTotals();
+}
+
+function selectItem(idx) { selectedItemIdx = idx; renderCart(); }
+function removeItem(idx) { cart.splice(idx,1); if(selectedItemIdx>=cart.length) selectedItemIdx=cart.length-1; renderCart(); }
+function removeSelected() { if(selectedItemIdx>=0&&selectedItemIdx<cart.length) removeItem(selectedItemIdx); }
+function changeQty(idx, delta) { cart[idx].qty = Math.max(1, cart[idx].qty+delta); renderCart(); }
+function clearCart() { cart=[]; couponDisc=0; couponCode=''; currentCustomer=null; selectedItemIdx=-1; document.getElementById('couponInput').value=''; document.getElementById('couponTag').classList.add('hidden'); document.getElementById('customerLabel').textContent='Walk-in'; renderCart(); }
+
+function calcTotals() {
+  const sub = cart.reduce((s,i) => s+(i.price*i.qty)-i.discount, 0);
+  const itemDisc = cart.reduce((s,i) => s+i.discount, 0);
+  const afterCoupon = Math.max(0, sub - couponDisc);
+  const taxable = cart.filter(i=>i.tax>0).reduce((s,i) => s+(i.price*i.qty)-i.discount, 0) - couponDisc;
+  const vat = Math.max(0, taxable) * 0.075;
+  const grand = afterCoupon + vat;
+
+  document.getElementById('subtotalEl').textContent  = fmt(sub);
+  document.getElementById('vatEl').textContent        = fmt(vat);
+  document.getElementById('totalEl').textContent      = fmt(grand);
+
+  const hasDisc = couponDisc > 0 || itemDisc > 0;
+  document.getElementById('discRow').classList.toggle('hidden', !hasDisc);
+  if (hasDisc) document.getElementById('discEl').textContent = '-' + fmt(couponDisc + itemDisc);
+
+  const btn = document.getElementById('chargeBtn');
+  btn.disabled = cart.length === 0;
+  btn.textContent = cart.length > 0 ? `Charge ${fmt(grand)}` : 'Charge ₦0.00';
+  document.getElementById('cartCountEl').textContent = cart.reduce((s,i)=>s+i.qty,0);
+}
+
+function getGrand() {
+  const sub = cart.reduce((s,i) => s+(i.price*i.qty)-i.discount, 0);
+  const afterCoupon = Math.max(0, sub - couponDisc);
+  const taxable = cart.filter(i=>i.tax>0).reduce((s,i) => s+(i.price*i.qty)-i.discount, 0) - couponDisc;
+  const vat = Math.max(0, taxable) * 0.075;
+  return afterCoupon + vat;
+}
+
+// ═══════════════════════════════════════════════════
+// NUMPAD
+// ═══════════════════════════════════════════════════
+function numPad(d) { numBuffer = (numBuffer+d).slice(0,6); document.getElementById('numDisplay').textContent = numBuffer; }
+function numClear()  { numBuffer = ''; document.getElementById('numDisplay').textContent = '—'; }
+function numBack()   { numBuffer = numBuffer.slice(0,-1); document.getElementById('numDisplay').textContent = numBuffer||'—'; }
+function applyQty()  { if (!numBuffer||selectedItemIdx<0) return; cart[selectedItemIdx].qty = parseInt(numBuffer); numClear(); renderCart(); }
+
+// ═══════════════════════════════════════════════════
+// COUPON
+// ═══════════════════════════════════════════════════
+function applyCoupon() {
+  const code = document.getElementById('couponInput').value.trim().toUpperCase();
+  if (!code) return;
+  const c = COUPONS[code];
+  if (!c) { showErr('Invalid coupon'); return; }
+  const sub = cart.reduce((s,i)=>s+(i.price*i.qty),0);
+  couponDisc = c.type==='pct' ? sub*(c.val/100) : Math.min(c.val, sub);
+  couponCode = code;
+  document.getElementById('couponTag').textContent = code + ' applied';
+  document.getElementById('couponTag').classList.remove('hidden');
+  document.getElementById('couponInput').value = '';
+  calcTotals(); toast(`🎟 Coupon ${code} applied`);
+}
+
+// ═══════════════════════════════════════════════════
+// CUSTOMER
+// ═══════════════════════════════════════════════════
+function openCustomerModal() { document.getElementById('customerModal').classList.remove('hidden'); document.getElementById('custSearchInput').focus(); }
+function searchCust(q) {
+  const res = q.length>1 ? CUSTOMERS.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.phone.includes(q)||c.loyalty.includes(q.toUpperCase())) : [];
+  document.getElementById('custResults').innerHTML = res.map(c=>`
+    <div onclick="assignCustomer(${c.id})" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:12px;font-weight:600;">${c.name}</div>
+        <div class="mono" style="font-size:10px;color:var(--text3);">${c.phone} · ${c.loyalty}</div>
+      </div>
+      <div style="text-align:right;">
+        <span class="tag ${c.tier==='PLATINUM'?'tag-purple':c.tier==='GOLD'?'tag-amber':c.tier==='SILVER'?'tag-dim':'tag-green'}">${c.tier}</span>
+        <div class="mono" style="font-size:10px;color:var(--accent);margin-top:3px;">${c.points.toLocaleString()} pts</div>
+      </div>
+    </div>
+  `).join('') || (q.length>1?`<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px;">No customer found</div>`:'');
+}
+function assignCustomer(id) { currentCustomer=CUSTOMERS.find(c=>c.id===id); document.getElementById('customerLabel').textContent=currentCustomer.name.split(' ')[0]; document.getElementById('customerModal').classList.add('hidden'); toast(`👤 ${currentCustomer.name}`); }
+function setWalkin() { currentCustomer=null; document.getElementById('customerLabel').textContent='Walk-in'; document.getElementById('customerModal').classList.add('hidden'); }
+
+// ═══════════════════════════════════════════════════
+// DISCOUNT
+// ═══════════════════════════════════════════════════
+function openDiscModal() { if(!cart.length){showErr('Cart is empty');return;} document.getElementById('discModal').classList.remove('hidden'); }
+function selDiscType(t) {
+  discType = t;
+  document.querySelectorAll('.disc-type').forEach(b => {
+    b.classList.toggle('btn-accent', b.dataset.t===t);
+    b.classList.toggle('btn-ghost', b.dataset.t!==t);
+  });
+}
+function applyDisc() {
+  const val = parseFloat(document.getElementById('discValue').value)||0;
+  if (!val){showErr('Enter a value');return;}
+  if (selectedItemIdx<0){showErr('Select an item first');return;}
+  const item = cart[selectedItemIdx];
+  const line = item.price * item.qty;
+  item.discount = discType==='pct' ? line*(Math.min(val,100)/100) : Math.min(val,line);
+  document.getElementById('discValue').value='';
+  document.getElementById('discModal').classList.add('hidden');
+  renderCart(); toast('Discount applied');
+}
+
+// ═══════════════════════════════════════════════════
+// HOLD
+// ═══════════════════════════════════════════════════
+function holdTransaction() {
+  if (!cart.length) return;
+  const held = { id:`LG01-HOLD-${Date.now()}`, items:[...cart], customer:currentCustomer, couponDisc, txNum:`LG01-${String(txCounter).padStart(3,'0')}` };
+  heldTxs.push(held);
+  clearCart();
+  renderHeld(); toast('Transaction held');
+}
+function renderHeld() {
+  document.getElementById('heldCount').textContent = heldTxs.length;
+  document.getElementById('heldList').innerHTML = heldTxs.map((h,i)=>`
+    <div onclick="recallHeld(${i})" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
+      <span class="mono" style="font-size:10px;color:var(--accent);">${h.txNum}</span>
+      <span style="font-size:10px;color:var(--text3);">${h.items.length} items</span>
+    </div>
+  `).join('');
+}
+function recallHeld(i) { const h=heldTxs.splice(i,1)[0]; cart=h.items; currentCustomer=h.customer; couponDisc=h.couponDisc; renderHeld(); renderCart(); toast('Transaction recalled'); }
+
+// ═══════════════════════════════════════════════════
+// PAYMENT
+// ═══════════════════════════════════════════════════
+function openPayModal() {
+  if (!cart.length) return;
+  document.getElementById('payModalTxNum').textContent = `TX: LG01-${String(txCounter).padStart(3,'0')}`;
+  document.getElementById('payDueEl').textContent = fmt(getGrand());
+  document.getElementById('tenderInput').value = getGrand().toFixed(2);
+  document.getElementById('changeEl').textContent = '₦0.00';
+  document.getElementById('payModal').classList.remove('hidden');
+}
+function closePayModal() { document.getElementById('payModal').classList.add('hidden'); }
+function selPayMethod(m) {
+  payMethod = m;
+  document.querySelectorAll('.pay-mth').forEach(b => { b.classList.toggle('btn-accent',b.dataset.m===m); b.classList.toggle('btn-ghost',b.dataset.m!==m); });
+  document.getElementById('cashSection').classList.toggle('hidden', m==='CARD'||m==='MOBILE');
+  document.getElementById('cardSection').classList.toggle('hidden', m==='CASH'||m==='SPLIT');
+}
+function setTender(v) { document.getElementById('tenderInput').value=v; calcChange(); }
+function setExact()   { document.getElementById('tenderInput').value=getGrand().toFixed(2); calcChange(); }
+function calcChange() {
+  const t=parseFloat(document.getElementById('tenderInput').value)||0, g=getGrand();
+  document.getElementById('changeEl').textContent=fmt(Math.max(0,t-g));
+}
+function processPayment() {
+  const g = getGrand();
+  if (payMethod==='CASH') { const t=parseFloat(document.getElementById('tenderInput').value)||0; if(t<g){showErr('Amount tendered is insufficient');return;} }
+  const tender = parseFloat(document.getElementById('tenderInput').value)||g;
+  lastTx = {
+    txNum:`LG01-${String(txCounter).padStart(3,'0')}`,
+    items:[...cart], customer:currentCustomer, staff:currentStaff,
+    subtotal:cart.reduce((s,i)=>s+(i.price*i.qty)-i.discount,0), couponDisc, vat:0,
+    grand:g, tender, change:Math.max(0,tender-g), method:payMethod, date:new Date()
+  };
+  lastTx.vat = lastTx.grand - lastTx.subtotal + lastTx.couponDisc;
+  sessionRevenue += g; sessionTxCount++;
+  document.getElementById('sessionSalesEl').textContent='₦'+sessionRevenue.toLocaleString();
+  document.getElementById('sessionTxEl').textContent=sessionTxCount;
+  txCounter++;
+  document.getElementById('payModal').classList.add('hidden');
+  renderReceipt(); document.getElementById('receiptModal').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════
+// RECEIPT
+// ═══════════════════════════════════════════════════
+function renderReceipt() {
+  if (!lastTx) return;
+  const tx = lastTx;
+  const d = tx.date.toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});
+  const t = tx.date.toLocaleTimeString('en-NG',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('receiptBody').innerHTML = `
+    <div style="text-align:center;margin-bottom:10px;color:var(--text);">
+      <div style="font-size:13px;font-weight:700;">RETAILOS STORE</div>
+      <div style="font-size:10px;color:var(--text3);">23 Adeola Hopewell, VI, Lagos</div>
+      <div style="font-size:10px;color:var(--text3);">+234 800 000 0000</div>
+    </div>
+    <div style="border-top:1px dashed var(--border);padding-top:8px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">TX#</span><span style="color:var(--accent);">${tx.txNum}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Date</span><span>${d} ${t}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Cashier</span><span style="color:var(--green);">${tx.staff.name} (${tx.staff.id})</span></div>
+      ${tx.customer?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Customer</span><span>${tx.customer.name}</span></div>`:''}
+    </div>
+    <div style="border-top:1px dashed var(--border);padding-top:8px;margin-bottom:8px;">
+      ${tx.items.map(i=>`<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="color:var(--text2);">${i.emoji} ${i.name} x${i.qty}</span><span>₦${((i.price*i.qty)-i.discount).toLocaleString()}</span></div>`).join('')}
+    </div>
+    <div style="border-top:1px dashed var(--border);padding-top:8px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Subtotal</span><span>${fmt(tx.subtotal)}</span></div>
+      ${tx.couponDisc>0?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--amber);">Coupon</span><span style="color:var(--amber);">-${fmt(tx.couponDisc)}</span></div>`:''}
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">VAT 7.5%</span><span>${fmt(tx.vat)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;margin-top:4px;"><span>TOTAL</span><span style="color:var(--green);">${fmt(tx.grand)}</span></div>
+    </div>
+    <div style="border-top:1px dashed var(--border);padding-top:8px;">
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Method</span><span>${tx.method}</span></div>
+      <div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Tendered</span><span>${fmt(tx.tender)}</span></div>
+      ${tx.change>0?`<div style="display:flex;justify-content:space-between;"><span style="color:var(--text3);">Change</span><span style="color:var(--amber);">${fmt(tx.change)}</span></div>`:''}
+    </div>
+    <div style="text-align:center;margin-top:12px;color:var(--text3);font-size:10px;">Thank you for shopping with us!</div>
+  `;
+}
+function printReceipt() { toast('Sending to receipt printer…'); }
+function newTransaction() { clearCart(); setTxHeader(); document.getElementById('receiptModal').classList.add('hidden'); focusScanner(); }
+
+// ═══════════════════════════════════════════════════
+// SESSION SUMMARY
+// ═══════════════════════════════════════════════════
+function openSessionSummary() {
+  document.getElementById('summaryBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Revenue</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--green);">${fmt(sessionRevenue)}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Transactions</div>
+        <div class="mono" style="font-size:18px;font-weight:700;">${sessionTxCount}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Cashier</div>
+        <div style="font-size:12px;font-weight:600;">${currentStaff.name}</div>
+        <div style="font-size:10px;color:var(--text3);">${currentStaff.id} · ${currentStaff.role}</div>
+      </div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:3px;">Opening Float</div>
+        <div class="mono" style="font-size:18px;font-weight:700;color:var(--amber);">₦${parseFloat(document.getElementById('floatInput').value||0).toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-bottom:5px;">Avg. Transaction Value</div>
+    <div class="mono" style="font-size:13px;font-weight:700;color:var(--text);">${sessionTxCount>0?fmt(sessionRevenue/sessionTxCount):'₦0.00'}</div>
+  `;
+  document.getElementById('summaryModal').classList.remove('hidden');
+}
+
+// ═══════════════════════════════════════════════════
+// MISC
+// ═══════════════════════════════════════════════════
+function voidTransaction() { if(!confirm('Void this transaction? This will be logged.'))return; clearCart(); toast('Transaction voided — logged to audit'); }
+function confirmLogout() { if(!confirm(`Close till and end shift for ${currentStaff.name}?`))return; location.reload(); }
+function fmt(n) { return '₦'+n.toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function toast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.remove('hidden');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.add('hidden'),2200);
+}
+function showErr(msg) {
+  const t=document.getElementById('errToast'); t.textContent=msg; t.classList.remove('hidden');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.add('hidden'),2400);
+}
+
+// Init
+renderStaffSelector();
+
+// Prevent scanner input from being lost
+document.addEventListener('keydown', e => {
+  if (document.getElementById('posApp').style.display==='flex' || !document.getElementById('posApp').classList.contains('hidden')) {
+    const tag = document.activeElement.tagName;
+    if (tag!=='INPUT' && tag!=='TEXTAREA') focusScanner();
+  }
+});
+</script>
+<!-- FLOATING TOUR DOCK FOR CASHIER POS -->
+<aside id="terminalTourDock" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(15,23,42,0.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(0,194,255,0.45);box-shadow:0 14px 40px rgba(0,0,0,0.5),0 0 20px rgba(0,194,255,0.15);border-radius:18px;padding:12px 20px;display:flex;align-items:center;gap:16px;color:#fff;max-width:820px;width:92%;pointer-events:auto;font-family:'Geist',sans-serif;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#00c2ff;box-shadow:0 0 8px #00c2ff;"></span>
+    <span style="font-size:11px;font-weight:800;letter-spacing:0.06em;color:#00c2ff;text-transform:uppercase;white-space:nowrap;">Step 7: Frontline Cashier POS</span>
+  </div>
+  <div style="font-size:12px;color:#cbd5e1;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+    Zero-latency local register engine with instant barcode scanning, clean cart, multi-pricing tiers & split tender payments. (Demo PIN: <strong style="color:#00c2ff;">1234</strong>)
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+    <a href="/app/dashboard" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all 0.15s ease;">
+      <span>← Return to Admin Portal</span>
+    </a>
+    <button type="button" onclick="document.getElementById('terminalTourDock').style.display='none'" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#94a3b8;cursor:pointer;padding:6px;border-radius:6px;display:flex;align-items:center;justify-content:center;" title="Dismiss Tour Banner">
+      <svg style="width:13px;height:13px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</aside>
+</body>
+</html>
