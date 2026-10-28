@@ -13,9 +13,19 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class TenantsComponent implements OnInit {
   public tenants = signal<any[]>([]);
+  public binTenants = signal<any[]>([]);
   public isLoading = signal<boolean>(false);
   public isCreating = signal<boolean>(false);
   public showCreateModal = signal<boolean>(false);
+
+  // Auto-generated credentials modal
+  public generatedCredentials = signal<{
+    businessName: string;
+    slug: string;
+    email: string;
+    password: string;
+  } | null>(null);
+  public copiedNotice = signal<boolean>(false);
 
   // Edit Tenant
   public showEditModal = signal<boolean>(false);
@@ -31,23 +41,35 @@ export class TenantsComponent implements OnInit {
     logoUrl: ''
   };
 
+  // Permanent Purge Confirmation Modal
+  public showPurgeModal = signal<boolean>(false);
+  public tenantToPurge = signal<any | null>(null);
+  public purgeInputSlug = signal<string>('');
+  public isPurging = signal<boolean>(false);
+
   public searchQuery = signal<string>('');
-  public statusFilter = signal<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL');
+  public statusFilter = signal<'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BIN'>('ALL');
 
   public totalTenants = computed(() => this.tenants().length);
   public activeTenants = computed(() => this.tenants().filter(t => t.isActive !== false).length);
   public suspendedTenants = computed(() => this.tenants().filter(t => t.isActive === false).length);
+  public binCount = computed(() => this.binTenants().length);
   public totalStoresQuotas = computed(() => this.tenants().reduce((sum, t) => sum + (t.maxStores || t.storesCount || 1), 0));
 
   public filteredTenants = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const filter = this.statusFilter();
-    let list = this.tenants();
-
-    if (filter === 'ACTIVE') {
-      list = list.filter(t => t.isActive !== false);
-    } else if (filter === 'SUSPENDED') {
-      list = list.filter(t => t.isActive === false);
+    
+    let list: any[];
+    if (filter === 'BIN') {
+      list = this.binTenants();
+    } else {
+      list = this.tenants();
+      if (filter === 'ACTIVE') {
+        list = list.filter(t => t.isActive !== false);
+      } else if (filter === 'SUSPENDED') {
+        list = list.filter(t => t.isActive === false);
+      }
     }
 
     if (!q) return list;
@@ -67,7 +89,6 @@ export class TenantsComponent implements OnInit {
     adminFirstName: '',
     adminLastName: '',
     adminEmail: '',
-    adminPassword: '',
     maxStores: 1,
     maxStaff: 5,
     maxTerminals: 2,
@@ -90,9 +111,15 @@ export class TenantsComponent implements OnInit {
   async loadTenants() {
     this.isLoading.set(true);
     try {
-      const data = await this.tenantService.getTenants(1, 100);
-      const items = data.items || data;
+      const [tenantsData, binData] = await Promise.all([
+        this.tenantService.getTenants(1, 100),
+        this.tenantService.getTenantsBin(1, 100)
+      ]);
+      const items = tenantsData.items || tenantsData;
       this.tenants.set(Array.isArray(items) ? items : []);
+
+      const binItems = binData.items || binData;
+      this.binTenants.set(Array.isArray(binItems) ? binItems : []);
     } catch (error) {
       console.error('Failed to load tenants', error);
     } finally {
@@ -100,7 +127,7 @@ export class TenantsComponent implements OnInit {
     }
   }
 
-  setStatusFilter(filter: 'ALL' | 'ACTIVE' | 'SUSPENDED') {
+  setStatusFilter(filter: 'ALL' | 'ACTIVE' | 'SUSPENDED' | 'BIN') {
     this.statusFilter.set(filter);
   }
 
@@ -112,9 +139,20 @@ export class TenantsComponent implements OnInit {
 
     this.isCreating.set(true);
     try {
-      await this.tenantService.createTenant(this.newTenant);
+      const res = await this.tenantService.createTenant(this.newTenant);
       this.showCreateModal.set(false);
       this.loadTenants();
+
+      // Show auto-generated credentials modal
+      if (res && res.generatedPassword) {
+        this.generatedCredentials.set({
+          businessName: res.businessName || this.newTenant.businessName,
+          slug: res.slug || this.newTenant.slug,
+          email: res.ownerEmail || this.newTenant.adminEmail,
+          password: res.generatedPassword
+        });
+      }
+
       this.resetNewTenant();
     } catch (error: any) {
       console.error('Failed to create tenant', error);
@@ -122,6 +160,24 @@ export class TenantsComponent implements OnInit {
     } finally {
       this.isCreating.set(false);
     }
+  }
+
+  copyCredentials() {
+    const creds = this.generatedCredentials();
+    if (!creds) return;
+    const text = `RetailOS Tenant Credentials\n` +
+      `Business: ${creds.businessName}\n` +
+      `Slug: ${creds.slug}\n` +
+      `Admin Email: ${creds.email}\n` +
+      `Temporary Password: ${creds.password}\n\n` +
+      `* Note: You will be required to change your password immediately upon your first login.`;
+    navigator.clipboard.writeText(text);
+    this.copiedNotice.set(true);
+    setTimeout(() => this.copiedNotice.set(false), 3000);
+  }
+
+  closeCredentialsModal() {
+    this.generatedCredentials.set(null);
   }
 
   resetNewTenant() {
@@ -132,7 +188,6 @@ export class TenantsComponent implements OnInit {
       adminFirstName: '',
       adminLastName: '',
       adminEmail: '',
-      adminPassword: '',
       maxStores: 1,
       maxStaff: 5,
       maxTerminals: 2,
@@ -189,6 +244,81 @@ export class TenantsComponent implements OnInit {
     }
   }
 
+  async moveToBin(tenant: any) {
+    if (!confirm(`Move "${tenant.businessName}" to the Recycle Bin?\n\nThis will deactivate the tenant organization and prevent staff from logging in. You can restore this tenant or permanently delete it later from the Bin.`)) {
+      return;
+    }
+
+    try {
+      await this.tenantService.deleteTenant(tenant.id);
+      await this.loadTenants();
+      await this.contextService.loadTenants();
+    } catch (error: any) {
+      console.error('Failed to move tenant to bin', error);
+      alert(error?.error?.message || 'Failed to move tenant to bin.');
+    }
+  }
+
+  async restoreTenant(tenant: any) {
+    if (!confirm(`Restore "${tenant.businessName}" from the Recycle Bin?\n\nThe organization will be restored to active status.`)) {
+      return;
+    }
+
+    try {
+      await this.tenantService.restoreTenant(tenant.id);
+      await this.loadTenants();
+      await this.contextService.loadTenants();
+    } catch (error: any) {
+      console.error('Failed to restore tenant', error);
+      alert(error?.error?.message || 'Failed to restore tenant.');
+    }
+  }
+
+  async exportTenantCsv(tenant: any) {
+    try {
+      await this.tenantService.exportTenantCsv(tenant.id, tenant.slug);
+    } catch (error: any) {
+      console.error('Failed to export tenant CSV', error);
+      alert('Failed to download tenant data export.');
+    }
+  }
+
+  openPurgeModal(tenant: any) {
+    this.tenantToPurge.set(tenant);
+    this.purgeInputSlug.set('');
+    this.showPurgeModal.set(true);
+  }
+
+  closePurgeModal() {
+    this.tenantToPurge.set(null);
+    this.purgeInputSlug.set('');
+    this.showPurgeModal.set(false);
+  }
+
+  async confirmPurge() {
+    const t = this.tenantToPurge();
+    if (!t) return;
+
+    if (this.purgeInputSlug().trim().toLowerCase() !== t.slug.toLowerCase()) {
+      alert(`Slug does not match. Please type "${t.slug}" to confirm.`);
+      return;
+    }
+
+    this.isPurging.set(true);
+    try {
+      await this.tenantService.purgeTenant(t.id);
+      this.closePurgeModal();
+      await this.loadTenants();
+      await this.contextService.loadTenants();
+      alert(`Tenant "${t.businessName}" and all associated data have been permanently purged.`);
+    } catch (error: any) {
+      console.error('Failed to purge tenant', error);
+      alert(error?.error?.message || 'Failed to permanently delete tenant.');
+    } finally {
+      this.isPurging.set(false);
+    }
+  }
+
   openEditModal(tenant: any) {
     this.editingTenantId = tenant.id;
     this.editTenant = {
@@ -227,7 +357,6 @@ export class TenantsComponent implements OnInit {
       this.showEditModal.set(false);
       this.editingTenantId = null;
       await this.loadTenants();
-      // Also update contextService so header and sidebar reflect any renamed tenant immediately
       await this.contextService.loadTenants();
     } catch (error: any) {
       console.error('Failed to update tenant', error);

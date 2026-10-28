@@ -2,64 +2,57 @@
   <!-- Breadcrumbs & Header -->
   <div style="margin-bottom:24px;">
     <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);margin-bottom:8px;">
-      <a routerLink="/app/staff" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
+      <a (click)="goBack()" style="cursor:pointer;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="15 18 9 12 15 6"/></svg>
         Back to Staff
       </a>
       <span>/</span>
-      <span>{{ isEditMode() ? 'Edit Staff Member' : 'New Staff Member' }}</span>
+      <span>{{ isEditMode() ? 'Edit Staff Profile' : 'Onboard New Staff' }}</span>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <h1 style="font-size:24px;font-weight:800;margin:0;color:var(--text1);letter-spacing:-0.02em;">
-          {{ isEditMode() ? 'Edit Staff Member' : 'Register New Staff Member' }}
+        <h1 style="font-size:24px;font-weight:800;color:var(--text1);margin:0;letter-spacing:-0.02em;">
+          {{ isEditMode() ? 'Update Staff Member' : 'Onboard New Staff Member' }}
         </h1>
         <div style="font-size:13px;color:var(--text3);margin-top:4px;">
-          Configure security roles, store branch access, and 4-digit POS register PINs
+          {{ isEditMode() ? 'Modify employee details, assigned location, or permissions.' : 'Register a staff member, assign store branch and security role.' }}
         </div>
       </div>
 
       <div style="display:flex;gap:10px;">
-        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">
-          Cancel
-        </button>
-        <button (click)="saveStaff()" class="btn btn-primary" [disabled]="isSaving()" style="min-width:140px;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+        <button (click)="goBack()" class="btn btn-secondary" [disabled]="isSaving()">Cancel</button>
+        <button (click)="saveStaff()" class="btn btn-primary" [disabled]="isSaving()" style="min-width:140px;display:inline-flex;align-items:center;justify-content:center;gap:6px;">
           @if (isSaving()) {
             <span class="spinner-sm"></span>
             <span>Saving...</span>
           } @else {
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>{{ isEditMode() ? 'Save Changes' : 'Create Staff Member' }}</span>
+            <span>{{ isEditMode() ? 'Save Changes' : 'Create Staff' }}</span>
           }
         </button>
       </div>
     </div>
   </div>
 
+  @if (errorMessage()) {
+    <div style="padding:14px 18px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:12px;color:var(--red);font-size:13px;font-weight:600;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
   @if (isLoading()) {
-    <div style="text-align:center;padding:80px 0;">
+    <div style="text-align:center;padding:60px 0;">
       <div class="spinner" style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color:var(--text3);font-size:14px;font-weight:600;">Loading staff profile...</div>
+      <div style="color:var(--text3);font-size:13px;font-weight:600;">Loading staff data...</div>
     </div>
   } @else {
-    @if (errorMessage()) {
-      <div style="margin-bottom:20px;padding:14px 16px;background:rgba(239,68,68,0.08);border:1.5px solid rgba(239,68,68,0.3);border-radius:12px;display:flex;align-items:flex-start;gap:12px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" style="width:18px;height:18px;flex-shrink:0;margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:2px;">Action Blocked</div>
-          <div style="font-size:12px;color:var(--text2);line-height:1.5;">{{ errorMessage() }}</div>
-        </div>
-        <button (click)="errorMessage.set(null)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;">×</button>
-      </div>
-    }
-
     <div style="display:grid;gap:20px;">
-      <!-- Card 1: Personal Details -->
+      <!-- Card 1: Identity & Contact -->
       <div class="card" style="padding:22px;border-radius:14px;background:var(--surface);border:1px solid var(--border);">
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Personal & Employment Details
+          Employee Identity & Contact
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
@@ -75,8 +68,8 @@
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
           <div>
-            <label class="label">Work Email <span style="color:var(--red);">*</span></label>
-            <input class="inp" [(ngModel)]="staff().email" type="email" placeholder="john.doe@retailos.com">
+            <label class="label">Email Address <span style="color:var(--red);">*</span></label>
+            <input class="inp" [(ngModel)]="staff().email" type="email" placeholder="john.doe@company.com">
           </div>
           <div>
             <label class="label">Employee ID / Number</label>
@@ -152,33 +145,119 @@
           Authentication & Credentials
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-          <div>
-            <label class="label">Quick POS Register PIN (4-6 digits)</label>
-            <div style="display:flex;gap:8px;">
-              <input class="inp mono" [(ngModel)]="staff().pin" type="text" maxlength="6" placeholder="{{ isEditMode() ? '•••• (leave blank to keep)' : 'e.g. 1234' }}" style="font-weight:700;">
-              <button type="button" (click)="generateQuickPin()" class="btn btn-secondary" style="white-space:nowrap;padding:0 12px;display:inline-flex;align-items:center;gap:4px;font-size:12px;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                Random
-              </button>
+        @if (!isEditMode()) {
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:flex-start;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             </div>
-            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
-              Fast keypad PIN used by cashier to unlock terminal drawer and switch shifts.
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text1);">Auto-Generated Credentials</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px;line-height:1.5;">
+                Upon clicking <strong>Create Staff</strong>, a temporary password (and 4-digit PIN for cashiers) will be automatically generated. You will be able to copy the credentials on the next screen. The employee will be required to change their credentials upon first login.
+              </div>
             </div>
           </div>
+        } @else {
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label class="label">Quick POS Register PIN (4-6 digits)</label>
+              <div style="display:flex;gap:8px;">
+                <input class="inp mono" [(ngModel)]="staff().pin" type="text" maxlength="6" placeholder="•••• (leave blank to keep)" style="font-weight:700;">
+                <button type="button" (click)="generateQuickPin()" class="btn btn-secondary" style="white-space:nowrap;padding:0 12px;display:inline-flex;align-items:center;gap:4px;font-size:12px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  Random
+                </button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+                Leave blank to preserve current PIN.
+              </div>
+            </div>
 
-          <div>
-            <label class="label">Portal Web Password</label>
-            <input class="inp mono" [(ngModel)]="staff().password" type="password" placeholder="{{ isEditMode() ? '•••••••• (leave blank to keep)' : 'Enter strong portal password' }}">
-            <div style="font-size:11px;color:var(--text3);margin-top:4px;">
-              Secure password for logging into this browser-based management portal.
+            <div>
+              <label class="label">Portal Web Password</label>
+              <div style="position:relative;display:flex;align-items:center;">
+                <input class="inp mono" [(ngModel)]="staff().password" [type]="showPassword() ? 'text' : 'password'" placeholder="•••••••• (leave blank to keep)" style="padding-right:38px;">
+                <button type="button" (click)="showPassword.set(!showPassword())"
+                        style="position:absolute;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                        title="Toggle password visibility">
+                  <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    @if (showPassword()) {
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    } @else {
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    }
+                  </svg>
+                </button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">
+                Leave blank to preserve current password.
+              </div>
             </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   }
 </div>
+
+<!-- AUTO-GENERATED STAFF CREDENTIALS MODAL -->
+@if (generatedCredentials()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div class="card" style="width:100%;max-width:500px;padding:24px;border-radius:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;color:var(--green);flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:20px;height:20px;"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:var(--text1);">Staff Member Created!</div>
+          <div style="font-size:12px;color:var(--text3);">Save these auto-generated employee credentials.</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;display:grid;gap:10px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Staff Member</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);">{{ generatedCredentials()?.fullName }} ({{ generatedCredentials()?.employeeNo }})</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;">Login Email</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text1);" class="mono">{{ generatedCredentials()?.email }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;">Temporary Web Password</div>
+          <div style="font-size:16px;font-weight:800;color:var(--accent);letter-spacing:1px;margin-top:2px;" class="mono">{{ generatedCredentials()?.password }}</div>
+        </div>
+        @if (generatedCredentials()?.pin) {
+          <div style="border-top:1px dashed var(--border);padding-top:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--green);text-transform:uppercase;">Temporary POS Register PIN</div>
+            <div style="font-size:16px;font-weight:800;color:var(--green);letter-spacing:2px;margin-top:2px;" class="mono">{{ generatedCredentials()?.pin }}</div>
+          </div>
+        }
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);margin-bottom:20px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);padding:10px 12px;border-radius:8px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--accent);flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>The staff member must change this temporary password (and cashier PIN) immediately upon their next login.</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <button (click)="copyCredentials()" class="btn btn-secondary" style="font-size:12px;padding:8px 16px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;">
+          @if (copiedNotice()) {
+            <span style="color:var(--green);font-weight:700;">✓ Copied to Clipboard!</span>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span>Copy All Credentials</span>
+          }
+        </button>
+        <button (click)="closeCredentialsModal()" class="btn btn-primary" style="font-size:12px;padding:8px 20px;border-radius:8px;">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
 <style>
   .label {

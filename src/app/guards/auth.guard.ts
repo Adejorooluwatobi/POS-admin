@@ -8,6 +8,12 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   const token = localStorage.getItem('retail_os_token');
   if (token || authService.isLoggedIn()) {
+    // If user has a newly generated password, require password setup before accessing other pages
+    const user = authService.currentUser();
+    if (user?.mustChangePassword && !state.url.includes('/app/profile')) {
+      router.navigate(['/app/profile'], { queryParams: { requirePasswordChange: 'true' } });
+      return false;
+    }
     return true;
   }
 

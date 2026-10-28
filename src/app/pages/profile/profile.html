@@ -10,11 +10,33 @@
       My Profile & Terminal Credentials
     </h1>
     <p style="font-size:13px;color:var(--text3);margin:0;">
-      Manage your personal administrator identity, contact information, and 4-digit POS register authorization PIN.
+      Manage your personal administrator identity, contact information, web portal password, and 4-digit POS register authorization PIN.
     </p>
   </div>
 
-  <!-- Status Notification -->
+  <!-- Mandatory First-Time Password Change Alert -->
+  @if (isMustChangePassword()) {
+    <div style="background:rgba(239,68,68,0.12);border:1.5px solid rgba(239,68,68,0.35);padding:16px 20px;border-radius:14px;display:flex;align-items:flex-start;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.2);color:var(--red);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg style="width:20px;height:20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:15px;font-weight:800;color:var(--red);">Action Required: Temporary Credentials Active</div>
+        <div style="font-size:13px;color:var(--text1);margin-top:4px;line-height:1.5;">
+          You are currently logged in with a system-generated temporary password. For security reasons, you must set a new permanent password
+          @if (isMustChangePin()) {
+            <strong>and configure your 4-digit POS register PIN</strong>
+          }
+          before you can access other parts of the platform.
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- General Status Notification -->
   @if (statusMsg()) {
     <div class="fade-up" [style.background]="statusMsg()?.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'"
          [style.borderColor]="statusMsg()?.type === 'success' ? '#10b981' : '#ef4444'"
@@ -62,7 +84,7 @@
         <div>
           <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;display:block;">Employee ID</span>
           <span style="font-size:13px;font-weight:700;color:var(--text);font-family:var(--mono);">
-            {{ user()?.employeeNo || user()?.sub ? (user()?.sub | slice:0:8) : 'EMP-HQ-001' }}
+            {{ user()?.employeeNo || (user()?.sub ? (user()?.sub | slice:0:8) : 'EMP-HQ-001') }}
           </span>
         </div>
 
@@ -82,18 +104,205 @@
         <div>
           <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;display:block;">Account Status</span>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-            <span style="width:8px;height:8px;border-radius:50%;background:#10b981;"></span>
-            <span style="font-size:12px;font-weight:700;color:#10b981;">Active & Authorized</span>
+            <span style="width:8px;height:8px;border-radius:50%;" [style.background]="isMustChangePassword() ? '#f59e0b' : '#10b981'"></span>
+            <span style="font-size:12px;font-weight:700;" [style.color]="isMustChangePassword() ? '#f59e0b' : '#10b981'">
+              {{ isMustChangePassword() ? 'Pending Password Setup' : 'Active & Authorized' }}
+            </span>
           </div>
         </div>
       </div>
 
     </div>
 
-    <!-- Right Column: Personal Info & POS PIN Management -->
+    <!-- Right Column: Personal Info & Security Management -->
     <div style="display:flex;flex-direction:column;gap:20px;">
-      
-      <!-- Card 1: Personal Profile Information -->
+
+      <!-- Card 1: Web Portal Password Change (Primary Security Requirement) -->
+      <div class="card" [style.borderColor]="isMustChangePassword() ? 'rgba(239,68,68,0.4)' : 'var(--border)'" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="width:4px;height:20px;" [style.background]="isMustChangePassword() ? 'var(--red)' : 'var(--accent)'" style="border-radius:2px;"></span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--text);">Web Portal Password & Credentials</div>
+              <div style="font-size:12px;color:var(--text3);">
+                {{ isMustChangePassword() ? 'Set your permanent password to complete onboarding' : 'Update your web portal authentication password' }}
+              </div>
+            </div>
+          </div>
+          @if (!isMustChangePassword()) {
+            <button (click)="isChangingPassword.set(!isChangingPassword())" class="btn btn-secondary btn-sm" style="border-radius:8px;">
+              {{ isChangingPassword() ? 'Cancel' : 'Change Password' }}
+            </button>
+          }
+        </div>
+
+        @if (passwordStatusMsg()) {
+          <div class="fade-up" [style.background]="passwordStatusMsg()?.type === 'success' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)'"
+               [style.borderColor]="passwordStatusMsg()?.type === 'success' ? '#10b981' : '#ef4444'"
+               [style.color]="passwordStatusMsg()?.type === 'success' ? '#10b981' : '#ef4444'"
+               style="border:1px solid;padding:12px 18px;border-radius:12px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <span>{{ passwordStatusMsg()?.text }}</span>
+            @if (passwordStatusMsg()?.type === 'success' && !isMustChangePassword()) {
+              <button (click)="proceedToDashboard()" class="btn btn-primary btn-xs" style="font-size:11px;padding:4px 10px;">Go to Dashboard</button>
+            }
+          </div>
+        }
+
+        @if (!isChangingPassword() && !isMustChangePassword()) {
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(99,102,241,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
+                <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);">Account Password</div>
+                <div style="font-size:11px;color:var(--text3);">Permanent cryptographically hashed BCrypt password</div>
+              </div>
+            </div>
+            <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);letter-spacing:4px;">
+              ••••••••
+            </div>
+          </div>
+        } @else {
+          <!-- Password Form -->
+          <div style="display:grid;gap:16px;">
+            <div>
+              <label class="label">Current / Temporary Password <span style="color:var(--red);">*</span></label>
+              <div style="position:relative;display:flex;align-items:center;">
+                <input class="inp mono" [type]="showCurrentPassword() ? 'text' : 'password'" [(ngModel)]="passwordForm.currentPassword" placeholder="Enter your current or temporary password" style="padding-right:38px;">
+                <button type="button" (click)="showCurrentPassword.set(!showCurrentPassword())"
+                        style="position:absolute;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                        title="Toggle password visibility">
+                  <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    @if (showCurrentPassword()) {
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    } @else {
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    }
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <label class="label">New Permanent Password <span style="color:var(--red);">*</span></label>
+                <div style="position:relative;display:flex;align-items:center;">
+                  <input class="inp mono" [type]="showNewPassword() ? 'text' : 'password'" [(ngModel)]="passwordForm.newPassword" placeholder="At least 6 characters" style="padding-right:38px;">
+                  <button type="button" (click)="showNewPassword.set(!showNewPassword())"
+                          style="position:absolute;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                          title="Toggle password visibility">
+                    <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      @if (showNewPassword()) {
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      } @else {
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="label">Confirm New Password <span style="color:var(--red);">*</span></label>
+                <div style="position:relative;display:flex;align-items:center;">
+                  <input class="inp mono" [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="passwordForm.confirmPassword" placeholder="Confirm new password" style="padding-right:38px;">
+                  <button type="button" (click)="showConfirmPassword.set(!showConfirmPassword())"
+                          style="position:absolute;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                          title="Toggle password visibility">
+                    <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      @if (showConfirmPassword()) {
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      } @else {
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            @if (isMustChangePin()) {
+              <div style="border-top:1px dashed var(--border);padding-top:14px;margin-top:4px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                  <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text1);">Set 4-Digit POS Register PIN <span style="color:var(--red);">*</span></div>
+                    <div style="font-size:11px;color:var(--text3);">Required for cashier register terminal logins.</div>
+                  </div>
+                  <button type="button" (click)="generatePasswordPin()" class="btn btn-secondary btn-xs" style="gap:4px;">
+                    <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                    </svg>
+                    Random PIN
+                  </button>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                  <div>
+                    <label class="label">New 4-Digit PIN</label>
+                    <div style="position:relative;display:flex;align-items:center;">
+                      <input class="inp mono" [type]="showNewPin() ? 'text' : 'password'" maxlength="4" [(ngModel)]="passwordForm.newPin" style="letter-spacing:4px;font-size:16px;padding-right:38px;" placeholder="••••">
+                      <button type="button" (click)="showNewPin.set(!showNewPin())"
+                              style="position:absolute;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                              title="Toggle PIN visibility">
+                        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          @if (showNewPin()) {
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          } @else {
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          }
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="label">Confirm 4-Digit PIN</label>
+                    <div style="position:relative;display:flex;align-items:center;">
+                      <input class="inp mono" [type]="showConfirmPin() ? 'text' : 'password'" maxlength="4" [(ngModel)]="passwordForm.confirmPin" style="letter-spacing:4px;font-size:16px;padding-right:38px;" placeholder="••••">
+                      <button type="button" (click)="showConfirmPin.set(!showConfirmPin())"
+                              style="position:absolute;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                              title="Toggle PIN visibility">
+                        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          @if (showConfirmPin()) {
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          } @else {
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                          }
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div style="display:flex;gap:10px;padding-top:6px;">
+              <button (click)="changePassword()" [disabled]="isSavingPassword()" class="btn btn-primary" style="padding:10px 24px;display:inline-flex;align-items:center;gap:6px;">
+                @if (isSavingPassword()) {
+                  <span class="spinner-sm"></span>
+                  <span>Updating Credentials...</span>
+                } @else {
+                  <span>{{ isMustChangePassword() ? 'Save Permanent Credentials & Proceed' : 'Update Password' }}</span>
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Card 2: Personal Profile Information -->
       <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:10px;">
@@ -104,7 +313,7 @@
             </div>
           </div>
           <button (click)="isEditing.set(!isEditing())" class="btn btn-secondary btn-sm" style="border-radius:8px;">
-            {{ isEditing() ? 'Cancel' : 'Edit Credentials' }}
+            {{ isEditing() ? 'Cancel' : 'Edit Contact Info' }}
           </button>
         </div>
 
@@ -160,72 +369,104 @@
         }
       </div>
 
-      <!-- Card 2: POS Hardware Quick PIN -->
-      <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--text);">POS Terminal Quick-PIN</div>
-              <div style="font-size:12px;color:var(--text3);">4-digit passcode for instant cashier register login and supervisor price overrides</div>
+      <!-- Card 3: POS Hardware Quick PIN (for quick updates when not in first-time setup) -->
+      @if (!isMustChangePassword()) {
+        <div class="card" style="padding:24px;display:flex;flex-direction:column;gap:18px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:4px;height:20px;background:#10b981;border-radius:2px;"></span>
+              <div>
+                <div style="font-size:15px;font-weight:800;color:var(--text);">POS Terminal Quick-PIN</div>
+                <div style="font-size:12px;color:var(--text3);">4-digit passcode for instant cashier register login and supervisor price overrides</div>
+              </div>
             </div>
+            <button (click)="isChangingPin.set(!isChangingPin())" class="btn btn-secondary btn-sm" style="border-radius:8px;">
+              {{ isChangingPin() ? 'Cancel' : 'Change PIN' }}
+            </button>
           </div>
-          <button (click)="isChangingPin.set(!isChangingPin())" class="btn btn-secondary btn-sm" style="border-radius:8px;">
-            {{ isChangingPin() ? 'Cancel' : 'Change PIN' }}
-          </button>
+
+          @if (!isChangingPin()) {
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;">
+                  <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--text);">Register Login Passcode</div>
+                  <div style="font-size:11px;color:var(--text3);">Cryptographically salted in employee ledger</div>
+                </div>
+              </div>
+              <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);letter-spacing:6px;">
+                ••••
+              </div>
+            </div>
+          } @else {
+            <div style="display:grid;gap:16px;margin-top:4px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:12px;color:var(--text3);">Set a new 4-digit numerical code:</span>
+                <button (click)="generateRandomPin()" class="btn btn-secondary btn-xs" style="gap:4px;">
+                  <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                  </svg>
+                  Generate Random PIN
+                </button>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div>
+                  <label class="label">New 4-Digit PIN</label>
+                  <div style="position:relative;display:flex;align-items:center;">
+                    <input class="inp" [type]="showProfileNewPin() ? 'text' : 'password'" maxlength="4" [(ngModel)]="pinForm.newPin" style="font-family:var(--mono);letter-spacing:4px;font-size:16px;padding-right:38px;" placeholder="••••">
+                    <button type="button" (click)="showProfileNewPin.set(!showProfileNewPin())"
+                            style="position:absolute;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                            title="Toggle PIN visibility">
+                      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        @if (showProfileNewPin()) {
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        } @else {
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        }
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="label">Confirm New PIN</label>
+                  <div style="position:relative;display:flex;align-items:center;">
+                    <input class="inp" [type]="showProfileConfirmPin() ? 'text' : 'password'" maxlength="4" [(ngModel)]="pinForm.confirmPin" style="font-family:var(--mono);letter-spacing:4px;font-size:16px;padding-right:38px;" placeholder="••••">
+                    <button type="button" (click)="showProfileConfirmPin.set(!showProfileConfirmPin())"
+                            style="position:absolute;right:8px;background:none;border:none;color:var(--text3);cursor:pointer;display:flex;align-items:center;padding:4px;"
+                            title="Toggle PIN visibility">
+                      <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        @if (showProfileConfirmPin()) {
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        } @else {
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        }
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding-top:6px;">
+                <button (click)="changePin()" [disabled]="isSaving()" class="btn btn-primary" style="padding:10px 24px;">
+                  {{ isSaving() ? 'Saving...' : 'Update POS Register PIN' }}
+                </button>
+              </div>
+            </div>
+          }
         </div>
+      }
 
-        @if (!isChangingPin()) {
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:12px;">
-              <div style="width:36px;height:36px;border-radius:10px;background:rgba(16,185,129,0.1);color:#10b981;display:flex;align-items:center;justify-content:center;">
-                <svg style="width:18px;height:18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-              </div>
-              <div>
-                <div style="font-size:13px;font-weight:700;color:var(--text);">Register Login Passcode</div>
-                <div style="font-size:11px;color:var(--text3);">Cryptographically salted in employee ledger</div>
-              </div>
-            </div>
-            <div style="font-family:var(--mono);font-size:18px;font-weight:800;color:var(--text);letter-spacing:6px;">
-              ••••
-            </div>
-          </div>
-        } @else {
-          <div style="display:grid;gap:16px;margin-top:4px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:12px;color:var(--text3);">Set a new 4-digit numerical code:</span>
-              <button (click)="generateRandomPin()" class="btn btn-secondary btn-xs" style="gap:4px;">
-                <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-                </svg>
-                Generate Random PIN
-              </button>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div>
-                <label class="label">New 4-Digit PIN</label>
-                <input class="inp" type="password" maxlength="4" [(ngModel)]="pinForm.newPin" style="font-family:var(--mono);letter-spacing:4px;font-size:16px;" placeholder="••••">
-              </div>
-              <div>
-                <label class="label">Confirm New PIN</label>
-                <input class="inp" type="password" maxlength="4" [(ngModel)]="pinForm.confirmPin" style="font-family:var(--mono);letter-spacing:4px;font-size:16px;" placeholder="••••">
-              </div>
-            </div>
-
-            <div style="padding-top:6px;">
-              <button (click)="changePin()" [disabled]="isSaving()" class="btn btn-primary" style="padding:10px 24px;">
-                {{ isSaving() ? 'Saving...' : 'Update POS Register PIN' }}
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-
-      <!-- Card 3: Active Session & Security Context -->
+      <!-- Card 4: Active Session & Security Context -->
       <div class="card" style="padding:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="width:36px;height:36px;border-radius:10px;background:rgba(79,70,229,0.1);color:var(--accent);display:flex;align-items:center;justify-content:center;">
@@ -251,4 +492,14 @@
 
 <style>
   .label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+  .spinner-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>

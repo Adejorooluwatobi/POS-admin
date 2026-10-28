@@ -8,6 +8,8 @@ export interface Account {
   initials: string;
   tenantId?: string | null;
   businessName?: string | null;
+  mustChangePassword?: boolean;
+  mustChangePin?: boolean;
 }
 
 export interface Tenant {
@@ -15,8 +17,16 @@ export interface Tenant {
   businessName: string;
   slug: string;
   ownerEmail?: string;
+  ownerName?: string;
+  ownerStaffId?: string;
   contactEmail?: string;
+  contactPhone?: string;
+  country?: string;
+  logoUrl?: string;
   isActive: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string;
+  generatedPassword?: string;
   maxStores?: number;
   storesCount?: number;
   subscription?: {
@@ -192,6 +202,12 @@ export interface Staff {
   hiredAt?: string;
   password?: string;
   hasPassword?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string;
+  mustChangePassword?: boolean;
+  mustChangePin?: boolean;
+  generatedPassword?: string;
+  generatedPin?: string;
   revenue?: {
     daily: number;
     weekly: number;

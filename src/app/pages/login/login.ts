@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
+import { TourService } from '../../services/tour.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -22,8 +23,13 @@ export class LoginComponent {
   constructor(
     public authService: AuthService,
     public themeService: ThemeService,
+    public tourService: TourService,
     private router: Router
   ) {}
+
+  startProductTour() {
+    this.tourService.startTour(0);
+  }
 
   quickFill(role: 'admin' | 'manager' | 'cashier') {
     if (role === 'admin') {
@@ -48,11 +54,17 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.loginError.set(null);
     try {
-      const error = await this.authService.login(this.email, this.password);
+      const sanitizedEmail = this.email.trim().toLowerCase();
+      const error = await this.authService.login(sanitizedEmail, this.password);
       if (error) {
         this.loginError.set(error);
       } else {
-        this.router.navigate(['/app/dashboard']);
+        const user = this.authService.currentUser();
+        if (user?.mustChangePassword) {
+          this.router.navigate(['/app/profile'], { queryParams: { requirePasswordChange: 'true' } });
+        } else {
+          this.router.navigate(['/app/dashboard']);
+        }
       }
     } catch (e) {
       this.loginError.set('An unexpected error occurred during authentication.');

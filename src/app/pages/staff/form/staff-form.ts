@@ -24,6 +24,17 @@ export class StaffFormComponent implements OnInit {
   public stores = signal<any[]>([]);
   public roles = signal<any[]>([]);
 
+  // Generated credentials modal on creation
+  public generatedCredentials = signal<{
+    fullName: string;
+    email: string;
+    employeeNo: string;
+    password: string;
+    pin?: string;
+  } | null>(null);
+  public copiedNotice = signal<boolean>(false);
+  public showPassword = signal<boolean>(false);
+
   public staff = signal<any>({
     firstName: '',
     lastName: '',
@@ -147,54 +158,103 @@ export class StaffFormComponent implements OnInit {
     const finalStoreId = (systemRole === 5) ? null : s.storeId;
     const finalRoleId = s.roleId?.startsWith('system-') ? null : s.roleId;
 
-    let finalPin = undefined;
-    if (!this.isEditMode()) {
-      finalPin = s.pin ? s.pin : '1234';
-    } else {
-      finalPin = (s.pin && s.pin !== '****') ? s.pin : undefined;
-    }
-
-    let finalPassword = undefined;
-    if (s.password === '********') {
-      finalPassword = undefined;
-    } else if (s.password === '') {
-      finalPassword = '';
-    } else {
-      finalPassword = s.password;
-    }
-
     this.isSaving.set(true);
     this.errorMessage.set(null);
 
     const user = this.authService.currentUser();
-    const dto = {
-      firstName: s.firstName.trim(),
-      lastName: s.lastName.trim(),
-      email: s.email.trim(),
-      employeeNo: s.employeeNo ? s.employeeNo.trim() : null,
-      roleId: finalRoleId,
-      systemRole: systemRole,
-      storeId: finalStoreId,
-      isActive: Boolean(s.isActive),
-      hiredAt: s.hiredAt,
-      tenantId: user?.tenantId,
-      pin: finalPin,
-      password: finalPassword
-    };
 
-    try {
-      if (this.isEditMode()) {
-        await this.staffService.updateStaff(this.staffId()!, { ...dto, id: this.staffId()! });
+    if (this.isEditMode()) {
+      let finalPin = (s.pin && s.pin !== '****') ? s.pin : undefined;
+      let finalPassword = undefined;
+      if (s.password === '********') {
+        finalPassword = undefined;
+      } else if (s.password === '') {
+        finalPassword = '';
       } else {
-        await this.staffService.createStaff(dto);
+        finalPassword = s.password;
       }
-      this.router.navigate(['/app/staff']);
-    } catch (err: any) {
-      console.error('Failed to save staff member', err);
-      this.errorMessage.set(err?.error?.message || 'Failed to save staff member.');
-    } finally {
-      this.isSaving.set(false);
+
+      const dto = {
+        firstName: s.firstName.trim(),
+        lastName: s.lastName.trim(),
+        email: s.email.trim(),
+        employeeNo: s.employeeNo ? s.employeeNo.trim() : null,
+        roleId: finalRoleId,
+        systemRole: systemRole,
+        storeId: finalStoreId,
+        isActive: Boolean(s.isActive),
+        hiredAt: s.hiredAt,
+        tenantId: user?.tenantId,
+        pin: finalPin,
+        password: finalPassword
+      };
+
+      try {
+        await this.staffService.updateStaff(this.staffId()!, { ...dto, id: this.staffId()! });
+        this.router.navigate(['/app/staff']);
+      } catch (err: any) {
+        console.error('Failed to update staff member', err);
+        this.errorMessage.set(err?.error?.message || 'Failed to update staff member.');
+      } finally {
+        this.isSaving.set(false);
+      }
+    } else {
+      // Creation mode: Backend auto-generates temporary password & cashier PIN!
+      const createDto = {
+        firstName: s.firstName.trim(),
+        lastName: s.lastName.trim(),
+        email: s.email.trim(),
+        employeeNo: s.employeeNo ? s.employeeNo.trim() : null,
+        roleId: finalRoleId,
+        systemRole: systemRole,
+        storeId: finalStoreId,
+        isActive: Boolean(s.isActive),
+        hiredAt: s.hiredAt,
+        tenantId: user?.tenantId
+      };
+
+      try {
+        const res = await this.staffService.createStaff(createDto);
+        if (res && res.generatedPassword) {
+          this.generatedCredentials.set({
+            fullName: `${res.firstName} ${res.lastName}`,
+            email: res.email,
+            employeeNo: res.employeeNo || s.employeeNo || 'N/A',
+            password: res.generatedPassword,
+            pin: res.generatedPin
+          });
+        } else {
+          this.router.navigate(['/app/staff']);
+        }
+      } catch (err: any) {
+        console.error('Failed to create staff member', err);
+        this.errorMessage.set(err?.error?.message || 'Failed to create staff member.');
+      } finally {
+        this.isSaving.set(false);
+      }
     }
+  }
+
+  copyCredentials() {
+    const creds = this.generatedCredentials();
+    if (!creds) return;
+    let text = `RetailOS Staff Credentials\n` +
+      `Staff Member: ${creds.fullName}\n` +
+      `Employee ID: ${creds.employeeNo}\n` +
+      `Login Email: ${creds.email}\n` +
+      `Temporary Web Password: ${creds.password}\n`;
+    if (creds.pin) {
+      text += `Temporary POS Register PIN: ${creds.pin}\n`;
+    }
+    text += `\n* Note: You will be required to change your credentials upon first login.`;
+    navigator.clipboard.writeText(text);
+    this.copiedNotice.set(true);
+    setTimeout(() => this.copiedNotice.set(false), 3000);
+  }
+
+  closeCredentialsModal() {
+    this.generatedCredentials.set(null);
+    this.router.navigate(['/app/staff']);
   }
 
   goBack() {

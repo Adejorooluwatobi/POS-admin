@@ -4,12 +4,17 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ThemeService } from '../../services/theme.service';
 import { ContextService } from '../../services/context.service';
+import { SidebarService } from '../../services/sidebar.service';
+import { TourService } from '../../services/tour.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './sidebar.html'
+  templateUrl: './sidebar.html',
+  host: {
+    '[class.collapsed]': '!sidebarService.isOpen()'
+  }
 })
 export class SidebarComponent {
   public navItems: any[] = [];
@@ -18,6 +23,8 @@ export class SidebarComponent {
     public authService: AuthService,
     public themeService: ThemeService,
     public contextService: ContextService,
+    public sidebarService: SidebarService,
+    public tourService: TourService,
     public router: Router
   ) {
     this.setupNav();

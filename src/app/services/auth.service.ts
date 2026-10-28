@@ -14,6 +14,8 @@ interface AuthResponseDto {
   email: string;
   storeId: string | null;
   businessName: string | null;
+  mustChangePassword?: boolean;
+  mustChangePin?: boolean;
 }
 
 @Injectable({
@@ -28,7 +30,11 @@ export class AuthService {
     // Attempt to hydrate from localStorage
     const savedUser = localStorage.getItem('retail_os_user');
     if (savedUser) {
-      this.currentUserSignal.set(JSON.parse(savedUser));
+      try {
+        this.currentUserSignal.set(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('Failed to parse saved user session', e);
+      }
     }
   }
 
@@ -40,7 +46,7 @@ export class AuthService {
     try {
       const response = await firstValueFrom(
         this.http.post<AuthResponseDto>(`${this.apiUrl}/login-admin`, { 
-          email: email.trim(), 
+          email: email.trim().toLowerCase(), 
           password: pass 
         })
       );
@@ -63,7 +69,9 @@ export class AuthService {
         store: response.storeId,
         initials: response.fullName ? response.fullName.substring(0, 2).toUpperCase() : 'U',
         tenantId: response.tenantId,
-        businessName: response.businessName
+        businessName: response.businessName,
+        mustChangePassword: Boolean(response.mustChangePassword),
+        mustChangePin: Boolean(response.mustChangePin)
       };
 
       this.currentUserSignal.set(acct);
@@ -85,11 +93,75 @@ export class AuthService {
     }
   }
 
+  async changePassword(currentPassword: string, newPassword: string, newPin?: string): Promise<{ success: boolean; message: string }> {
+    const res = await firstValueFrom(
+      this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/change-password`, {
+        currentPassword,
+        newPassword,
+        newPin: newPin || null
+      })
+    );
+
+    // Update locally stored user state to clear mustChange flags
+    const current = this.currentUserSignal();
+    if (current) {
+      const updated: Account = {
+        ...current,
+        mustChangePassword: false,
+        mustChangePin: false
+      };
+      this.currentUserSignal.set(updated);
+      localStorage.setItem('retail_os_user', JSON.stringify(updated));
+    }
+
+    return res;
+  }
+
+  updateSessionCredentials(mustChangePassword: boolean = false, mustChangePin: boolean = false) {
+    const current = this.currentUserSignal();
+    if (current) {
+      const updated: Account = {
+        ...current,
+        mustChangePassword,
+        mustChangePin
+      };
+      this.currentUserSignal.set(updated);
+      localStorage.setItem('retail_os_user', JSON.stringify(updated));
+    }
+  }
+
   logout() {
     this.currentUserSignal.set(null);
     localStorage.removeItem('retail_os_user');
     localStorage.removeItem('retail_os_token');
+    localStorage.removeItem('retail_os_is_demo');
+    localStorage.removeItem('retail_os_tour_active');
+    localStorage.removeItem('retail_os_tour_step');
     this.router.navigate(['/login']);
+  }
+
+  setGuestSession() {
+    const guestAcct: Account = {
+      sub: 'demo-visitor-id',
+      email: 'visitor@retailos.demo',
+      pass: '',
+      role: 'TENANT_ADMIN',
+      name: 'Demo Visitor',
+      store: 'demo-store-001',
+      initials: 'DV',
+      tenantId: 'demo-tenant-001',
+      businessName: 'Sandbox Enterprise Store',
+      mustChangePassword: false,
+      mustChangePin: false
+    };
+    this.currentUserSignal.set(guestAcct);
+    localStorage.setItem('retail_os_user', JSON.stringify(guestAcct));
+    localStorage.setItem('retail_os_token', 'demo-sandbox-token');
+    localStorage.setItem('retail_os_is_demo', 'true');
+  }
+
+  isDemoSession(): boolean {
+    return localStorage.getItem('retail_os_is_demo') === 'true';
   }
 
   isLoggedIn(): boolean {
@@ -99,7 +171,6 @@ export class AuthService {
   getSystemRole(): string {
     const user = this.currentUser();
     if (!user) return '';
-    // Map back to original system role if needed, or return the internal enum
     if (user.role === 'SUPER_ADMIN') return 'SuperAdmin';
     if (user.role === 'TENANT_ADMIN') return 'TenantAdmin';
     if (user.role === 'MANAGER') return 'Manager';
@@ -110,6 +181,10 @@ export class AuthService {
 
   isSuperAdmin(): boolean {
     return this.currentUser()?.role === 'SUPER_ADMIN';
+  }
+
+  isTenantAdmin(): boolean {
+    return this.currentUser()?.role === 'TENANT_ADMIN';
   }
 
   getStoreId(): string | null {

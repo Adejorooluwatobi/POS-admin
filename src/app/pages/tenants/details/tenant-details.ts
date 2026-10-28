@@ -2,6 +2,7 @@ import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TenantService } from '../../../services/tenant.service';
+import { StaffService } from '../../../services/staff.service';
 import { AuthService } from '../../../services/auth.service';
 import { ContextService } from '../../../services/context.service';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -31,6 +32,21 @@ export class TenantDetailsComponent implements OnInit {
     logoUrl: ''
   };
 
+  // Credential generation modal for Tenant Admin
+  public generatedCredentials = signal<{
+    businessName: string;
+    fullName: string;
+    email: string;
+    password: string;
+  } | null>(null);
+  public isGeneratingPassword = signal<boolean>(false);
+  public copiedNotice = signal<boolean>(false);
+
+  // Permanent Purge Confirmation Modal
+  public showPurgeModal = signal<boolean>(false);
+  public purgeInputSlug = signal<string>('');
+  public isPurging = signal<boolean>(false);
+
   // Filtering
   public selectedYear = signal<number>(new Date().getFullYear());
   public selectedMonth = signal<number | null>(null);
@@ -54,6 +70,7 @@ export class TenantDetailsComponent implements OnInit {
 
   constructor(
     private tenantService: TenantService,
+    private staffService: StaffService,
     public contextService: ContextService,
     private route: ActivatedRoute,
     private router: Router,
@@ -90,7 +107,6 @@ export class TenantDetailsComponent implements OnInit {
             : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         };
       } else {
-        // No subscription yet — pre-fill with defaults so the modal is ready to create one
         this.subEdit = {
           plan: 0,
           status: 1,
@@ -105,6 +121,134 @@ export class TenantDetailsComponent implements OnInit {
       console.error('Failed to load tenant details', error);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async generateOwnerPassword() {
+    const t = this.tenant();
+    if (!t || !t.ownerStaffId) {
+      alert('No tenant administrator account found to reset.');
+      return;
+    }
+
+    if (!confirm(`Generate a new temporary password for ${t.ownerName || t.ownerEmail}?\n\nThey will be required to change this password on their next login.`)) {
+      return;
+    }
+
+    this.isGeneratingPassword.set(true);
+    try {
+      const res = await this.staffService.generatePassword(t.ownerStaffId);
+      this.generatedCredentials.set({
+        businessName: t.businessName,
+        fullName: res.fullName || t.ownerName || 'Tenant Administrator',
+        email: res.email || t.ownerEmail,
+        password: res.generatedPassword
+      });
+    } catch (error: any) {
+      console.error('Failed to generate password', error);
+      alert(error?.error?.message || 'Failed to generate temporary password.');
+    } finally {
+      this.isGeneratingPassword.set(false);
+    }
+  }
+
+  copyGeneratedCredentials() {
+    const creds = this.generatedCredentials();
+    if (!creds) return;
+    const text = `RetailOS Tenant Admin Credentials\n` +
+      `Business: ${creds.businessName}\n` +
+      `Name: ${creds.fullName}\n` +
+      `Email: ${creds.email}\n` +
+      `Temporary Password: ${creds.password}\n\n` +
+      `* Note: You will be required to change your password immediately upon your first login.`;
+    navigator.clipboard.writeText(text);
+    this.copiedNotice.set(true);
+    setTimeout(() => this.copiedNotice.set(false), 3000);
+  }
+
+  closeCredentialsModal() {
+    this.generatedCredentials.set(null);
+  }
+
+  async moveToBin() {
+    const t = this.tenant();
+    if (!t) return;
+
+    if (!confirm(`Move "${t.businessName}" to the Recycle Bin?\n\nThis will deactivate the tenant organization and prevent staff from logging in. You can restore this tenant or permanently delete it later from the Bin.`)) {
+      return;
+    }
+
+    try {
+      await this.tenantService.deleteTenant(t.id);
+      await this.contextService.loadTenants();
+      this.router.navigate(['/app/tenants']);
+    } catch (error: any) {
+      console.error('Failed to move tenant to bin', error);
+      alert(error?.error?.message || 'Failed to move tenant to bin.');
+    }
+  }
+
+  async restoreTenant() {
+    const t = this.tenant();
+    if (!t) return;
+
+    if (!confirm(`Restore "${t.businessName}" from the Recycle Bin?\n\nThe organization will be restored to active status.`)) {
+      return;
+    }
+
+    try {
+      await this.tenantService.restoreTenant(t.id);
+      await this.loadDetails();
+      await this.contextService.loadTenants();
+    } catch (error: any) {
+      console.error('Failed to restore tenant', error);
+      alert(error?.error?.message || 'Failed to restore tenant.');
+    }
+  }
+
+  async exportTenantCsv() {
+    const t = this.tenant();
+    if (!t) return;
+
+    try {
+      await this.tenantService.exportTenantCsv(t.id, t.slug);
+    } catch (error: any) {
+      console.error('Failed to export tenant CSV', error);
+      alert('Failed to download tenant data export.');
+    }
+  }
+
+  openPurgeModal() {
+    this.purgeInputSlug.set('');
+    this.showPurgeModal.set(true);
+  }
+
+  closePurgeModal() {
+    this.purgeInputSlug.set('');
+    this.showPurgeModal.set(false);
+  }
+
+  async confirmPurge() {
+    const t = this.tenant();
+    if (!t) return;
+
+    if (this.purgeInputSlug().trim().toLowerCase() !== t.slug.toLowerCase()) {
+      alert(`Slug does not match. Please type "${t.slug}" to confirm.`);
+      return;
+    }
+
+    this.isPurging.set(true);
+    try {
+      await this.tenantService.purgeTenant(t.id);
+      this.closePurgeModal();
+      await this.contextService.loadTenants();
+      alert(`Tenant "${t.businessName}" has been permanently purged.`);
+      this.router.navigate(['/app/tenants']);
+    } catch (error: any) {
+      console.error('Failed to purge tenant', error);
+      alert(error?.error?.message || 'Failed to permanently delete tenant.');
+    } finally {
+      this.isPurging.set(false);
     }
   }
 
@@ -168,7 +312,6 @@ export class TenantDetailsComponent implements OnInit {
       await this.tenantService.updateTenant(t.id, this.tenantEdit);
       this.showEditTenantModal.set(false);
       await this.loadDetails();
-      // Refresh global context so header/sidebar update immediately if this tenant is active
       await this.contextService.loadTenants();
     } catch (error: any) {
       console.error('Failed to update tenant info', error);

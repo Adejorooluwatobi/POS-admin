@@ -100,6 +100,16 @@ svg.w-7 { width: 26px !important; height: 26px !important; max-width: 26px !impo
 svg.w-8 { width: 30px !important; height: 30px !important; max-width: 30px !important; max-height: 30px !important; }
 
 /* Sidebar */
+app-sidebar {
+  display: block;
+  flex-shrink: 0;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+app-sidebar.collapsed {
+  width: 56px !important;
+  min-width: 56px !important;
+}
+
 .sidebar {
   background: var(--sidebar);
   width: 215px;
@@ -108,9 +118,50 @@ svg.w-8 { width: 30px !important; height: 30px !important; max-width: 30px !impo
   flex-direction: column;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
   border-right: 1px solid var(--border);
   box-shadow: 0 1px 6px rgba(0,0,0,0.02);
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
 }
+.sidebar.collapsed {
+  width: 56px !important;
+  min-width: 56px !important;
+}
+.sidebar.collapsed .sidebar-full-only {
+  display: none !important;
+}
+.sidebar.collapsed .sidebar-mini-only {
+  display: flex !important;
+}
+.sidebar.collapsed .nav-section {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 10px;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  color: transparent;
+}
+.sidebar.collapsed .nav-link {
+  justify-content: center !important;
+  padding: 8px 0 !important;
+  width: 38px !important;
+  margin: 3px auto !important;
+  gap: 0 !important;
+}
+.sidebar.collapsed .nav-link span {
+  display: none !important;
+}
+.sidebar.collapsed .nav-icon {
+  width: 17px !important;
+  height: 17px !important;
+  margin: 0 !important;
+}
+.sidebar.collapsed .sub-nav {
+  display: none !important;
+}
+
 .sidebar::-webkit-scrollbar-thumb { background: var(--border); }
 .nav-link {
   display: flex;

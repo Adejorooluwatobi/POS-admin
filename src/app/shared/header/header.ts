@@ -1,9 +1,10 @@
-import { Component, signal, OnDestroy, effect } from '@angular/core';
+import { Component, signal, OnDestroy, effect, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ContextService } from '../../services/context.service';
 import { ThemeService } from '../../services/theme.service';
+import { SidebarService } from '../../services/sidebar.service';
 
 @Component({
   selector: 'app-header',
@@ -22,6 +23,7 @@ export class HeaderComponent implements OnDestroy {
     public authService: AuthService,
     public contextService: ContextService,
     public themeService: ThemeService,
+    public sidebarService: SidebarService,
     private router: Router
   ) {
     this.startClock();
@@ -30,6 +32,14 @@ export class HeaderComponent implements OnDestroy {
     effect(() => {
       this.updateTitles();
     });
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'b') {
+      event.preventDefault();
+      this.sidebarService.toggle();
+    }
   }
 
   startClock() {
